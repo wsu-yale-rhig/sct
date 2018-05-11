@@ -31,7 +31,7 @@ boost (for example analysis routines), gtest (for tests), and benchmark (for ben
 ## Build
 Once ROOT, gflags and glog are installed on the user's system, building should be simple:
 ```
-git clone https://github.com/nickelsey/sct.git
+git clone --recurse-submodules https://github.com/nickelsey/sct.git
 cd sct
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=/path/to/install/location .. && make install
