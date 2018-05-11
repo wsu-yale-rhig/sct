@@ -31,7 +31,10 @@ boost (for example analysis routines), gtest (for tests), and benchmark (for ben
 ## Build
 Once ROOT, gflags and glog are installed on the user's system, building should be simple:
 ```
-fill in once repo has been initialized :)
+git clone https://github.com/nickelsey/sct.git
+cd sct
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=/path/to/install/location .. && make install
 ```
 If you have the boost libraries, you can build the example analysis scripts with the cmake option
 ```
@@ -41,4 +44,3 @@ If you want to run the tests and benchmark routines, the sct build script will b
 ```
 cmake -DBUILD_TEST=ON .. && make
 ```
-
