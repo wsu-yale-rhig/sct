@@ -10,7 +10,6 @@ set(SCT_BINARY_SRCS)
 ## add all subdirectories
 add_subdirectory(core)
 add_subdirectory(utils)
-add_subdirectory(systematics)
 add_subdirectory(analysis)
 add_subdirectory(centrality)
 
