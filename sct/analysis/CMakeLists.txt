@@ -6,7 +6,7 @@ set(SCT_BINARY_SRCS ${SCT_BINARY_SRCS} ${tmp})
 file(GLOB tmp *_test.cc)
 set(SCT_TEST_SRCS ${SCT_TEST_SRCS} ${tmp})
 
-## and exclude the test files from libsct
+## and exclude the test files from analysis routines
 if (SCT_TEST_SRCS)
   list(REMOVE_ITEM SCT_BINARY_SRCS ${SCT_TEST_SRCS})
 endif(SCT_TEST_SRCS)
@@ -15,7 +15,7 @@ endif(SCT_TEST_SRCS)
 file(GLOB tmp *_benchmark.cc)
 set(SCT_BENCH_SRCS ${SCT_BENCH_SRCS} ${tmp})
 
-## and exclude the benchmark files from libglauber
+## and exclude the benchmark files from analysis routines
 if (SCT_BENCH_SRCS)
   list(REMOVE_ITEM SCT_BINARY_SRCS ${SCT_BENCH_SRCS})
 endif(SCT_BENCH_SRCS)
