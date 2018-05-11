@@ -30,8 +30,8 @@ namespace sct {
     double weight() {return weight_;}
     
     // given a corrected refmult, calculate the 16 or 9 bin centrality
-    unsigned centrality16() {return centrality_16_;}
-    unsigned centrality9() {return centrality_9_;}
+    int centrality16() {return centrality_16_;}
+    int centrality9() {return centrality_9_;}
     
     // two parameters for luminosity correction -
     // [0] + [1] * zdcRate
