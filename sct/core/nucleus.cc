@@ -323,13 +323,13 @@ namespace sct {
     return TVector3(dx, dy, dz);
   }
   
-  const Nucleon& Nucleus::operator[](unsigned idx) const throw (const char *) {
+  const Nucleon& Nucleus::operator[](unsigned idx) const {
     if (idx > nucleons_.size())
       throw "Out of bounds access";
     return nucleons_[idx];
   }
   
-  Nucleon& Nucleus::operator[](unsigned idx) throw (const char *) {
+  Nucleon& Nucleus::operator[](unsigned idx) {
     if (idx > nucleons_.size())
       throw "Out of bounds access";
     return nucleons_[idx];

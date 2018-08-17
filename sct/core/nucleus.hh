@@ -81,8 +81,8 @@ namespace sct {
     inline bool randomOrientation() const {return random_orientation_;}
     
     // access to nucleons
-    const Nucleon& operator[](unsigned idx) const throw (const char *);
-    Nucleon& operator[](unsigned idx) throw (const char *);
+    const Nucleon& operator[](unsigned idx) const;
+    Nucleon& operator[](unsigned idx);
     
     // access to parameters
     inline unsigned massNumber() const {return mass_number_;}
