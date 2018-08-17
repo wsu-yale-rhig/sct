@@ -31,13 +31,13 @@ TEST(nucleon, specificExample1) {
   pos.SetMagThetaPhi(r, theta, phi);
   
   // with no nuclear rotation
-  double nuclearTheta = 0;
-  double nuclearPhi = 0;
+  double nuclear_theta = 0;
+  double nuclear_phi = 0;
   
   // and zero impact parameter
   double b = 0.0;
   
-  nucleon.set(pos, b, nuclearTheta, nuclearPhi, true);
+  nucleon.set(pos, b, nuclear_theta, nuclear_phi, true);
   
   // check r, theta, phi, x, y, z
   EXPECT_NEAR(2.0, nucleon.x(), 1e-8);
@@ -66,13 +66,13 @@ TEST(nucleon, specificExample2) {
   pos.SetMagThetaPhi(r, theta, phi);
   
   // with no nuclear rotation
-  double nuclearTheta = 0;
-  double nuclearPhi = 0;
+  double nuclear_theta = 0;
+  double nuclear_phi = 0;
   
   // and zero impact parameter
   double b = 2.0;
   
-  nucleon.set(pos, b, nuclearTheta, nuclearPhi, true);
+  nucleon.set(pos, b, nuclear_theta, nuclear_phi, true);
   
   // check r, theta, phi, x, y, z
   EXPECT_NEAR(4.0, nucleon.x(), 1e-8);
@@ -101,13 +101,13 @@ TEST(nucleon, specificExample3) {
   pos.SetMagThetaPhi(r, theta, phi);
   
   // with no nuclear rotation
-  double nuclearTheta = sct::pi;
-  double nuclearPhi = 0;
+  double nuclear_theta = sct::pi;
+  double nuclear_phi = 0;
   
   // and zero impact parameter
   double b = 0.0;
   
-  nucleon.set(pos, b, nuclearTheta, nuclearPhi, true);
+  nucleon.set(pos, b, nuclear_theta, nuclear_phi, true);
   
   // check r, theta, phi, x, y, z
   EXPECT_NEAR(-2.0, nucleon.x(), 1e-8);
@@ -136,13 +136,13 @@ TEST(nucleon, specificExample4) {
   pos.SetMagThetaPhi(r, theta, phi);
   
   // with no nuclear rotation
-  double nuclearTheta = sct::pi / 2.0;
-  double nuclearPhi = sct::pi / 2.0;
+  double nuclear_theta = sct::pi / 2.0;
+  double nuclear_phi = sct::pi / 2.0;
   
   // and zero impact parameter
   double b = 0.0;
   
-  nucleon.set(pos, b, nuclearTheta, nuclearPhi, true);
+  nucleon.set(pos, b, nuclear_theta, nuclear_phi, true);
   
   // check r, theta, phi, x, y, z
   EXPECT_NEAR(0.0, nucleon.x(), 1e-8);
@@ -174,13 +174,13 @@ TEST(nucleon, specificExample5) {
   pos.SetMagThetaPhi(r, theta, phi);
   
   // with no nuclear rotation
-  double nuclearTheta = sct::pi / 2.0;
-  double nuclearPhi = sct::pi / 2.0;
+  double nuclear_theta = sct::pi / 2.0;
+  double nuclear_phi = sct::pi / 2.0;
   
   // and zero impact parameter
   double b = 2.0;
   
-  nucleon.set(pos, b, nuclearTheta, nuclearPhi, true);
+  nucleon.set(pos, b, nuclear_theta, nuclear_phi, true);
   
   // check r, theta, phi, x, y, z
   EXPECT_NEAR(2.0, nucleon.x(), 1e-8);
@@ -224,13 +224,13 @@ TEST(nucleon, position) {
     pos.SetMagThetaPhi(r, theta, phi);
   
     // with no nuclear rotation
-    double nuclearTheta = 0;
-    double nuclearPhi = 0;
+    double nuclear_theta = 0;
+    double nuclear_phi = 0;
     
     // and zero impact parameter
     double b = 0.0;
   
-    nucleon.set(pos, b, nuclearTheta, nuclearPhi, true);
+    nucleon.set(pos, b, nuclear_theta, nuclear_phi, true);
   
     // check r, theta, phi, x, y, z
     EXPECT_NEAR(x, nucleon.x(), 1e-8);
@@ -265,18 +265,18 @@ TEST(nucleon, nucleusRotation) {
     pos.SetMagThetaPhi(r, theta, phi);
     
     // with no nuclear rotation
-    double nuclearTheta = acos(sct::Random::instance().centeredUniform());
-    double nuclearPhi = sct::Random::instance().zeroToPi() * 2.0 - sct::pi;
+    double nuclear_theta = acos(sct::Random::instance().centeredUniform());
+    double nuclear_phi = sct::Random::instance().zeroToPi() * 2.0 - sct::pi;
     
     // and zero impact parameter
     double b = 0.0;
     
-    nucleon.set(pos, b, nuclearTheta, nuclearPhi, true);
+    nucleon.set(pos, b, nuclear_theta, nuclear_phi, true);
     
     // now create a vector to replicate the rotation
     TVector3 vec(x, y, z);
-    vec.RotateY(nuclearTheta);
-    vec.RotateZ(nuclearPhi);
+    vec.RotateY(nuclear_theta);
+    vec.RotateZ(nuclear_phi);
     
     // check r, theta, phi, x, y, z
     EXPECT_NEAR(vec.X(), nucleon.x(), 1e-8);
@@ -311,19 +311,19 @@ TEST(nucleon, nucleusRotationReverse) {
     pos.SetMagThetaPhi(r, theta, phi);
     
     // with nuclear rotation
-    double nuclearTheta = acos(sct::Random::instance().centeredUniform());
-    double nuclearPhi = sct::Random::instance().zeroToPi() * 2.0 - sct::pi;
+    double nuclear_theta = acos(sct::Random::instance().centeredUniform());
+    double nuclear_phi = sct::Random::instance().zeroToPi() * 2.0 - sct::pi;
     
     // and zero impact parameter
     double b = 0.0;
     
     // * ROTATE PHI BEFORE THETA THIS TIME *
-    nucleon.set(pos, b, nuclearTheta, nuclearPhi, false);
+    nucleon.set(pos, b, nuclear_theta, nuclear_phi, false);
     
     // now create a vector to replicate the rotation
     TVector3 vec(x, y, z);
-    vec.RotateZ(nuclearPhi);
-    vec.RotateY(nuclearTheta);
+    vec.RotateZ(nuclear_phi);
+    vec.RotateY(nuclear_theta);
     
     // check r, theta, phi, x, y, z
     EXPECT_NEAR(vec.X(), nucleon.x(), 1e-8);
@@ -358,13 +358,13 @@ TEST(nucleon, impactParameter) {
     pos.SetMagThetaPhi(r, theta, phi);
 
     // with no nuclear rotation
-    double nuclearTheta = 0;
-    double nuclearPhi = 0;
+    double nuclear_theta = 0;
+    double nuclear_phi = 0;
 
     // and get an impact parameter
     double b = dis(generator);
 
-    nucleon.set(pos, b, nuclearTheta, nuclearPhi, true);
+    nucleon.set(pos, b, nuclear_theta, nuclear_phi, true);
 
     // check r, theta, phi, x, y, z
     EXPECT_NEAR(x + b, nucleon.x(), 1e-8); // impact parameter is always a shift along X
@@ -405,18 +405,18 @@ TEST(nucleon, impactParameterWithRotation) {
     pos.SetMagThetaPhi(r, theta, phi);
     
     // with nuclear rotation
-    double nuclearTheta = acos(sct::Random::instance().centeredUniform());
-    double nuclearPhi = sct::Random::instance().zeroToPi() * 2.0 - sct::pi;
+    double nuclear_theta = acos(sct::Random::instance().centeredUniform());
+    double nuclear_phi = sct::Random::instance().zeroToPi() * 2.0 - sct::pi;
     
     // and get an impact parameter
     double b = dis(generator);
     
-    nucleon.set(pos, b, nuclearTheta, nuclearPhi, true);
+    nucleon.set(pos, b, nuclear_theta, nuclear_phi, true);
     
     // now create a vector to replicate the rotation
     TVector3 vec(x, y, z);
-    vec.RotateY(nuclearTheta);
-    vec.RotateZ(nuclearPhi);
+    vec.RotateY(nuclear_theta);
+    vec.RotateZ(nuclear_phi);
     
     // and offset by the impact parameter
     vec.SetXYZ(vec.X() + b, vec.Y(), vec.Z());

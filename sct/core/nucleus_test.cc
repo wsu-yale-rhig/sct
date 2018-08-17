@@ -61,31 +61,31 @@ TEST(nucleus, smearingHardCore) {
   nucleus.setParameters(197, 6.38, 0.535, 0.0, 0.0);
   nucleus.setRepulsionDistance(0.00);
 
-  sct::Nucleus smearedNucleus;
-  smearedNucleus.setParameters(197, 6.38, 0.535, 0.0, 0.0);
-  smearedNucleus.setNucleonSmearing(sct::NucleonSmearing::HardCore, 30.0);
-  smearedNucleus.setRepulsionDistance(0.00);
+  sct::Nucleus smeared_nucleus;
+  smeared_nucleus.setParameters(197, 6.38, 0.535, 0.0, 0.0);
+  smeared_nucleus.setNucleonSmearing(sct::NucleonSmearing::HardCore, 30.0);
+  smeared_nucleus.setRepulsionDistance(0.00);
 
   for (int event = 0; event < 1e4; ++event) {
     nucleus.generate();
-    smearedNucleus.generate();
+    smeared_nucleus.generate();
   }
 
   TH3D* position = nucleus.smearedPosition();
-  TH3D* smearedPosition = smearedNucleus.smearedPosition();
+  TH3D* smeared_position = smeared_nucleus.smearedPosition();
 
-  TH1D* ProjectionX_1 = position->ProjectionX();
-  TH1D* ProjectionX_2 = smearedPosition->ProjectionX();
+  TH1D* projection_x1 = position->ProjectionX();
+  TH1D* projection_x2 = smeared_position->ProjectionX();
 
-  TH1D* ProjectionY_1 = position->ProjectionY();
-  TH1D* ProjectionY_2 = smearedPosition->ProjectionY();
+  TH1D* projection_y1 = position->ProjectionY();
+  TH1D* projection_y2 = smeared_position->ProjectionY();
 
-  TH1D* ProjectionZ_1 = position->ProjectionZ();
-  TH1D* ProjectionZ_2 = smearedPosition->ProjectionZ();
+  TH1D* projection_z1 = position->ProjectionZ();
+  TH1D* projection_z2 = smeared_position->ProjectionZ();
 
-  EXPECT_LE(ProjectionX_1->KolmogorovTest(ProjectionX_2), 0.01);
-  EXPECT_LE(ProjectionY_1->KolmogorovTest(ProjectionY_2), 0.01);
-  EXPECT_LE(ProjectionZ_1->KolmogorovTest(ProjectionZ_2), 0.01);
+  EXPECT_LE(projection_x1->KolmogorovTest(projection_x2), 0.01);
+  EXPECT_LE(projection_y1->KolmogorovTest(projection_y2), 0.01);
+  EXPECT_LE(projection_z1->KolmogorovTest(projection_z2), 0.01);
 }
 
 TEST(nucleus, smearingGaussian) {
@@ -95,31 +95,31 @@ TEST(nucleus, smearingGaussian) {
   nucleus.setParameters(197, 6.38, 0.535, 0.0, 0.0);
   nucleus.setRepulsionDistance(0.00);
 
-  sct::Nucleus smearedNucleus;
-  smearedNucleus.setParameters(197, 6.38, 0.535, 0.0, 0.0);
-  smearedNucleus.setNucleonSmearing(sct::NucleonSmearing::Gaussian, 5.0);
-  smearedNucleus.setRepulsionDistance(0.00);
+  sct::Nucleus smeared_nucleus;
+  smeared_nucleus.setParameters(197, 6.38, 0.535, 0.0, 0.0);
+  smeared_nucleus.setNucleonSmearing(sct::NucleonSmearing::Gaussian, 5.0);
+  smeared_nucleus.setRepulsionDistance(0.00);
 
   for (int event = 0; event < 1e4; ++event) {
     nucleus.generate();
-    smearedNucleus.generate();
+    smeared_nucleus.generate();
   }
 
   TH3D* position = nucleus.smearedPosition();
-  TH3D* smearedPosition = smearedNucleus.smearedPosition();
+  TH3D* smeared_position = smeared_nucleus.smearedPosition();
 
-  TH1D* ProjectionX_1 = position->ProjectionX();
-  TH1D* ProjectionX_2 = smearedPosition->ProjectionX();
+  TH1D* projection_x1 = position->ProjectionX();
+  TH1D* projection_x2 = smeared_position->ProjectionX();
 
-  TH1D* ProjectionY_1 = position->ProjectionY();
-  TH1D* ProjectionY_2 = smearedPosition->ProjectionY();
+  TH1D* projection_y1 = position->ProjectionY();
+  TH1D* projection_y2 = smeared_position->ProjectionY();
 
-  TH1D* ProjectionZ_1 = position->ProjectionZ();
-  TH1D* ProjectionZ_2 = smearedPosition->ProjectionZ();
+  TH1D* projection_z1 = position->ProjectionZ();
+  TH1D* projection_z2 = smeared_position->ProjectionZ();
 
-  EXPECT_LE(ProjectionX_1->KolmogorovTest(ProjectionX_2), 0.01);
-  EXPECT_LE(ProjectionY_1->KolmogorovTest(ProjectionY_2), 0.01);
-  EXPECT_LE(ProjectionZ_1->KolmogorovTest(ProjectionZ_2), 0.01);
+  EXPECT_LE(projection_x1->KolmogorovTest(projection_x2), 0.01);
+  EXPECT_LE(projection_y1->KolmogorovTest(projection_y2), 0.01);
+  EXPECT_LE(projection_z1->KolmogorovTest(projection_z2), 0.01);
 }
 
 TEST(nucleus, sphericalDistribution) {
@@ -135,21 +135,21 @@ TEST(nucleus, sphericalDistribution) {
 
   TH3D* position = nucleus.smearedPosition();
 
-  TH1D* ProjectionX = position->ProjectionX();
-  TH1D* ProjectionY = position->ProjectionY();
-  TH1D* ProjectionZ = position->ProjectionZ();
+  TH1D* projection_x = position->ProjectionX();
+  TH1D* projection_y = position->ProjectionY();
+  TH1D* projection_z = position->ProjectionZ();
 
-  EXPECT_GE(ProjectionX->KolmogorovTest(ProjectionY), 0.01);
-  EXPECT_GE(ProjectionY->KolmogorovTest(ProjectionZ), 0.01);
-  EXPECT_GE(ProjectionZ->KolmogorovTest(ProjectionX), 0.01);
+  EXPECT_GE(projection_x->KolmogorovTest(projection_y), 0.01);
+  EXPECT_GE(projection_y->KolmogorovTest(projection_z), 0.01);
+  EXPECT_GE(projection_z->KolmogorovTest(projection_x), 0.01);
 }
 
 TEST(nucleus, woodsSaxon1D) {
 
   sct::Nucleus nucleus;
   double radius = 6.38;
-  double skinDepth = 0.535;
-  nucleus.setParameters(197, radius, skinDepth, 0.0, 0.0);
+  double skin_depth = 0.535;
+  nucleus.setParameters(197, radius, skin_depth, 0.0, 0.0);
   nucleus.setRepulsionDistance(0.00);
 
   // set the fitting function for the woods-saxon
@@ -169,27 +169,27 @@ TEST(nucleus, woodsSaxon1D) {
   hWS->Fit(WS, "Q");
 
   EXPECT_NEAR(radius, WS->GetParameter(0), 5e-3);
-  EXPECT_NEAR(skinDepth, WS->GetParameter(1), 5e-3);
+  EXPECT_NEAR(skin_depth, WS->GetParameter(1), 5e-3);
 
 }
 
 double WoodsSaxonDeformed(double *x,
                           double *par) {
   double r = x[0];
-  double cosTheta = x[1];
+  double costheta = x[1];
   double R0 = par[0];
   double a = par[1];
   double beta2 = par[2];
   double beta4 = par[3];
   double norm = par[4];
 
-  // powers of cosTheta
-  double cosTheta2 = std::pow(cosTheta, 2.0);
-  double cosTheta4 = std::pow(cosTheta, 4.0);
+  // powers of costheta
+  double costheta2 = std::pow(costheta, 2.0);
+  double costheta4 = std::pow(costheta, 4.0);
 
   // spherical harmonics Y(l=2, m=0), Y(l=4, m=0)
-  double Y20 = std::sqrt(5.0 / sct::pi) / 4.0 * (3.0 * cosTheta2 - 1.0);
-  double Y40 = std::sqrt(1.0 / sct::pi) * 3.0 / 16.0 * (35.0 * cosTheta4 - 30.0 * cosTheta2 + 3.0);
+  double Y20 = std::sqrt(5.0 / sct::pi) / 4.0 * (3.0 * costheta2 - 1.0);
+  double Y40 = std::sqrt(1.0 / sct::pi) * 3.0 / 16.0 * (35.0 * costheta4 - 30.0 * costheta2 + 3.0);
 
   double R = R0 * (1.0 + beta2 * Y20 + beta4 * Y40);
 
@@ -200,10 +200,10 @@ TEST(nucleus, woodsSaxon2D) {
   
   sct::Nucleus nucleus;
   double radius = 6.38;
-  double skinDepth = 0.535;
+  double skin_depth = 0.535;
   double beta2 = 0.2;
   double beta4 = 0;
-  nucleus.setParameters(197, radius, skinDepth, beta2, beta4);
+  nucleus.setParameters(197, radius, skin_depth, beta2, beta4);
   nucleus.setRepulsionDistance(0.00);
   nucleus.setRandomOrientation(false);
   
@@ -211,7 +211,7 @@ TEST(nucleus, woodsSaxon2D) {
   fWSD->SetNpx(200);
   fWSD->SetNpy(200);
   fWSD->SetParameter(0, radius + 0.01);
-  fWSD->SetParameter(1, skinDepth + 0.01);
+  fWSD->SetParameter(1, skin_depth + 0.01);
   fWSD->SetParameter(2, beta2 + 0.01);
   fWSD->SetParameter(3, beta4 + 0.01);
   fWSD->SetParameter(4, 1);
@@ -228,7 +228,7 @@ TEST(nucleus, woodsSaxon2D) {
   rcostheta->Fit(fWSD, "Q");
   
   EXPECT_NEAR(fWSD->GetParameter(0), radius, 1e-2);
-  EXPECT_NEAR(fWSD->GetParameter(1), skinDepth, 1e-2);
+  EXPECT_NEAR(fWSD->GetParameter(1), skin_depth, 1e-2);
   EXPECT_NEAR(fWSD->GetParameter(2), beta2, 1e-2);
   EXPECT_NEAR(fWSD->GetParameter(3), beta4, 1e-2);
 }
