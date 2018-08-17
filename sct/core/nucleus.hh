@@ -37,11 +37,11 @@ namespace sct {
     Nucleus();
     
     // generic constructor
-    Nucleus(unsigned massNumber,  // number of nucleons
-            double radius,        // radius of the nucleus (in fm)
-            double skinDepth,     // skin depth of the nucleus (in fm)
-            double beta2,         // 2nd order deformation parameter
-            double beta4);        // 4th order deformation parameter
+    Nucleus(unsigned mass_number,  // number of nucleons
+            double radius,         // radius of the nucleus (in fm)
+            double skin_depth,     // skin depth of the nucleus (in fm)
+            double beta2,          // 2nd order deformation parameter
+            double beta4);         // 4th order deformation parameter
     
     Nucleus(const Nucleus& rhs);
     
@@ -52,7 +52,7 @@ namespace sct {
     
     // allows the user to (re)set the parameters after construction, if resetting,
     // will delete any currently generated event
-    void setParameters(unsigned massNumber, double radius, double skinDepth,
+    void setParameters(unsigned mass_number, double radius, double skin_depth,
                        double beta2, double beta4);
   
     // creates a new set of nucleons according to the nucleus parameters,
@@ -77,33 +77,33 @@ namespace sct {
     // angles. Default is set to true, but only used if the nucleus is not spherical
     // (ie, beta2 or beta4 != 0.0). The option to turn this off is really only included
     // for testing, since it needs to be on during glauber simulations.
-    void setRandomOrientation(bool flag) {randomOrientation_ = flag;}
-    inline bool randomOrientation() const {return randomOrientation_;}
+    void setRandomOrientation(bool flag) {random_orientation_ = flag;}
+    inline bool randomOrientation() const {return random_orientation_;}
     
     // access to nucleons
     const Nucleon& operator[](unsigned idx) const throw (const char *);
     Nucleon& operator[](unsigned idx) throw (const char *);
     
     // access to parameters
-    inline unsigned massNumber() const {return massNumber_;}
+    inline unsigned massNumber() const {return mass_number_;}
     inline unsigned size()  const {return nucleons_.size();}
     inline double radius() const {return radius_;}
-    inline double skinDepth() const {return skinDepth_;}
+    inline double skinDepth() const {return skin_depth_;}
     inline double beta2() const {return beta2_;}
     inline double beta4() const {return beta4_;}
     inline NucleonSmearing nucleonSmearing() const {return smear_;}
     inline double nnCrossSection() const {return sigmaNN_;}
-    inline double repulsionDistance() const {return repulsionDistance_;}
-    inline double nucleusTheta() const {return nucleusTheta_;}
-    inline double nucleusPhi() const {return nucleusPhi_;}
+    inline double repulsionDistance() const {return repulsion_distance_;}
+    inline double nucleusTheta() const {return nucleus_theta_;}
+    inline double nucleusPhi() const {return nucleus_phi_;}
     inline double impactParameter() const {return b_;}
     
-    inline TH2D* generatedRCosTheta() const {return (TH2D*) generatedRCosTheta_.get();}
-    inline TH3D* generatedPosition() const {return (TH3D*) generatedPosition_.get();}
-    inline TH3D* generatedSmear() const {return (TH3D*) generatedSmear_.get();}
-    inline TH3D* smearedPosition() const {return (TH3D*) smearedPosition_.get();}
+    inline TH2D* generatedRCosTheta() const {return (TH2D*) generated_rcostheta_.get();}
+    inline TH3D* generatedPosition() const {return (TH3D*) generated_position_.get();}
+    inline TH3D* generatedSmear() const {return (TH3D*) generated_smear_.get();}
+    inline TH3D* smearedPosition() const {return (TH3D*) smeared_position_.get();}
     
-    inline TF1* woodsSaxon() const {return woodsSaxon_.get();}
+    inline TF1* woodsSaxon() const {return woods_saxon_.get();}
   
   private:
     
@@ -124,30 +124,30 @@ namespace sct {
     
     string name_;         // string identifier
     
-    unsigned massNumber_; // nuclear mass number
-    double radius_;       // radius of nucleus
-    double skinDepth_;    // skin depth of nucleus
-    double beta2_;        // 2nd order deformation parameter
-    double beta4_;        // 4th order deformation parameter
+    unsigned mass_number_; // nuclear mass number
+    double radius_;        // radius of nucleus
+    double skin_depth_;    // skin depth of nucleus
+    double beta2_;         // 2nd order deformation parameter
+    double beta4_;         // 4th order deformation parameter
     
-    NucleonSmearing smear_;     // flag for nucleon position smearing
-    double sigmaNN_;            // nucleon-nucleon inellastic cross section
-    double repulsionDistance_;  // force nucleons to be minimum repulsionDistance_ away
-                                // from each other
+    NucleonSmearing smear_;      // flag for nucleon position smearing
+    double sigmaNN_;             // nucleon-nucleon inellastic cross section
+    double repulsion_distance_;  // force nucleons to be minimum repulsionDistance_ away
+                                 // from each other
     
-    bool randomOrientation_;    // if set to true, the nucleus will be oriented in a random
-                                // direction (only useful if beta2 or beta4 are non-zero)
-    double nucleusTheta_;       // for deformed nuclei, specifies the polar & azimuthal
-    double nucleusPhi_;         // angles in the collision frame for a specific event
-    double b_;                  // impact parameter for a specific event
+    bool random_orientation_;    // if set to true, the nucleus will be oriented in a random
+                                 // direction (only useful if beta2 or beta4 are non-zero)
+    double nucleus_theta_;       // for deformed nuclei, specifies the polar & azimuthal
+    double nucleus_phi_;         // angles in the collision frame for a specific event
+    double b_;                   // impact parameter for a specific event
     
-    unique_ptr<TF1> woodsSaxon_;      // density profile for nucleons
-    unique_ptr<TF3> smearingProfile_; // Used to smear nucleon position if requested
+    unique_ptr<TF1> woods_saxon_;      // density profile for nucleons
+    unique_ptr<TF3> smearing_profile_; // Used to smear nucleon position if requested
     
-    unique_ptr<TH2> generatedRCosTheta_; // histogram recording sampled r/theta from woods-saxon
-    unique_ptr<TH3> generatedPosition_;  // histogram recording the generated nucleon position
-    unique_ptr<TH3> generatedSmear_;     // histogram recording the generated smearing
-    unique_ptr<TH3> smearedPosition_;    // histogram recording the final smeared position
+    unique_ptr<TH2> generated_rcostheta_; // histogram recording sampled r/theta from woods-saxon
+    unique_ptr<TH3> generated_position_;  // histogram recording the generated nucleon position
+    unique_ptr<TH3> generated_smear_;     // histogram recording the generated smearing
+    unique_ptr<TH3> smeared_position_;    // histogram recording the final smeared position
   };
   
 } // namespace sct

@@ -62,9 +62,9 @@ namespace sct {
     virtual ~MCGlauber();
     
     // set minimum & maximum impact parameter
-    void setImpactParameterRange(double bMin, double bMax);
-    inline double minB() const {return bMin_;}
-    inline double maxB() const {return bMax_;}
+    void setImpactParameterRange(double b_min, double b_max);
+    inline double minB() const {return b_min_;}
+    inline double maxB() const {return b_max_;}
     
     // add repulsion distance to nucleons (default is 0 fm)
     // forces generated nucleons to be at least repulsionDistance() away from
@@ -134,8 +134,8 @@ namespace sct {
     unsigned eventsAccepted_;
     
     // impact parameter
-    double bMin_;
-    double bMax_;
+    double b_min_;
+    double b_max_;
     
     // collision parameters
     double  energy_;            // center of mass energy

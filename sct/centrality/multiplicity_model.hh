@@ -41,8 +41,8 @@ namespace sct {
     
     // depending on if ConstEfficiency() is true or false, this will return
     // different values - either the efficiency at 0-5% centrality if true, or
-    // a parameterized efficiency that runs from ppEfficiency_ at 0 mult to
-    // centralEfficiency_ at 0-5% central mult
+    // a parameterized efficiency that runs from pp_efficiency_ at 0 mult to
+    // central_efficiency_ at 0-5% central mult
     double evalEfficiency(unsigned mult) const;
     
     // sets the fraction of multiplicity from "hard processes" in the two
@@ -53,42 +53,42 @@ namespace sct {
     // multiplicity calculations take into account average detector efficiency
     // at the given "true" multiplicity, this sets the zero multiplicity limit
     // and should be set to pp or peripheral AuAu
-    inline void setppEfficiency(double val) {ppEfficiency_ = val;}
-    inline double ppEfficiency() {return ppEfficiency_;}
+    inline void setppEfficiency(double val) {pp_efficiency_ = val;}
+    inline double ppEfficiency() {return pp_efficiency_;}
     
     // multiplicity calculations take into account average detector efficiency
     // at the given "true" multiplicity, this sets the high multiplicity limit
     // and should be set to the average efficiency in 0-5%
-    inline  void setCentralEfficiency(double val) {centralEfficiency_ = val;}
-    inline double centralEfficiency() {return centralEfficiency_;}
+    inline  void setCentralEfficiency(double val) {central_efficiency_ = val;}
+    inline double centralEfficiency() {return central_efficiency_;}
     
     // the average central (0-5%) multiplicity should be specified to define
     // the slope of the linear efficiency curve
-    inline void setCentralMultiplicity(unsigned mult) {centMult_ = mult;}
-    inline unsigned centralMultiplicity() const {return centMult_;}
+    inline void setCentralMultiplicity(unsigned mult) {cent_mult_ = mult;}
+    inline unsigned centralMultiplicity() const {return cent_mult_;}
     
-    // if set to true, always use centralEfficiency_, instead of a multiplicity
+    // if set to true, always use central_efficiency_, instead of a multiplicity
     // dependent parameterization
-    inline void setConstEfficiency(bool flag) {constEfficiency_ = flag;}
-    inline double constEfficiency() {return constEfficiency_;}
+    inline void setConstEfficiency(bool flag) {const_efficiency_ = flag;}
+    inline double constEfficiency() {return const_efficiency_;}
     
     // triggers can bias you towards higher multiplicities, this attempts
     // to correct that - if set to a value between [0, 1), multiplicity calculation
     // will add extra tracks with this value as the probability, so you end up with
     // between uncorrected multiplicity & 2 * uncorrected multiplicity, with an
-    // average of (1 + triggerBias_) * multiplicity
-    inline void setTriggerBias(double val) {triggerBias_ = val;}
-    inline double triggerBias() {return triggerBias_;}
+    // average of (1 + trigger_bias_) * multiplicity
+    inline void setTriggerBias(double val) {trigger_bias_ = val;}
+    inline double triggerBias() {return trigger_bias_;}
     
   private:
     
-    double ppEfficiency_;         // pp_efficiency
-    double centralEfficiency_;    // efficiency at 0-5% centrality for the given
-                                  // collision system
-    double centMult_;             // average multiplicity in 0-5% centrality
-    double triggerBias_;          // trigger bias
-    double x_;                    // fraction of production from hard processes
-    bool constEfficiency_;        // flag for constant or non-constant efficiency
+    double pp_efficiency_;         // pp_efficiency
+    double central_efficiency_;    // efficiency at 0-5% centrality for the given
+                                   // collision system
+    double cent_mult_;             // average multiplicity in 0-5% centrality
+    double trigger_bias_;          // trigger bias
+    double x_;                     // fraction of production from hard processes
+    bool const_efficiency_;        // flag for constant or non-constant efficiency
   };
 } // namespace sct
 

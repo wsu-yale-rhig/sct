@@ -55,16 +55,16 @@ namespace sct {
     // two dimensional delta R (in XY)
     double deltaXY(const Nucleon& rhs) const;
     
-    inline bool     participant() const  {return nColl_ ? true : false;}
-    inline unsigned nColl() const        {return nColl_;}
+    inline bool     participant() const  {return n_coll_ ? true : false;}
+    inline unsigned nColl() const        {return n_coll_;}
     inline double   multiplicity() const {return multiplicity_;}
     
-    inline void incrementNColl() {++nColl_;}
+    inline void incrementNColl() {++n_coll_;}
     inline void setMultiplicity(double mult) {multiplicity_ = mult;}
     
   private:
     TVector3 position_;
-    unsigned nColl_;
+    unsigned n_coll_;
     unsigned multiplicity_;
   };
   

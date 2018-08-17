@@ -75,20 +75,29 @@ namespace sct {
          double x_max, double ppEff, double AAEff, double centMult, double triggerBias,
          bool constEfficiency, bool saveAllHist = false);
     
-    // to restrict the fits to multiplicity > minMultFit_, which will have an effect
+    // to restrict the fits to multiplicity > minmult_fit_, which will have an effect
     // on the chi2, since the low multiplicity regime is where the data will deviate
     // from the glauber simulation.
-    void minimumMultiplicityCut(unsigned min) {minMultFit_ = min;}
-    inline unsigned minimumMultiplicityCut() const {return minMultFit_;}
+    void minimumMultiplicityCut(unsigned min) {minmult_fit_ = min;}
+    inline unsigned minimumMultiplicityCut() const {return minmult_fit_;}
 
     // get normalization between two histograms in range
     // (minMultFit < x < h1->GetXaxis()->GetXmax());
     double norm(TH1D* h1, TH1D* h2);
     
     // get chi2 difference between h1 & h2
-    std::pair<double, int> chi2(TH1D* h1, TH1D* h2);
+    std::pair<double, int> chi2(TH1* h1, TH1* h2);
+    
+    // use homebrewed chi2 copied from StGlauber library, instead of ROOTs
+    // NOTE: StGlauber Chi2 is not symmetric and only uses errors from h1
+    // in the denominator
+    void UseStGlauberChi2(bool flag = true) {use_stglauber_chi2_ = flag;}
+    inline bool UsingStGlauberChi2() {return use_stglauber_chi2_;}
     
   private:
+    
+    std::pair<double, int> chi2_root(TH1* h1, TH1* h2);
+    std::pair<double, int> chi2_stglauber(TH1* h1, TH1* h2);
     
     // multiplicity model
     unique_ptr<MultiplicityModel> multiplicityModel_;
@@ -99,7 +108,10 @@ namespace sct {
     unique_ptr<TH2D> nPartnColl_;
     
     // minimum multiplicity for fitting range
-    double minMultFit_;
+    double minmult_fit_;
+    
+    // flag for using StGlauber chi2 or ROOT's own chi-square minimization
+    bool use_stglauber_chi2_;
   };
 } // namespace sct
   

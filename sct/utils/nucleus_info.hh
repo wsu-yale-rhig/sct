@@ -38,24 +38,24 @@ namespace sct {
     static NucleusInfo& instance();
     virtual ~NucleusInfo();
     
-    unsigned massNumber(GlauberSpecies sp) {return massNumber_[sp];}
-    unsigned chargeNumber(GlauberSpecies sp) {return chargeNumber_[sp];}
+    unsigned massNumber(GlauberSpecies sp) {return mass_number_[sp];}
+    unsigned chargeNumber(GlauberSpecies sp) {return charge_number_[sp];}
     double radius(GlauberSpecies sp) {return radius_[sp];}
-    double skinDepth(GlauberSpecies sp) {return skinDepth_[sp];}
-    double radiusError(GlauberSpecies sp) {return radiusError_[sp];}
-    double skinDepthError(GlauberSpecies sp) {return skinDepthError_[sp];}
+    double skinDepth(GlauberSpecies sp) {return skin_depth_[sp];}
+    double radiusError(GlauberSpecies sp) {return radius_error_[sp];}
+    double skinDepthError(GlauberSpecies sp) {return skin_depth_error_[sp];}
     double beta2(GlauberSpecies sp) {return beta2_[sp];}
     double beta4(GlauberSpecies sp) {return beta4_[sp];}
     string name(GlauberSpecies sp) {return name_[sp];}
     
   private:
     
-    std::unordered_map<GlauberSpecies, unsigned, EnumClassHash> massNumber_;
-    std::unordered_map<GlauberSpecies, unsigned, EnumClassHash> chargeNumber_;
+    std::unordered_map<GlauberSpecies, unsigned, EnumClassHash> mass_number_;
+    std::unordered_map<GlauberSpecies, unsigned, EnumClassHash> charge_number_;
     std::unordered_map<GlauberSpecies, double, EnumClassHash> radius_;
-    std::unordered_map<GlauberSpecies, double, EnumClassHash> skinDepth_;
-    std::unordered_map<GlauberSpecies, double, EnumClassHash> radiusError_;
-    std::unordered_map<GlauberSpecies, double, EnumClassHash> skinDepthError_;
+    std::unordered_map<GlauberSpecies, double, EnumClassHash> skin_depth_;
+    std::unordered_map<GlauberSpecies, double, EnumClassHash> radius_error_;
+    std::unordered_map<GlauberSpecies, double, EnumClassHash> skin_depth_error_;
     std::unordered_map<GlauberSpecies, double, EnumClassHash> beta2_;
     std::unordered_map<GlauberSpecies, double, EnumClassHash> beta4_;
     std::unordered_map<GlauberSpecies, string, EnumClassHash> name_;

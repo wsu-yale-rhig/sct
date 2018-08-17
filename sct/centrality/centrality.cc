@@ -90,68 +90,68 @@ namespace sct {
     vector<unsigned> boundaries;
     
     // first get xsec modification
-    double xSecPercent = 1.0;
+    double xsec_percent = 1.0;
     switch (mod) {
       case XSecMod::Plus5 :
-        xSecPercent = 1.05;
+        xsec_percent = 1.05;
         break;
       case XSecMod::Minus5 :
-        xSecPercent = 0.95;
+        xsec_percent = 0.95;
         break;
       case XSecMod::None :
-        xSecPercent = 1.0;
+        xsec_percent = 1.0;
         break;
     }
     
     // copy our centrality bounds from sct/core/base.hh
-    vector<double> centMin = Centrality16BinLowerBound;
-    vector<double> centMax = Centrality16BinUpperBound;
+    vector<double> cent_min = Centrality16BinLowerBound;
+    vector<double> cent_max = Centrality16BinUpperBound;
     
     // get the number of cuts
-    unsigned nCentBins = centMin.size();
-    boundaries.resize(nCentBins);
+    unsigned n_cent_bins = cent_min.size();
+    boundaries.resize(n_cent_bins);
     
     // now define our boundary cuts depending on if we are integrating forward or backward,
     // and weighted by the xsec modification
-    vector<double> centCuts;
+    vector<double> cent_cuts;
     switch (direction) {
       case Integral::Forward :
-        for (int i = 0; i < nCentBins; ++i)
-          centCuts.push_back(centMax[i] / 100.0 * xSecPercent);
+        for (int i = 0; i < n_cent_bins; ++i)
+          cent_cuts.push_back(cent_max[i] / 100.0 * xsec_percent);
         break;
       case Integral::Backward :
-        for (int i = 0; i < nCentBins; ++i)
-          centCuts.push_back(centMax[nCentBins-1-i] / 100.0 * xSecPercent);
+        for (int i = 0; i < n_cent_bins; ++i)
+          cent_cuts.push_back(cent_max[n_cent_bins-1-i] / 100.0 * xsec_percent);
         break;
     }
-    std::reverse(centCuts.begin(), centCuts.end());
+    std::reverse(cent_cuts.begin(), cent_cuts.end());
     
     // now do the integration - goal is to integrate until we find the bin such that the
     // cumulative integral up to that point, normalized by the total integral, passes one
     // of the centrality bin cuts
-    unsigned centBin = 0;
-    unsigned nBinsHist = h->GetNbinsX();
+    unsigned cent_bin = 0;
+    unsigned nbins_hist = h->GetNbinsX();
     double norm = h->Integral();
   
-    for (int i = 1; i <= nBinsHist; ++i) {
+    for (int i = 1; i <= nbins_hist; ++i) {
       // define the bins to integrate over, depending on if we
       // integrate forward or backwards, and the multiplicity
-      unsigned binLow, binHigh, mult;
+      unsigned bin_low, bin_high, mult;
       switch (direction) {
         case Integral::Forward :
-          binLow = 1;
-          binHigh = i;
-          mult = binHigh - 1;
+          bin_low = 1;
+          bin_high = i;
+          mult = bin_high - 1;
           break;
         case Integral::Backward :
-          binLow = nBinsHist + 1 - i;
-          binHigh = nBinsHist;
-          mult = binLow - 1;
+          bin_low = nbins_hist + 1 - i;
+          bin_high = nbins_hist;
+          mult = bin_low - 1;
           break;
       }
       
       // get the integral
-      double integral = h->Integral(binLow, binHigh);
+      double integral = h->Integral(bin_low, bin_high);
       
       // and the fraction of the total integral
       double fraction = integral / norm;
@@ -163,16 +163,16 @@ namespace sct {
       // now loop to find if it sits on a bin edge
       switch (direction) {
         case Integral::Forward :
-          for (int bin = centBin; bin < nCentBins; ++bin) {
-            if (1.0 - fraction < centCuts[bin]) {
-              boundaries[centBin++] = mult;
+          for (int bin = cent_bin; bin < n_cent_bins; ++bin) {
+            if (1.0 - fraction < cent_cuts[bin]) {
+              boundaries[cent_bin++] = mult;
             }
           }
           break;
         case Integral::Backward :
-          for (int bin = centBin; bin < nCentBins; ++bin) {
-            if (fraction >= centCuts[bin]) {
-              boundaries[centBin++] = mult;
+          for (int bin = cent_bin; bin < n_cent_bins; ++bin) {
+            if (fraction >= cent_cuts[bin]) {
+              boundaries[cent_bin++] = mult;
             }
           }
           break;

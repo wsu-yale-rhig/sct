@@ -20,6 +20,7 @@ TEST(nbd, test_nbd_dist) {
   std::random_device random;
   std::mt19937 generator(random());
   std::uniform_real_distribution<> dis(0.0, 5.0);
+  
   for (int i = 0; i < 100; ++i) {
     double npp = dis(generator);
     double k = dis(generator);
@@ -33,8 +34,6 @@ TEST(nbd, test_nbd_dist) {
       EXPECT_NEAR(nbd.evaluateNBD(j), root_nbd->Eval(j), 1e-3);
     }
     EXPECT_LE(tmp->Chisquare(root_nbd), 1e-3);
-    
-    delete tmp;
   }
 }
 

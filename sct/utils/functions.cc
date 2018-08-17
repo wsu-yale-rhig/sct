@@ -57,12 +57,12 @@ namespace sct {
     double beta4 = par[3];
       
     // powers of cosTheta
-    double cosTheta2 = std::pow(cosTheta, 2.0);
-    double cosTheta4 = std::pow(cosTheta, 4.0);
+    double cos_theta2 = std::pow(cosTheta, 2.0);
+    double cos_theta4 = std::pow(cosTheta, 4.0);
     
     // spherical harmonics Y(l=2, m=0), Y(l=4, m=0)
-    double Y20 = std::sqrt(5.0 / pi) / 4.0 * (3.0 * cosTheta2 - 1.0);
-    double Y40 = std::sqrt(1.0 / pi) * 3.0 / 16.0 * (35.0 * cosTheta4 - 30.0 * cosTheta2 + 3.0);
+    double Y20 = std::sqrt(5.0 / pi) / 4.0 * (3.0 * cos_theta2 - 1.0);
+    double Y40 = std::sqrt(1.0 / pi) * 3.0 / 16.0 * (35.0 * cos_theta4 - 30.0 * cos_theta2 + 3.0);
       
     double R = R0 * (1.0 + beta2 * Y20 + beta4 * Y40);
       

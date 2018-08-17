@@ -45,11 +45,6 @@ namespace sct {
     unique_ptr<TH1D> data_;
     unique_ptr<TH1D> simu_;
     
-    vector<unsigned> centBounds_;
-    vector<unsigned> centBounds_p5_;
-    vector<unsigned> centBounds_m5_;
-    vector<double> weights_;
-    
   };
 } // namespace sct
 

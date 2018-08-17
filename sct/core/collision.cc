@@ -201,9 +201,9 @@ namespace sct {
     qy /= count_[weightIdx];
     qw /= count_[weightIdx];
     
-    double participantPlane = atan2(qy, -qx);
+    double participant_plane = atan2(qy, -qx);
     double eccentricity = sqrt(qx * qx + qy * qy) / qw;
     
-    return {participantPlane, eccentricity};
+    return {participant_plane, eccentricity};
   }
 } // namespace sct

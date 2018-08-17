@@ -27,7 +27,7 @@ namespace sct {
   
   NBDFit::NBDFit(TH1D* data, TH2D* glauber)
   : multiplicityModel_(nullptr), refMultData_(nullptr), nPartnColl_(nullptr),
-   minMultFit_(100) {
+   minmult_fit_(100), use_stglauber_chi2_(false) {
   
     if (data != nullptr)
       loadData(*data);
@@ -203,8 +203,8 @@ namespace sct {
   
   double NBDFit::norm(TH1D* h1, TH1D* h2) {
     // get the normalization between two histograms in the region from
-    // minMultFit_ to h1->GetXaxis()->GetXmax()
-    double min = minMultFit_;
+    // minmult_fit_ to h1->GetXaxis()->GetXmax()
+    double min = minmult_fit_;
     int minBin = h1->GetXaxis()->FindBin(min);
     double max = h1->GetXaxis()->GetXmax();
     int maxBin = h1->GetXaxis()->FindBin(max);
@@ -225,20 +225,28 @@ namespace sct {
     return (denominator == 0.0 ? 1.0 : numerator / denominator);
   }
   
-  std::pair<double, int> NBDFit::chi2(TH1D* h1, TH1D* h2) {
-    
+  std::pair<double, int> NBDFit::chi2(TH1* h1, TH1* h2) {
     //calculate the chi2 from data and simulation - return a pair of (chi2, ndf)
-    // note: only calculates from minMultFit_ to max bin, same range used for the
-    // normalization. We'll use ROOT's chi2 test by using set range
-    std::pair<double, int> result;
+    // note: only calculates from minmult_fit_ to max bin, same range used for the
+    // normalization. By default, we'll use ROOT's chi2 test by using set range,
+    // But we can set the option to calculate by hand, using StGlauber way
     
-    double min = minMultFit_;
-    int minBin = h1->GetXaxis()->FindBin(min+0.001);
-    int maxBin = h2->GetXaxis()->GetNbins();
+    if (use_stglauber_chi2_)
+      return chi2_stglauber(h1, h2);
+    else
+      return chi2_root(h1, h2);
+    
+  }
+  
+  std::pair<double, int> NBDFit::chi2_root(TH1* h1, TH1* h2) {
+    
+    double min = minmult_fit_;
+    int min_bin = h1->GetXaxis()->FindBin(min+0.001);
+    int max_bin = h1->GetXaxis()->GetNbins();
     
     // set bin range
-    h1->GetXaxis()->SetRange(minBin, maxBin);
-    h2->GetXaxis()->SetRange(minBin, maxBin);
+    h1->GetXaxis()->SetRange(min_bin, max_bin);
+    h2->GetXaxis()->SetRange(min_bin, max_bin);
     
     double chi2;
     int ndf, good;
@@ -250,9 +258,31 @@ namespace sct {
     h1->GetXaxis()->SetRange();
     h2->GetXaxis()->SetRange();
     
-    result.first = chi2;
-    result.second = ndf;
-    return result;
+    return {chi2, ndf};
+  }
+  std::pair<double, int> NBDFit::chi2_stglauber(TH1* h1, TH1* h2) {
+    
+    int min_bin = h1->GetXaxis()->FindBin(minmult_fit_ + 0.001);
+    double chi2 = 0.0 ;
+    int ndf = 0;
+    
+    for(int i = min_bin; i <= h1->GetNbinsX(); ++i){
+      
+      // Check there are entries and the error is not zero
+      // to protect against dividing by zero
+      double error = h1->GetBinError(i);
+      if (error <= 0.0)
+        continue;
+      
+      // Calculate chi2
+      double h1_value  = h1->GetBinContent(i);
+      double h2_value  = h2->GetBinContent(i);
+      double delta = (h1_value - h2_value) / error;
+      chi2 += delta*delta ;
+      ndf++;
+    }
+    
+    return {chi2, ndf};
   }
   
 } // namespace sct

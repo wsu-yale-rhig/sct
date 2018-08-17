@@ -8,19 +8,19 @@
 namespace sct {
   Nucleon::Nucleon()
   : position_(0,0,0),
-    nColl_(0),
+    n_coll_(0),
     multiplicity_(0.0) {}
   
   Nucleon::Nucleon(const Nucleon& rhs)
   : position_(rhs.position()),
-    nColl_(rhs.nColl()),
+    n_coll_(rhs.nColl()),
     multiplicity_(rhs.multiplicity()) { }
 
   Nucleon::~Nucleon() {}
 
   void Nucleon::clear() {
     position_.SetXYZ(0, 0, 0);
-    nColl_ = 0;
+    n_coll_ = 0;
     multiplicity_ = 0;
   }
 
@@ -40,7 +40,7 @@ namespace sct {
   
     // offset by impact parameter
     position_.SetX(position_.X() + b);
-    nColl_ = 0;
+    n_coll_ = 0;
     multiplicity_ = 0.0;
   }
   

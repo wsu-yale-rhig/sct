@@ -15,15 +15,15 @@ namespace sct {
                                        double x, double ppEff,
                                        double centEff, double centMult,
                                        double triggerBias, bool const_eff)
-  : ppEfficiency_(ppEff), centralEfficiency_(centEff), centMult_(centMult),
-  triggerBias_(triggerBias), x_(x), constEfficiency_(const_eff) {
+  : pp_efficiency_(ppEff), central_efficiency_(centEff), cent_mult_(centMult),
+  trigger_bias_(triggerBias), x_(x), const_efficiency_(const_eff) {
   setNBD(npp, k);
   }
   
   MultiplicityModel::MultiplicityModel(const MultiplicityModel& rhs)
-  : ppEfficiency_(rhs.ppEfficiency_), centralEfficiency_(rhs.centralEfficiency_),
-  centMult_(rhs.centMult_), triggerBias_(rhs.triggerBias_), x_(rhs.x_),
-  constEfficiency_(rhs.constEfficiency_) {
+  : pp_efficiency_(rhs.pp_efficiency_), central_efficiency_(rhs.central_efficiency_),
+  cent_mult_(rhs.cent_mult_), trigger_bias_(rhs.trigger_bias_), x_(rhs.x_),
+  const_efficiency_(rhs.const_efficiency_) {
     setNBD(rhs.npp(), rhs.k());
   }
   
@@ -38,12 +38,12 @@ namespace sct {
     // taking into account trigger & TPC efficiency,
     // get multiplicity from NBD
     
-    double nchPP = twoComponentMultiplicity(npart, ncoll);
-    double nChSampled = nchPP;
+    double nch_pp = twoComponentMultiplicity(npart, ncoll);
+    double nch_sampled = nch_pp;
     
     // do the sampling
     unsigned ideal_mult = 0;
-    for (int i = 0; i < TMath::Nint(nChSampled); ++i) {
+    for (int i = 0; i < TMath::Nint(nch_sampled); ++i) {
       ideal_mult += random();
     }
     
@@ -56,12 +56,12 @@ namespace sct {
       mult++;
     }
     
-    if (triggerBias_ == 1.0)
+    if (trigger_bias_ == 1.0)
     return mult;
     
     int count = mult;
     for (int i = 0; i < count; ++i) {
-      if (Random::instance().uniform() < triggerBias_)
+      if (Random::instance().uniform() < trigger_bias_)
       mult++;
     }
     return mult;
@@ -69,21 +69,21 @@ namespace sct {
   
   TH1D* MultiplicityModel::multiplicity(double npart, double ncoll,
                                         double weight) const {
-    double nchPP = twoComponentMultiplicity(npart, ncoll);
+    double nch_pp = twoComponentMultiplicity(npart, ncoll);
     
     // include the trigger bias
-    int nch = TMath::Nint(nchPP * triggerBias_);
+    int nch = TMath::Nint(nch_pp * trigger_bias_);
     
     // get the efficiency and modify if multiplicity dependent
     double eff = evalEfficiency(nch);
-    int nSampled = TMath::Nint(nch * eff);
+    int n_sampled = TMath::Nint(nch * eff);
     
-    unsigned nBins = 1000;
+    unsigned n_bins = 1000;
     TH1D* h = new TH1D(MakeString("mult_tmp_", Random::instance().counter()).c_str(),
-                                  "", nBins, 0, nBins);
+                                  "", n_bins, 0, n_bins);
     
-    for (int i = 0; i < nBins; ++i) {
-      double prob = evaluateNBD(i, nSampled);
+    for (int i = 0; i < n_bins; ++i) {
+      double prob = evaluateNBD(i, n_sampled);
       
       if (prob > 0.0 && prob < std::numeric_limits<double>::max()) {
         h->Fill(i+0.5, prob);
@@ -94,11 +94,11 @@ namespace sct {
   }
   
   double MultiplicityModel::evalEfficiency(unsigned mult) const {
-    if (constEfficiency_)
-    return centralEfficiency_;
+    if (const_efficiency_)
+    return central_efficiency_;
     
-    double d = ppEfficiency_ - centralEfficiency_;
-    return ppEfficiency_ * (1.0 - mult * d / centMult_);
+    double d = pp_efficiency_ - central_efficiency_;
+    return pp_efficiency_ * (1.0 - mult * d / cent_mult_);
   }
   
   void MultiplicityModel::setNBD(double npp, double k) {
