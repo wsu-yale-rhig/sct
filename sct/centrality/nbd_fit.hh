@@ -29,8 +29,8 @@ namespace sct {
   struct FitResult {
     double chi2;
     int ndf;
-    std::shared_ptr<TH1D> data;
-    std::shared_ptr<TH1D> simu;
+    TH1D* data;
+    unique_ptr<TH1D> simu;
     
     FitResult() : chi2(0.0), ndf(0),
       data(nullptr), simu(nullptr) {};
@@ -62,14 +62,14 @@ namespace sct {
     // and generates a refmult distribution (with name name) from a negative binomial.
     // Then normalizes the simulated distribution to the data, and
     // reports the chi2 & NDF for that fit.
-    std::shared_ptr<FitResult> fit(unsigned nevents = 1000, string name = "refmultsim");
+    unique_ptr<FitResult> fit(unsigned nevents = 10000, string name = "refmultsim");
     
     // When using scan(...), not necessary to call setParameters(...).
     // scan() will perform the simulation and fit for a 3D grid of Npp,
     // K, X values passed by the user and will return all results
     // If saveAllHist == true, then every simulated refmult distribution
     // is saved - otherwise, only the best fit is saved
-    unordered_map<string, shared_ptr<FitResult>>
+    unordered_map<string, unique_ptr<FitResult>>
     scan(unsigned nevents, unsigned npp_bins, double npp_min, double npp_max,
          unsigned k_bins, double k_min, double k_max, unsigned x_bins, double x_min,
          double x_max, double ppEff, double AAEff, double centMult, double triggerBias,
@@ -95,11 +95,8 @@ namespace sct {
     
     // we will make local copies, outside of the ROOT files, so
     // we have to explicity manage the memory...
-    shared_ptr<TH1D> refMultData_;
-    shared_ptr<TH2D> nPartnColl_;
-    
-    // simulated refmult using NBD
-    shared_ptr<TH1D> refMultSim_;
+    unique_ptr<TH1D> refMultData_;
+    unique_ptr<TH2D> nPartnColl_;
     
     // minimum multiplicity for fitting range
     double minMultFit_;

@@ -22,12 +22,9 @@ namespace sct {
     double twoComponentMultiplicity(double npart, double ncoll) const;
     // returns convolution with NBD
     double multiplicity(double npart, double ncoll) const;
-    // return multiplicity distribution with scaled NBD with mult*npp, k*mult
-    shared_ptr<TH1D> multiplicity(double npart, double ncoll,
-                                  double weight) const;
   
     // randomly sample from the NBD
-    int random() const {return static_cast<unsigned>(nbd_->GetRandom());}
+    unsigned random() const {return static_cast<unsigned>(nbd_->GetRandom());}
     
     // evaluate NBD(npp*m, k*m; n)
     double evaluateNBD(int i, double m = 1.0) const;

@@ -138,7 +138,7 @@ namespace sct {
     void loadBranches();
     void createBranches();
     
-    std::unique_ptr<TFile> file_;
+    unique_ptr<TFile> file_;
     TTree* header_;
     TTree* event_;
     

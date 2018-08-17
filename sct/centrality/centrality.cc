@@ -186,21 +186,21 @@ namespace sct {
     return boundaries;
   }
   
-  std::pair<vector<double>, shared_ptr<TH1D>>
+  std::pair<vector<double>, unique_ptr<TH1D>>
   Centrality::weights(unsigned fit_boundary) {
     // make sure both histograms exist
     if (data_.get() == nullptr) {
       LOG(ERROR) << "no data refmult distribution loaded, can't calculate weights";
-      return {vector<double>(), std::shared_ptr<TH1D>()};
+      return {vector<double>(), unique_ptr<TH1D>()};
     }
     
     if (simu_.get() == nullptr) {
       LOG(ERROR) << "no simulated refmult distribution loaded, can't calculate weights";
-      return {vector<double>(), std::shared_ptr<TH1D>()};
+      return {vector<double>(), unique_ptr<TH1D>()};
     }
     
     // now make a copy of the simulated refmult and take the ratio
-    shared_ptr<TH1D> ratio = std::make_shared<TH1D>(*simu_.get());
+    unique_ptr<TH1D> ratio = make_unique<TH1D>(*simu_.get());
     ratio->Divide(data_.get());
     
     // define the fit function
@@ -216,7 +216,7 @@ namespace sct {
     for (int par = 0; par < ratio_fit->GetNpar(); ++par)
       weights[par] = ratio_fit->GetParameter(par);
     
-    return {weights, ratio};
+    return {weights, std::move(ratio)};
   }
   
 } // namespace sct

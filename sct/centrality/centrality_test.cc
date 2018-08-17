@@ -8,7 +8,7 @@
 // first test that the centrality integration works
 TEST(Centrality, centralityIntegration0_100) {
   
-  std::shared_ptr<TH1D> h = std::make_shared<TH1D>("h", "", 150, 0, 150);
+  std::unique_ptr<TH1D> h = sct::make_unique<TH1D>("h", "", 150, 0, 150);
   
   std::random_device random;
   std::mt19937 generator(random());
@@ -30,7 +30,7 @@ TEST(Centrality, centralityIntegration0_100) {
 // same test, but for a random distribution
 TEST(Centrality, centralityIntegrationRandomDist) {
   
-  std::shared_ptr<TH1D> h = std::make_shared<TH1D>("h", "", 150, 0, 150);
+  std::unique_ptr<TH1D> h = sct::make_unique<TH1D>("h", "", 150, 0, 150);
   std::random_device random;
   std::mt19937 generator(random());
   std::uniform_int_distribution<> dis(0, 150);

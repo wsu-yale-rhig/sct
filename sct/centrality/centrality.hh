@@ -35,7 +35,7 @@ namespace sct {
     // defined using the functional form:
     // [0] + [1]/([2]*x + [3]) + [4]*([2]*x + [3]) + [5]/([2]*x + [3])^2 + [6]*([2]*x + [3])^2"
     // returns the parameter values for the best fit for parameters 0-6
-    std::pair<vector<double>, shared_ptr<TH1D>> weights(unsigned fit_cutoff = 400);
+    std::pair<vector<double>, unique_ptr<TH1D>> weights(unsigned fit_cutoff = 400);
     
   private:
     

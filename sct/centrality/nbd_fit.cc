@@ -27,7 +27,7 @@ namespace sct {
   
   NBDFit::NBDFit(TH1D* data, TH2D* glauber)
   : multiplicityModel_(nullptr), refMultData_(nullptr), nPartnColl_(nullptr),
-  refMultSim_(nullptr), minMultFit_(100) {
+   minMultFit_(100) {
   
     if (data != nullptr)
       loadData(*data);
@@ -45,7 +45,7 @@ namespace sct {
     refMultData_.reset();
     
     // copy the data histogram
-    refMultData_ = std::make_shared<TH1D>(data);
+    refMultData_ = make_unique<TH1D>(data);
     refMultData_->SetName(MakeString("nbdfit_internal_data_",
                           Random::instance().counter()).c_str());
     refMultData_->SetDirectory(0);
@@ -56,7 +56,7 @@ namespace sct {
     nPartnColl_.reset();
     
     // copy the data histogram
-    nPartnColl_ = std::make_shared<TH2D>(glauber);
+    nPartnColl_ = make_unique<TH2D>(glauber);
     nPartnColl_->SetName(MakeString("nbdfit_internal_data_",
                          Random::instance().counter()).c_str());
     nPartnColl_->SetDirectory(0);
@@ -69,11 +69,11 @@ namespace sct {
                                                         triggerBias, constEfficiency);
   }
   
-  std::shared_ptr<FitResult> NBDFit::fit(unsigned nevents, string name) {
+  unique_ptr<FitResult> NBDFit::fit(unsigned nevents, string name) {
     // fit real data w/ simulated multiplicity distribution
     
     // create output FitResults
-    std::shared_ptr<FitResult> result = std::make_shared<FitResult>();
+    unique_ptr<FitResult> result = unique_ptr<FitResult>();
     
     // first make sure refmult & npartncoll have been loaded
     if (refMultData_ == nullptr) {
@@ -88,16 +88,15 @@ namespace sct {
     
     // make the simulated refmult histogram with the same bin edges as our
     // data refmult distribution
-    refMultSim_.reset();
     string histName;
     if (name == "" || name == "refmultsim")
       histName = MakeString("refmultsim", Random::instance().counter());
     else
       histName = name;
-    refMultSim_ = std::make_shared<TH1D>(name.c_str(), "",
-                                         refMultData_->GetXaxis()->GetNbins(),
-                                         refMultData_->GetXaxis()->GetXmin(),
-                                         refMultData_->GetXaxis()->GetXmax());
+    unique_ptr<TH1D> refMultSim_ = make_unique<TH1D>(name.c_str(), "",
+                                                     refMultData_->GetXaxis()->GetNbins(),
+                                                     refMultData_->GetXaxis()->GetXmin(),
+                                                     refMultData_->GetXaxis()->GetXmax());
     refMultSim_->SetDirectory(0);
     refMultSim_->Sumw2();
     
@@ -125,13 +124,13 @@ namespace sct {
     // fill in the fit results
     result->chi2 = chi2_res.first;
     result->ndf  = chi2_res.second;
-    result->data = refMultData_;
-    result->simu = refMultSim_;
+    result->data = refMultData_.get();
+    result->simu = std::move(refMultSim_);
     
-    return result;
+    return std::move(result);
   }
   
-  unordered_map<string, shared_ptr<FitResult>>
+  unordered_map<string, unique_ptr<FitResult>>
   NBDFit::scan(unsigned nevents, unsigned npp_bins, double npp_min,
                double npp_max, unsigned k_bins, double k_min,
                double k_max, unsigned x_bins, double x_min, double x_max,
@@ -139,7 +138,7 @@ namespace sct {
                bool constEfficiency, bool saveAllHist) {
     // Perform the fit routine over a grid of NBD values (Npp, K, X)
     // and return a dictionary of results
-    unordered_map<string, shared_ptr<FitResult>> result_map;
+    unordered_map<string, unique_ptr<FitResult>> result_map;
     
     // total number of bins
     unsigned nBins = npp_bins * k_bins * x_bins;
@@ -166,7 +165,7 @@ namespace sct {
           
           string key = MakeString("npp_", npp, "_k_", k, "_x_", x);
           
-          shared_ptr<FitResult> result = fit(nevents, key);
+          std::unique_ptr<FitResult> result = fit(nevents, key);
           
           // if we only save the best fit, we will check if this fit is better
           // than the current result and update
@@ -178,7 +177,7 @@ namespace sct {
             else {
               double current_chi2 = result->chi2 / result->ndf;
               if (current_chi2 < best_chi2) {
-                result_map[best_chi2_key]->simu.reset();
+                result_map[best_chi2_key]->simu.reset(nullptr);
                 best_chi2 = current_chi2;
                 best_chi2_key = key;
               }
@@ -195,7 +194,7 @@ namespace sct {
           }
           
           // add the result from this (npp, k, x) set to the dictionary
-          result_map[key] = result;
+          result_map[key] = std::move(result);
         }
       }
     }

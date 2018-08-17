@@ -125,7 +125,7 @@ int main(int argc, char* argv[]) {
   double npp = 0.0;
   double k = 0.0;
   
-  for (auto result : results) {
+  for (auto& result : results) {
     if (result.second->chi2/result.second->ndf < best_chi2) {
       best_chi2 = result.second->chi2/result.second->ndf;
       best_key = result.first;
@@ -157,7 +157,7 @@ int main(int argc, char* argv[]) {
   
   // now calculate centrality definition for the best fit
   sct::Centrality cent;
-  cent.setDataRefmult(refit->data.get());
+  cent.setDataRefmult(refit->data);
   cent.setSimuRefmult(refit->simu.get());
   std::vector<unsigned> cent_bounds = cent.centralityBins(sct::XSecMod::None);
   std::vector<unsigned> cent_bounds_p5 = cent.centralityBins(sct::XSecMod::Plus5);
@@ -169,6 +169,10 @@ int main(int argc, char* argv[]) {
   // write the ratio to file
   weights.second->SetName("ratio_fit");
   weights.second->Write();
+  
+  // create a weighted distribution
+  
+  
   
   out.Close();
   

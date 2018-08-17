@@ -15,8 +15,8 @@ TEST(NBDFit, norm) {
   
   const double norm_factor = 2.0;
   
-  std::shared_ptr<TH1D> h1 = std::make_shared<TH1D>("h1", "", 150, 0, 150);
-  std::shared_ptr<TH1D> h2 = std::make_shared<TH1D>("h2", "", 150, 0, 150);
+  std::unique_ptr<TH1D> h1 = sct::make_unique<TH1D>("h1", "", 150, 0, 150);
+  std::unique_ptr<TH1D> h2 = sct::make_unique<TH1D>("h2", "", 150, 0, 150);
   std::random_device random;
   std::mt19937 generator(random());
   std::uniform_int_distribution<> dis(0, 150);
@@ -33,9 +33,9 @@ TEST(NBDFit, norm) {
 
 TEST(NBDFit, chi2) {
   
-  std::shared_ptr<TH1D> h1 = std::make_shared<TH1D>("h1", "", 150, 0, 150);
+  std::unique_ptr<TH1D> h1 = sct::make_unique<TH1D>("h1", "", 150, 0, 150);
   h1->Sumw2();
-  std::shared_ptr<TH1D> h2 = std::make_shared<TH1D>("h2", "", 150, 0, 150);
+  std::unique_ptr<TH1D> h2 = sct::make_unique<TH1D>("h2", "", 150, 0, 150);
   h2->Sumw2();
   std::random_device random;
   std::mt19937 generator(random());
@@ -61,9 +61,9 @@ TEST(NBDFit, chi2) {
 
 TEST(NBDFit, chi2_fail) {
   
-  std::shared_ptr<TH1D> h1 = std::make_shared<TH1D>("h1", "", 150, 0, 150);
+  std::unique_ptr<TH1D> h1 = sct::make_unique<TH1D>("h1", "", 150, 0, 150);
   h1->Sumw2();
-  std::shared_ptr<TH1D> h2 = std::make_shared<TH1D>("h2", "", 150, 0, 150);
+  std::unique_ptr<TH1D> h2 = sct::make_unique<TH1D>("h2", "", 150, 0, 150);
   h2->Sumw2();
   std::random_device random;
   std::mt19937 generator(random());
@@ -91,8 +91,8 @@ TEST(NBDFit, chi2_fail) {
 
 TEST(NBDFit, chi2Weighted) {
   
-  std::shared_ptr<TH1D> h1 = std::make_shared<TH1D>("h1", "", 150, 0, 150);
-  std::shared_ptr<TH1D> h2 = std::make_shared<TH1D>("h2", "", 150, 0, 150);
+  std::unique_ptr<TH1D> h1 = sct::make_unique<TH1D>("h1", "", 150, 0, 150);
+  std::unique_ptr<TH1D> h2 = sct::make_unique<TH1D>("h2", "", 150, 0, 150);
   std::random_device random;
   std::mt19937 generator(random());
   std::uniform_int_distribution<> dis(0, 150);
@@ -120,9 +120,9 @@ TEST(NBDFit, chi2Weighted) {
 
 TEST(NBDFit, chi2RestrictedRange) {
   
-  std::shared_ptr<TH1D> h1 = std::make_shared<TH1D>("h1", "", 150, 0, 150);
+  std::unique_ptr<TH1D> h1 = sct::make_unique<TH1D>("h1", "", 150, 0, 150);
   h1->Sumw2();
-  std::shared_ptr<TH1D> h2 = std::make_shared<TH1D>("h2", "", 150, 0, 150);
+  std::unique_ptr<TH1D> h2 = sct::make_unique<TH1D>("h2", "", 150, 0, 150);
   h2->Sumw2();
   std::random_device random;
   std::mt19937 generator(random());
