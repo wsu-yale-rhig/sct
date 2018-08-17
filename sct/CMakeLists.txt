@@ -12,6 +12,7 @@ add_subdirectory(core)
 add_subdirectory(utils)
 add_subdirectory(analysis)
 add_subdirectory(centrality)
+add_subdirectory(systematics)
 
 ## handle any files that have to be configured
 configure_file(${PROJECT_SOURCE_DIR}/sct/core/macros.hh.in
