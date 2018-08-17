@@ -44,8 +44,8 @@ SCT_DEFINE_int(events, 1e5, "number of events per fit");
 
 // model settings
 SCT_DEFINE_double(npp_min, 1.0, "minimum Npp for negative binomial");
-SCT_DEFINE_double(npp_max, 5.0, "maximum Npp for negative binomial");
-SCT_DEFINE_int(npp_steps, 40, "number of steps in Npp range to sample");
+SCT_DEFINE_double(npp_max, 4.0, "maximum Npp for negative binomial");
+SCT_DEFINE_int(npp_steps, 30, "number of steps in Npp range to sample");
 SCT_DEFINE_double(k_min, 1.0, "minimum k for negative binomial");
 SCT_DEFINE_double(k_max, 4.0, "maximum k for negative binomial");
 SCT_DEFINE_int(k_steps, 30, "number of steps in k range to sample");
@@ -56,6 +56,7 @@ SCT_DEFINE_double(ppEfficiency, 0.98, "pp efficiency");
 SCT_DEFINE_double(AuAuEfficiency, 0.84, "0-5% central AuAu efficiency");
 SCT_DEFINE_int(centMult, 540, "average 0-5% central multiplicity");
 SCT_DEFINE_bool(constEff, false, "turn on to use only pp efficiency");
+SCT_DEFINE_bool(useStGlauberChi2, false, "use StGlauber Chi2 calculation instead of ROOT");
 SCT_DEFINE_double(trigBias, 1.0, "trigger bias");
 SCT_DEFINE_int(minMult, 100, "minimum multiplicity for chi2 comparisons in fit");
 
@@ -109,6 +110,7 @@ int main(int argc, char* argv[]) {
   // create our fitting model
   sct::NBDFit fitter(refmult, npartncoll);
   fitter.minimumMultiplicityCut(FLAGS_minMult);
+  fitter.useStGlauberChi2(FLAGS_useStGlauberChi2);
   
   // scan
   auto results = fitter.scan(FLAGS_events, FLAGS_npp_steps, FLAGS_npp_min, FLAGS_npp_max,

@@ -91,8 +91,8 @@ namespace sct {
     // use homebrewed chi2 copied from StGlauber library, instead of ROOTs
     // NOTE: StGlauber Chi2 is not symmetric and only uses errors from h1
     // in the denominator
-    void UseStGlauberChi2(bool flag = true) {use_stglauber_chi2_ = flag;}
-    inline bool UsingStGlauberChi2() {return use_stglauber_chi2_;}
+    void useStGlauberChi2(bool flag = true) {use_stglauber_chi2_ = flag;}
+    inline bool usingStGlauberChi2() {return use_stglauber_chi2_;}
     
   private:
     
