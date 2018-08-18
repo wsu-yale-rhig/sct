@@ -26,7 +26,7 @@ namespace sct {
   
   
   NBDFit::NBDFit(TH1D* data, TH2D* glauber)
-  : multiplicityModel_(nullptr), refMultData_(nullptr), nPartnColl_(nullptr),
+  : multiplicity_model_(nullptr), refmult_data_(nullptr), npart_ncoll_(nullptr),
    minmult_fit_(100), use_stglauber_chi2_(false) {
   
     if (data != nullptr)
@@ -42,91 +42,90 @@ namespace sct {
   
   void NBDFit::loadData(const TH1D& data) {
     // first clear the old histogram
-    refMultData_.reset();
+    refmult_data_.reset();
     
     // copy the data histogram
-    refMultData_ = make_unique<TH1D>(data);
-    refMultData_->SetName(MakeString("nbdfit_internal_data_",
+    refmult_data_ = make_unique<TH1D>(data);
+    refmult_data_->SetName(MakeString("nbdfit_internal_data_",
                           Random::instance().counter()).c_str());
-    refMultData_->SetDirectory(0);
+    refmult_data_->SetDirectory(0);
   }
   
   void NBDFit::loadGlauber(const TH2D& glauber) {
     // first clear the old histogram
-    nPartnColl_.reset();
+    npart_ncoll_.reset();
     
     // copy the data histogram
-    nPartnColl_ = make_unique<TH2D>(glauber);
-    nPartnColl_->SetName(MakeString("nbdfit_internal_data_",
+    npart_ncoll_ = make_unique<TH2D>(glauber);
+    npart_ncoll_->SetName(MakeString("nbdfit_internal_data_",
                          Random::instance().counter()).c_str());
-    nPartnColl_->SetDirectory(0);
+    npart_ncoll_->SetDirectory(0);
   }
   
   // When using Fit(...) must set the NBD parameters beforehand
   void NBDFit::setParameters(double npp, double k, double x, double ppEff, double AAEff,
                              double centMult, double triggerBias, bool constEfficiency) {
-    multiplicityModel_ = make_unique<MultiplicityModel>(npp, k, x, ppEff, AAEff, centMult,
+    multiplicity_model_ = make_unique<MultiplicityModel>(npp, k, x, ppEff, AAEff, centMult,
                                                         triggerBias, constEfficiency);
   }
   
   unique_ptr<FitResult> NBDFit::fit(unsigned nevents, string name) {
     // fit real data w/ simulated multiplicity distribution
     
-    // create output FitResults
-    unique_ptr<FitResult> result = unique_ptr<FitResult>();
-    
     // first make sure refmult & npartncoll have been loaded
-    if (refMultData_ == nullptr) {
+    if (refmult_data_ == nullptr) {
       LOG(ERROR) << "no data refmult distribution has been loaded: Fit failure";
-      return result;
+      return unique_ptr<FitResult>();
     }
     
-    if (nPartnColl_ == nullptr) {
+    if (npart_ncoll_ == nullptr) {
       LOG(ERROR) << "no glauber nPartnColl distribution has been loaded: Fit failure";
-      return result;
+      return unique_ptr<FitResult>();
     }
     
     // make the simulated refmult histogram with the same bin edges as our
     // data refmult distribution
-    string histName;
+    string hist_name;
     if (name == "" || name == "refmultsim")
-      histName = MakeString("refmultsim", Random::instance().counter());
+      hist_name = MakeString("refmultsim", Random::instance().counter());
     else
-      histName = name;
-    unique_ptr<TH1D> refMultSim_ = make_unique<TH1D>(name.c_str(), "",
-                                                     refMultData_->GetXaxis()->GetNbins(),
-                                                     refMultData_->GetXaxis()->GetXmin(),
-                                                     refMultData_->GetXaxis()->GetXmax());
-    refMultSim_->SetDirectory(0);
-    refMultSim_->Sumw2();
+      hist_name = name;
+    unique_ptr<TH1D> refmult_sim_ = make_unique<TH1D>(name.c_str(), "",
+                                                     refmult_data_->GetXaxis()->GetNbins(),
+                                                     refmult_data_->GetXaxis()->GetXmin(),
+                                                     refmult_data_->GetXaxis()->GetXmax());
+    refmult_sim_->SetDirectory(0);
+    refmult_sim_->Sumw2();
     
     // now fill the simulated refmult distribution from the negative binomial,
     // with the MC glauber npart x ncoll distribution, nevents times
     for (int event = 0; event < nevents; ++event) {
       // first sample from the npart ncoll distribution
       double npart, ncoll;
-      nPartnColl_->GetRandom2(npart, ncoll);
+      npart_ncoll_->GetRandom2(npart, ncoll);
       
       // check if any collisions took place
       if (npart < 2 || ncoll < 1) continue;
       
-      unsigned mult = multiplicityModel_->multiplicity(static_cast<int>(npart), static_cast<int>(ncoll));
-      refMultSim_->Fill(mult);
+      unsigned mult = multiplicity_model_->multiplicity(static_cast<int>(npart), static_cast<int>(ncoll));
+      refmult_sim_->Fill(mult);
     }
     
     // normalize
-    double norm_ = norm(refMultData_.get(), refMultSim_.get());
-    refMultSim_->Scale(norm_);
+    double norm_ = norm(refmult_data_.get(), refmult_sim_.get());
+    refmult_sim_->Scale(norm_);
     
     // get chi2
-    std::pair<double, int> chi2_res = chi2(refMultData_.get(), refMultSim_.get());
+    std::pair<double, int> chi2_res = chi2(refmult_data_.get(), refmult_sim_.get());
+    
+    // create output FitResults
+    unique_ptr<FitResult> result = make_unique<FitResult>();
     
     // fill in the fit results
     result->chi2 = chi2_res.first;
     result->ndf  = chi2_res.second;
-    result->data = refMultData_.get();
-    result->simu = std::move(refMultSim_);
-    
+    result->data = refmult_data_.get();
+    result->simu = std::move(refmult_sim_);
     return std::move(result);
   }
   
@@ -258,7 +257,7 @@ namespace sct {
     h1->GetXaxis()->SetRange();
     h2->GetXaxis()->SetRange();
     
-    return {chi2, ndf};
+    return std::pair<double, int>{chi2, ndf};
   }
   std::pair<double, int> NBDFit::chi2_stglauber(TH1* h1, TH1* h2) {
     
@@ -282,7 +281,7 @@ namespace sct {
       ndf++;
     }
     
-    return {chi2, ndf};
+    return std::pair<double, int>{chi2, ndf};
   }
   
 } // namespace sct

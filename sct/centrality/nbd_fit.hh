@@ -100,12 +100,12 @@ namespace sct {
     std::pair<double, int> chi2_stglauber(TH1* h1, TH1* h2);
     
     // multiplicity model
-    unique_ptr<MultiplicityModel> multiplicityModel_;
+    unique_ptr<MultiplicityModel> multiplicity_model_;
     
     // we will make local copies, outside of the ROOT files, so
     // we have to explicity manage the memory...
-    unique_ptr<TH1D> refMultData_;
-    unique_ptr<TH2D> nPartnColl_;
+    unique_ptr<TH1D> refmult_data_;
+    unique_ptr<TH2D> npart_ncoll_;
     
     // minimum multiplicity for fitting range
     double minmult_fit_;
