@@ -56,14 +56,14 @@ SCT_DEFINE_int(refmultMax, 800, "maximum refmult");
 
 SCT_DEFINE_string(luminosityBranch, "lumi",
                   "name of branch containing luminosity information (zdc rate, bbc rate, etc)");
-SCT_DEFINE_double(lumiMin, 0, "minimum luminosity (Hz)");
-SCT_DEFINE_double(lumiMax, 100, "maximum luminosity (Hz)");
+SCT_DEFINE_double(lumiMin, 0, "minimum luminosity (kHz)");
+SCT_DEFINE_double(lumiMax, 100, "maximum luminosity (kHz)");
 SCT_DEFINE_double(lumiBins, 50, "number of bins to use for luminosity correction");
 SCT_DEFINE_double(lumiNorm, 0.0, "normalization point - luminosity correction = f(zdcNorm)/f(zdc)");
 
 SCT_DEFINE_string(vzBranch, "vz", "name of vertex z branch");
-SCT_DEFINE_double(vzMin, -30.0, "minimum Vz");
-SCT_DEFINE_double(vzMax, 30.0, "maximum Vz");
+SCT_DEFINE_double(vzMin, -30.0, "minimum Vz [cm]");
+SCT_DEFINE_double(vzMax, 30.0, "maximum Vz [cm]");
 SCT_DEFINE_double(vzBins, 20, "number of bins to use for Vz correction");
 SCT_DEFINE_double(vzNorm, 0.0, "normalization point - vz correction = f(vzNorm)/f(vz)");
 
