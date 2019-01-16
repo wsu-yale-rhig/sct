@@ -1,15 +1,10 @@
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 cmake_policy(SET CMP0042 NEW)
+cmake_policy(SET CMP0048 NEW)
 
 ## project title
-project(sct)
-
-## project version
-set(SCT_VERSION_MAJOR 0)
-set(SCT_VERSION_MINOR 1)
-set(SCT_VERSION_PATCH 0)
-set(SCT_VERSION
-    "${SCT_VERSION_MAJOR}.${SCT_VERSION_MINOR}.${SCT_VERSION_PATCH}")
+project(sct
+        VERSION 0.1.0)
 
 set(CMAKE_BUILD_TYPE RELEASE)
 
