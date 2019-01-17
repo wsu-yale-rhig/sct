@@ -210,10 +210,10 @@ TEST(nucleus, woodsSaxon2D) {
   TF2* fWSD = new TF2("WSD", WoodsSaxonDeformed, 0, 20, -1, 1, 5);
   fWSD->SetNpx(200);
   fWSD->SetNpy(200);
-  fWSD->SetParameter(0, radius + 0.01);
-  fWSD->SetParameter(1, skin_depth + 0.01);
-  fWSD->SetParameter(2, beta2 + 0.01);
-  fWSD->SetParameter(3, beta4 + 0.01);
+  fWSD->SetParameter(0, radius);
+  fWSD->SetParameter(1, skin_depth);
+  fWSD->SetParameter(2, beta2);
+  fWSD->SetParameter(3, beta4);
   fWSD->SetParameter(4, 1);
   
   TH2D* rcostheta = new TH2D("rcostheta", ";R;cos(#theta)", 100, 0, 20, 100, -1, 1);
