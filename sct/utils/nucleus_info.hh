@@ -26,8 +26,6 @@
  * *NEW TABLE* https://arxiv.org/pdf/1508.06294.pdf need to check it out
  */
 
-#include <unordered_map>
-
 #include "sct/core/base.hh"
 #include "sct/core/enumerations.hh"
 
