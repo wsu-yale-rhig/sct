@@ -5,6 +5,8 @@
 
 #include "sct/core/base.hh"
 
+#include <set>
+
 namespace  sct {
   
   // collision systems that we have centrality tables & NBD parameters for
@@ -70,6 +72,10 @@ namespace  sct {
     SmallXSec,    // Small inelastic NN cross section (-1mb)
     Gauss         // Gaussian collision profile
   };
+
+  // set of all glauber modifications as strings
+  static std::set<string> glauberModString{"nominal", "large", "small", "largexsec",
+    "smallxsec", "gauss"};
   
   // dictionaries for glaubermod <==> string
   static std::unordered_map<sct::GlauberMod, std::string, sct::EnumClassHash> modToString {
@@ -96,6 +102,21 @@ namespace  sct {
     None,                      // default
     Minus5,                    // -5% total cross section
     Plus5                      // +5% total cross section
+  };
+
+  // glauber model observables - used in systematic analysis
+  enum class GlauberObservable {
+    npart,
+    ncoll,
+    multiplicity,
+    b,
+    centrality,
+    areaRP,
+    areaPP,
+    eccRP,
+    eccPP2,
+    eccPP3,
+    eccPP4
   };
   
   // For sanity checks on code & histograms: when performing a centrality calculation,
