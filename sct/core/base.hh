@@ -55,7 +55,7 @@ namespace sct {
                           25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80};
   
   // make_unique is a C++14 feature. If we don't have 14, we will emulate
-  // its behavior. This is copied from folly/Memory.h
+  // its behavior. This is copied from facebook's folly/Memory.h
   #if __cplusplus >= 201402L ||                                              \
       (defined __cpp_lib_make_unique && __cpp_lib_make_unique >= 201304L) || \
       (defined(_MSC_VER) && _MSC_VER >= 1900)
