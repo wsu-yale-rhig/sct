@@ -65,27 +65,48 @@ namespace  sct {
   
   // For systematics: vary the settings of the glauber model
   enum class GlauberMod {
-    Nominal,      // nominal settings
-    Large,        // Large radius(+2%), small skin depth(-10%)
-    Small,        // Small radius(-2%), large skin depth(+10%)
-    LargeXSec,    // Large inelastic NN cross section (+1mb)
-    SmallXSec,    // Small inelastic NN cross section (-1mb)
-    Gauss         // Gaussian collision profile
+    Nominal,          // nominal settings
+    Large,            // Large radius(+2%), small skin depth(-10%)
+    Small,            // Small radius(-2%), large skin depth(+10%)
+    LargeXSec,        // Large inelastic NN cross section (+1mb)
+    SmallXSec,        // Small inelastic NN cross section (-1mb)
+    Gauss,            // Gaussian collision profile
+    LargeNpp,         // Vary Npp (+5%)
+    SmallNpp,         // Vary Npp (-5%)
+    LargeNppReweight, // Large Npp Reweighted (specifically used for 39 GeV AuAu)
+    SmallNppReweight  // Small Npp Reweighted (specifically used for 39 GeV AuAu)
   };
 
   // set of all glauber modifications as strings
   static std::set<string> glauberModString{"nominal", "large", "small", "largexsec",
-    "smallxsec", "gauss"};
+    "smallxsec", "gauss", "largenpp", "smallnpp", "largenppreweight", "smallnppreweight"};
   
   // dictionaries for glaubermod <==> string
-  static std::unordered_map<sct::GlauberMod, std::string, sct::EnumClassHash> modToString {
-    {GlauberMod::Nominal, "nominal"}, {GlauberMod::Large, "large"}, {GlauberMod::Small, "small"},
-    {GlauberMod::LargeXSec, "largexsec"}, {GlauberMod::SmallXSec, "smallxsec"},
-    {GlauberMod::Gauss, "gauss"} };
-  static std::unordered_map<std::string, sct::GlauberMod> stringToMod {
-    {"nominal", GlauberMod::Nominal}, {"large", GlauberMod::Large}, {"small", GlauberMod::Small},
-    {"largexsec", GlauberMod::LargeXSec}, {"smallxsec", GlauberMod::SmallXSec},
-    {"gauss", GlauberMod::Gauss} };
+  static std::unordered_map<sct::GlauberMod, std::string, sct::EnumClassHash> glauberModToString {
+    {GlauberMod::Nominal, "nominal"}, 
+    {GlauberMod::Large, "large"}, 
+    {GlauberMod::Small, "small"}, 
+    {GlauberMod::LargeXSec, "largexsec"}, 
+    {GlauberMod::SmallXSec, "smallxsec"}, 
+    {GlauberMod::Gauss, "gauss"}, 
+    {GlauberMod::LargeNpp, "largenpp"}, 
+    {GlauberMod::SmallNpp, "smallnpp"}, 
+    {GlauberMod::LargeNppReweight, "largenppreweight"}, 
+    {GlauberMod::SmallNppReweight, "smallnppreweight"} 
+    };
+
+  static std::unordered_map<std::string, sct::GlauberMod> stringToGlauberMod {
+    {"nominal", GlauberMod::Nominal}, 
+    {"large", GlauberMod::Large}, 
+    {"small", GlauberMod::Small},
+    {"largexsec", GlauberMod::LargeXSec}, 
+    {"smallxsec", GlauberMod::SmallXSec},
+    {"gauss", GlauberMod::Gauss}, 
+    {"largenpp", GlauberMod::LargeNpp}, 
+    {"smallnpp", GlauberMod::SmallNpp},
+    {"largenppreweight", GlauberMod::LargeNppReweight}, 
+    {"smallnppreweight", GlauberMod::SmallNppReweight}
+    };
   
   // For systematics: vary the NBD Npp by 5%
   // also has options for 39 GeV AuAu to use reweighting (see centrality_table.hh)
@@ -106,17 +127,17 @@ namespace  sct {
 
   // glauber model observables - used in systematic analysis
   enum class GlauberObservable {
-    npart,
-    ncoll,
-    multiplicity,
-    b,
-    centrality,
-    areaRP,
-    areaPP,
-    eccRP,
-    eccPP2,
-    eccPP3,
-    eccPP4
+    Npart,        // number of participants in a collision
+    Ncoll,        // number of binary collisions in a collision
+    Multiplicity, // produced multiplicity
+    B,            // impact parameter
+    Centrality,   // collision centrality
+    RPArea,       // reaction plane area
+    PPArea,       // participant plane area
+    RP2Ecc,       // second order reaction plane eccentricity
+    PP2Ecc,       // second order participant plane eccentricity
+    PP3Ecc,       // third order participant plane eccentricity
+    PP4Ecc        // fourth order participant plane eccentricity
   };
   
   // For sanity checks on code & histograms: when performing a centrality calculation,
