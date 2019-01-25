@@ -20,7 +20,7 @@ namespace sct {
   constexpr double twoPi = 6.28318530718;
   
   // commonly used classes from std, use statements
-  // in glbr namespace so that including sct headers
+  // in sct namespace so that including sct headers
   // won't modify the global namespace
   using std::pair;
   using std::string;
@@ -83,6 +83,9 @@ namespace sct {
     make_unique(Args&&...) = delete;
   
   #endif
+
+  // and include make_shared
+  using std::make_shared;
   
 } // namespace sct
 
