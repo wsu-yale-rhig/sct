@@ -13,7 +13,7 @@
 #include "sct/core/logging.hh"
 #include "sct/core/enumerations.hh"
 #include "sct/core/mc_glauber.hh"
-#include "sct/core/tree.hh"
+#include "sct/core/glauber_tree.hh"
 #include "sct/utils/nucleus_info.hh"
 #include "sct/utils/random.hh"
 
@@ -59,12 +59,12 @@ void PrintSettings() {
 void RunGlauber(sct::GlauberSpecies species, sct::CollisionEnergy energy,
                 sct::GlauberMod mod, std::string outDir, bool deformation,
                 int nEvents) {
-  std::string modstring = sct::modToString[mod];
+  std::string modstring = sct::glauberModToString[mod];
   
   // create and run the generator
   sct::MCGlauber generator(species, species, energy, mod, deformation, deformation);
   generator.run(nEvents);
-  sct::Tree* result = generator.results();
+  sct::GlauberTree* result = generator.results();
   
   int binx = sct::NucleusInfo::instance().massNumber(species) * 2;
   int biny = sct::NucleusInfo::instance().massNumber(species) * 8;
@@ -165,7 +165,7 @@ int main(int argc, char* argv[]) {
   if (FLAGS_systematic == false) {
     std::string modstring = FLAGS_modification;
     std::transform(modstring.begin(), modstring.end(), modstring.begin(), ::tolower);
-    sct::GlauberMod mod = sct::stringToMod[modstring];
+    sct::GlauberMod mod = sct::stringToGlauberMod[modstring];
     
     RunGlauber(species, energy, mod, FLAGS_outDir,
                FLAGS_deformation, FLAGS_events);
@@ -175,20 +175,20 @@ int main(int argc, char* argv[]) {
     if (FLAGS_multithread) {
       std::vector<std::thread> workers;
       for (auto mod : modifiers) {
-        LOG(INFO) << "Running Glauber with modification: " << sct::modToString[mod];
+        LOG(INFO) << "Running Glauber with modification: " << sct::glauberModToString[mod];
         workers.push_back(std::thread(RunGlauber, species, energy, mod, FLAGS_outDir,
                                       FLAGS_deformation, FLAGS_events));
       }
       for (int i = 0; i < workers.size(); ++i) {
         workers[i].join();
-        LOG(INFO) << "Running Glauber with modification: " << sct::modToString[modifiers[i]] << " done";
+        LOG(INFO) << "Running Glauber with modification: " << sct::glauberModToString[modifiers[i]] << " done";
       }
     }
     
     // otherwise, run sequentially
     else {
       for (auto mod : modifiers) {
-        LOG(INFO) << "Running Glauber with modification: " << sct::modToString[mod];
+        LOG(INFO) << "Running Glauber with modification: " << sct::glauberModToString[mod];
         RunGlauber(species, energy, mod, FLAGS_outDir, FLAGS_deformation, FLAGS_events);
         LOG(INFO) << "done";
       }

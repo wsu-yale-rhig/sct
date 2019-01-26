@@ -42,9 +42,9 @@ SCT_DEFINE_string(oldTreeName, "tree", "old glauber TTree name");
 
 int main(int argc, char* argv[]) {
   
-  constexpr unsigned npart_idx = static_cast<unsigned>(sct::GlauberWeights::NPart);
-  constexpr unsigned ncoll_idx = static_cast<unsigned>(sct::GlauberWeights::NColl);
-  constexpr unsigned spec_idx = static_cast<unsigned>(sct::GlauberWeights::Spectators);
+  constexpr unsigned npart_idx = static_cast<unsigned>(sct::GlauberWeight::NPart);
+  constexpr unsigned ncoll_idx = static_cast<unsigned>(sct::GlauberWeight::NColl);
+  constexpr unsigned spec_idx = static_cast<unsigned>(sct::GlauberWeight::Spectators);
   
   // set help message
   std::string usage = "Compares new MCGlauber results to StFastGlauberMC";

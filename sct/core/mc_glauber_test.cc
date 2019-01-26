@@ -5,7 +5,7 @@
 
 #include "sct/core/base.hh"
 #include "sct/core/logging.hh"
-#include "sct/core/tree.hh"
+#include "sct/core/glauber_tree.hh"
 #include "sct/utils/nucleus_info.hh"
 
 #include "TProfile.h"
@@ -17,7 +17,7 @@ TEST(MCGlauber, eventCounter) {
   
   sct::MCGlauber generator;
   generator.run(nEvents);
-  sct::Tree* tree = generator.results();
+  sct::GlauberTree* tree = generator.results();
   
   EXPECT_EQ(tree->getEntries(), nEvents);
 }
@@ -27,7 +27,7 @@ TEST(MCGlauber, defaultHeader) {
 
   sct::MCGlauber generator;
   generator.run(nEvents);
-  sct::Tree* tree = generator.results();
+  sct::GlauberTree* tree = generator.results();
 
   EXPECT_EQ(tree->getEntries(), nEvents);
   tree->getHeaderEntry(0);
@@ -78,7 +78,7 @@ TEST(MCGlauber, nonDefaultHeader) {
   generator.setCollisionProfile(sct::CollisionProfile::Gaussian);
   generator.setImpactParameterRange(bMin, bMax);
   generator.run(nEvents);
-  sct::Tree* tree = generator.results();
+  sct::GlauberTree* tree = generator.results();
   
   EXPECT_EQ(tree->getEntries(), nEvents);
   tree->getHeaderEntry(0);
@@ -123,7 +123,7 @@ TEST(MCGlauber, nonDefaultSymmetricHeader) {
   generator.setCollisionProfile(sct::CollisionProfile::HardCore);
   generator.setImpactParameterRange(bMin, bMax);
   generator.run(nEvents);
-  sct::Tree* tree = generator.results();
+  sct::GlauberTree* tree = generator.results();
   
   EXPECT_EQ(tree->getEntries(), nEvents);
   tree->getHeaderEntry(0);

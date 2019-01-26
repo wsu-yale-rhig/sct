@@ -142,10 +142,16 @@ namespace sct {
   void MCGlauber::setCollisionProfile(CollisionProfile profile) {
     collision_.setCollisionProfile(profile);
   }
+
+  void MCGlauber::setMultiplicityModel(double npp, double k, double x, double ppEff,
+                                       double aaEff, double aaCent, double trigEff,
+                                       bool constEff) {
+    collision_.setMultiplicityModel(npp, k, x, ppEff, aaEff, aaCent, trigEff, constEff);
+  }
   
   void MCGlauber::initOutput() {
     clear();
-    tree_ = make_unique<Tree>();
+    tree_ = make_unique<GlauberTree>(GlauberTree::TreeMode::Write);
   }
   
   void MCGlauber::initQA() {
@@ -168,7 +174,6 @@ namespace sct {
       nucleusA_->clear();
     if (nucleusB_.get() != nullptr)
       nucleusB_->clear();
-    collision_.clear();
   }
   
   // run the glauber MC for N events
@@ -256,19 +261,21 @@ namespace sct {
     tree_->setTheta(0, nucleusA_->nucleusPhi());
     tree_->setTheta(1, nucleusB_->nucleusTheta());
     tree_->setTheta(1, nucleusB_->nucleusPhi());
-    for (int i = 0; i < nGlauberWeights; ++i) {
-      tree_->setSumX(i, collision_.averageX()[i]);
-      tree_->setSumY(i, collision_.averageY()[i]);
-      tree_->setSumX2(i, collision_.averageX2()[i]);
-      tree_->setSumY2(i, collision_.averageY2()[i]);
-      tree_->setSumXY(i, collision_.averageXY()[i]);
-      tree_->setEccRP2(i, collision_.reactionPlane2Ecc()[i]);
-      tree_->setEccPP2(i, collision_.partPlane2Ecc()[i]);
-      tree_->setEccPP3(i, collision_.partPlane3Ecc()[i]);
-      tree_->setEccPP4(i, collision_.partPlane4Ecc()[i]);
-      tree_->setPP2(i, collision_.partPlane2()[i]);
-      tree_->setPP3(i, collision_.partPlane3()[i]);
-      tree_->setPP4(i, collision_.partPlane4()[i]);
+
+    for (auto& weight : glauberWeightSet) {
+      int index = static_cast<int>(weight);
+      tree_->setSumX(weight, collision_.averageX()[index]);
+      tree_->setSumY(weight, collision_.averageY()[index]);
+      tree_->setSumX2(weight, collision_.averageX2()[index]);
+      tree_->setSumY2(weight, collision_.averageY2()[index]);
+      tree_->setSumXY(weight, collision_.averageXY()[index]);
+      tree_->setRP2Ecc(weight, collision_.reactionPlane2Ecc()[index]);
+      tree_->setPP2Ecc(weight, collision_.partPlane2Ecc()[index]);
+      tree_->setPP3Ecc(weight, collision_.partPlane3Ecc()[index]);
+      tree_->setPP4Ecc(weight, collision_.partPlane4Ecc()[index]);
+      tree_->setPP2(weight, collision_.partPlane2()[index]);
+      tree_->setPP3(weight, collision_.partPlane3()[index]);
+      tree_->setPP4(weight, collision_.partPlane4()[index]);
     }
     
     tree_->fill();

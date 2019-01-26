@@ -14,6 +14,7 @@
 #include "sct/core/enumerations.hh"
 #include "sct/core/nucleus.hh"
 #include "sct/core/nucleon.hh"
+#include "sct/centrality/multiplicity_model.hh"
 
 namespace sct {
   class Collision {
@@ -36,6 +37,16 @@ namespace sct {
     inline void setCollisionProfile(CollisionProfile profile) {profile_ = profile;}
     inline CollisionProfile collisionProfile() const {return profile_;}
     
+    // estimates a multiplicity for each binary collision, allowing
+    // observables to be calculated weighted by the estimated multiplicity
+    // generally, these parameters come from a fit of the glauber model to data,
+    // so it may be required to run the model twice. Once to generate
+    // Npart Ncoll pairs for fitting, and again once the multiplicity model
+    // has been optimized
+    void setMultiplicityModel(double npp, double k, double x, double ppEff,
+                              double aaEff, double aaCent, double trigEff = 1.0,
+                              bool constEff = false);
+
     // collide two lists of nucleons - return true if at least one
     // nucleon-nucleon collision occurred. This is instantiated for both
     // Nucleus & std::vector<Nucleon> in the library. For other containers,
@@ -82,6 +93,9 @@ namespace sct {
     CollisionProfile profile_;    // either normal hard-core collision profile
                                   // or gaussian profile
     
+    // multiplicity model
+    unique_ptr<MultiplicityModel> mult_model_;
+
     unsigned nColl_;
     std::array<unsigned, nGlauberWeights> count_;
     std::array<double, nGlauberWeights> avgX_;

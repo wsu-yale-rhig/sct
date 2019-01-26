@@ -12,6 +12,12 @@ namespace sct {
   }
   
   Collision::~Collision() { }
+
+  void Collision::setMultiplicityModel(double npp, double k, double x, double ppEff,
+                                       double aaEff, double aaCent, double trigEff,
+                                       bool constEff) {
+    mult_model_ = make_unique<MultiplicityModel>(npp, k, x, ppEff, aaEff, aaCent, trigEff, constEff);
+  }
   
   template<typename Container>
   bool Collision::collide(Container& nucleusA, Container& nucleusB) {
@@ -33,9 +39,10 @@ namespace sct {
       return false;
     
     // get indices for the arrays
-    int nPart_index = static_cast<int>(GlauberWeights::NPart);
-    int nColl_index = static_cast<int>(GlauberWeights::NColl);
-    int spectator_index = static_cast<int>(GlauberWeights::Spectators);
+    int nPart_index = static_cast<int>(GlauberWeight::NPart);
+    int nColl_index = static_cast<int>(GlauberWeight::NColl);
+    int spectator_index = static_cast<int>(GlauberWeight::Spectators);
+    int multiplicity_index = static_cast<int>(GlauberWeight::Multiplicity);
     
     // calculate kinematic event averages
     for (auto nucleus : {&nucleusA, &nucleusB}) {
@@ -58,6 +65,17 @@ namespace sct {
           avgX2_[nColl_index] += nucleon.nColl() * nucleon.x2();
           avgY2_[nColl_index] += nucleon.nColl() * nucleon.y2();
           avgXY_[nColl_index] += nucleon.nColl() * nucleon.xy();
+
+          if (mult_model_.get() != nullptr) {
+            int mult = mult_model_->twoComponentMultiplicity(1.0, nucleon.nColl());
+            nucleon.setMultiplicity(mult);
+            count_[multiplicity_index] += mult;
+            avgX_[multiplicity_index] += mult * nucleon.x();
+            avgY_[multiplicity_index] += mult * nucleon.y();
+            avgX2_[multiplicity_index] += mult * nucleon.x2();
+            avgY2_[multiplicity_index] += mult * nucleon.y2();
+            avgXY_[multiplicity_index] += mult * nucleon.xy();
+          }
         }
         else {
           // spectator weighted averages
@@ -72,8 +90,11 @@ namespace sct {
     }
     
     // now calculate eccentricity for each class
-    for (int idx : {nPart_index, nColl_index, spectator_index}) {
+    for (int idx : {nPart_index, nColl_index, spectator_index, multiplicity_index}) {
       if (count_[idx] == 0)
+        continue;
+      
+      if (idx == multiplicity_index && mult_model_ == nullptr)
         continue;
       
       avgX_[idx] /= count_[idx];
@@ -166,9 +187,10 @@ namespace sct {
       return {-999.0, -999.0};
 
     // get indices for the arrays
-    constexpr unsigned nPart_index = static_cast<int>(GlauberWeights::NPart);
-    constexpr unsigned nColl_index = static_cast<int>(GlauberWeights::NColl);
-    constexpr unsigned spectator_index = static_cast<int>(GlauberWeights::Spectators);
+    constexpr unsigned nPart_index = static_cast<int>(GlauberWeight::NPart);
+    constexpr unsigned nColl_index = static_cast<int>(GlauberWeight::NColl);
+    constexpr unsigned spectator_index = static_cast<int>(GlauberWeight::Spectators);
+    constexpr unsigned multiplicity_index = static_cast<int>(GlauberWeight::Multiplicity);
     
     for (auto nucleus : {&nucleusA, &nucleusB}) {
       for (int i = 0; i < nucleus->size(); ++i) {
@@ -186,7 +208,11 @@ namespace sct {
         TVector3 tmp(nucleon.x() - avgX_[weightIdx],
                      nucleon.y() - avgY_[weightIdx],
                      nucleon.z());
-        double weight = weightIdx == nColl_index ? nColl : 1.0;
+        double weight = 1.0;
+        if (weightIdx == nColl_index)
+          weight = nColl;
+        else if (weightIdx == multiplicity_index)
+          weight = nucleon.multiplicity();
         double r = tmp.Perp();
         double phi = tmp.Phi();
         

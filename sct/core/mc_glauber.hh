@@ -15,7 +15,7 @@
 
 #include "sct/core/base.hh"
 #include "sct/core/enumerations.hh"
-#include "sct/core/tree.hh"
+#include "sct/core/glauber_tree.hh"
 #include "sct/core/nucleon.hh"
 #include "sct/core/nucleus.hh"
 #include "sct/core/collision.hh"
@@ -87,6 +87,14 @@ namespace sct {
     void setCollisionProfile(CollisionProfile profile);
     CollisionProfile collisionProfile() const {return collision_.collisionProfile();}
     
+    // if one already has parameters for the two-part multiplicity model, either
+    // from fits or some other source, they can be used to generate multiplicity
+    // estimates in the glauber trees. This also allows observables like eccentricity
+    // to be estimated with a multiplicity weighting
+    void setMultiplicityModel(double npp, double k, double x, double ppEff,
+                              double aaEff, double aaCent, double trigEff = 1.0,
+                              bool constEff = false);
+    
     // run the glauber MC for N events
     void run(unsigned N = 1000);
     
@@ -100,7 +108,7 @@ namespace sct {
     void writeHeader();
     
     // gives access to tree
-    Tree* results() const {return tree_.get();}
+    GlauberTree* results() const {return tree_.get();}
     
     // gives access to generated parameters
     TH2D* woodsSaxonA() {return nucleusA_->generatedRCosTheta();}
@@ -121,7 +129,7 @@ namespace sct {
     void initQA();
     
     // output tree
-    unique_ptr<Tree> tree_;
+    unique_ptr<GlauberTree> tree_;
     
     // containers for nucleus A & B
     unique_ptr<Nucleus> nucleusA_;
@@ -141,7 +149,7 @@ namespace sct {
     double  energy_;            // center of mass energy
     GlauberMod modification_;   // Used for systematics: define a chance in the glauber parameters
                                 // default is GlauberMod::Nominal
-    
+
     // QA histograms for impact parameter
     unique_ptr<TH1D> generated_ip_;
     unique_ptr<TH1D> accepted_ip_;

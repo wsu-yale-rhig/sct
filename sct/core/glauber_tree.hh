@@ -1,7 +1,7 @@
-// sct/core/tree.hh
+// sct/core/glauber_tree.hh
 
-#ifndef SCT_CORE_TREE_HH
-#define SCT_CORE_TREE_HH
+#ifndef SCT_CORE_GLAUBER_TREE_HH
+#define SCT_CORE_GLAUBER_TREE_HH
 
 #include "sct/core/base.hh"
 #include "sct/core/enumerations.hh"
@@ -12,21 +12,25 @@
 
 namespace sct {
 
-  class Tree {
+  class GlauberTree {
   public:
     
     static const unsigned n_nuclei = 2; // 2 nucleus collision (A, B)
-    enum class Nucleus{A, B};
-    
+    enum class TreeMode {Read, Write};
+
     // if filename is empty, assumes user wants to create a new tree
-    Tree(const string& filename = "");
-    virtual ~Tree();
+    GlauberTree(TreeMode mode, const string& filename = "");
+    virtual ~GlauberTree();
   
     // zeros values for the event tree
     void clearEvent();
     
     // to read a Tree from file, use open(filename)
     bool open(const string& filename);
+
+    // convenience function for the Tree to read from a file
+    // that is opened elsewhere
+    bool read(shared_ptr<TFile> file);
     
     // writes current values to event tree
     void fill();
@@ -46,39 +50,45 @@ namespace sct {
     inline void setNpart(unsigned val)                   {nPart_ = val;}
     inline void setNcoll(unsigned val)                   {nColl_ = val;}
     inline void setNspectators(unsigned val)             {nSpec_ = val;}
+    inline void setMultiplicity(unsigned val)            {multiplicity_ = val;}
     inline void setTheta(unsigned id, double val)        {theta_[id] = val;}
     inline void setPhi(unsigned id, double val)          {phi_[id] = val;}
-    inline void setSumX(unsigned id, double val)         {sumX_[id] = val;}
-    inline void setSumY(unsigned id, double val)         {sumY_[id] = val;}
-    inline void setSumX2(unsigned id, double val)        {sumX2_[id] = val;}
-    inline void setSumY2(unsigned id, double val)        {sumY2_[id] = val;}
-    inline void setSumXY(unsigned id, double val)        {sumXY_[id] = val;}
-    inline void setEccRP2(unsigned id, double val)       {eccRP2_[id] = val;}
-    inline void setEccPP2(unsigned id, double val)       {eccPP2_[id] = val;}
-    inline void setEccPP3(unsigned id, double val)       {eccPP3_[id] = val;}
-    inline void setEccPP4(unsigned id, double val)       {eccPP4_[id] = val;}
-    inline void setPP2(unsigned id, double val)          {pp2_[id] = val;}
-    inline void setPP3(unsigned id, double val)          {pp3_[id] = val;}
-    inline void setPP4(unsigned id, double val)          {pp4_[id] = val;}
+    inline void setSumX(GlauberWeight id, double val)   {sumX_[static_cast<unsigned>(id)] = val;}
+    inline void setSumY(GlauberWeight id, double val)   {sumY_[static_cast<unsigned>(id)] = val;}
+    inline void setSumX2(GlauberWeight id, double val)  {sumX2_[static_cast<unsigned>(id)] = val;}
+    inline void setSumY2(GlauberWeight id, double val)  {sumY2_[static_cast<unsigned>(id)] = val;}
+    inline void setSumXY(GlauberWeight id, double val)  {sumXY_[static_cast<unsigned>(id)] = val;}
+    inline void setRP2Ecc(GlauberWeight id, double val) {rp2ecc_[static_cast<unsigned>(id)] = val;}
+    inline void setPP2Ecc(GlauberWeight id, double val) {pp2ecc_[static_cast<unsigned>(id)] = val;}
+    inline void setPP3Ecc(GlauberWeight id, double val) {pp3ecc_[static_cast<unsigned>(id)] = val;}
+    inline void setPP4Ecc(GlauberWeight id, double val) {pp4ecc_[static_cast<unsigned>(id)] = val;}
+    inline void setPP2(GlauberWeight id, double val)    {pp2_[static_cast<unsigned>(id)] = val;}
+    inline void setPP3(GlauberWeight id, double val)    {pp3_[static_cast<unsigned>(id)] = val;}
+    inline void setPP4(GlauberWeight id, double val)    {pp4_[static_cast<unsigned>(id)] = val;}
     
     inline double B() const                       {return b_;}
     inline unsigned nPart() const                 {return nPart_;}
     inline unsigned nColl() const                 {return nColl_;}
     inline unsigned nSpectators() const           {return nSpec_;}
+    inline unsigned multiplicity() const          {return multiplicity_;}
     inline double theta(unsigned id) const        {return theta_[id];}
     inline double phi(unsigned id) const          {return phi_[id];}
-    inline double sumX(unsigned id) const         {return sumX_[id];}
-    inline double sumY(unsigned id) const         {return sumY_[id];}
-    inline double sumX2(unsigned id) const        {return sumX2_[id];}
-    inline double sumY2(unsigned id) const        {return sumY2_[id];}
-    inline double sumXY(unsigned id) const        {return sumXY_[id];}
-    inline double eccRP2(unsigned id) const       {return eccRP2_[id];}
-    inline double eccPP2(unsigned id) const       {return eccPP2_[id];}
-    inline double eccPP3(unsigned id) const       {return eccPP3_[id];}
-    inline double eccPP4(unsigned id) const       {return eccPP4_[id];}
-    inline double PP2(unsigned id) const          {return pp2_[id];}
-    inline double PP3(unsigned id) const          {return pp3_[id];}
-    inline double PP4(unsigned id) const          {return pp4_[id];}
+    inline double sumX(GlauberWeight id) const         {return sumX_[static_cast<unsigned>(id)];}
+    inline double sumY(GlauberWeight id) const         {return sumY_[static_cast<unsigned>(id)];}
+    inline double sumX2(GlauberWeight id) const        {return sumX2_[static_cast<unsigned>(id)];}
+    inline double sumY2(GlauberWeight id) const        {return sumY2_[static_cast<unsigned>(id)];}
+    inline double sumXY(GlauberWeight id) const        {return sumXY_[static_cast<unsigned>(id)];}
+    inline double RP2Ecc(GlauberWeight id) const       {return rp2ecc_[static_cast<unsigned>(id)];}
+    inline double PP2Ecc(GlauberWeight id) const       {return pp2ecc_[static_cast<unsigned>(id)];}
+    inline double PP3Ecc(GlauberWeight id) const       {return pp3ecc_[static_cast<unsigned>(id)];}
+    inline double PP4Ecc(GlauberWeight id) const       {return pp4ecc_[static_cast<unsigned>(id)];}
+    inline double PP2(GlauberWeight id) const          {return pp2_[static_cast<unsigned>(id)];}
+    inline double PP3(GlauberWeight id) const          {return pp3_[static_cast<unsigned>(id)];}
+    inline double PP4(GlauberWeight id) const          {return pp4_[static_cast<unsigned>(id)];}
+    
+    // area calculations
+    double RPArea(GlauberWeight id);
+    double PPArea(GlauberWeight id);
     
     // header
     inline void setNameNucleusA(const string& val) {nameA_ = val;}
@@ -138,7 +148,7 @@ namespace sct {
     void loadBranches();
     void createBranches();
     
-    unique_ptr<TFile> file_;
+    shared_ptr<TFile> file_;
     TTree* header_;
     TTree* event_;
     
@@ -146,6 +156,7 @@ namespace sct {
     unsigned nPart_;
     unsigned nColl_;
     unsigned nSpec_;
+    unsigned multiplicity_;
     double theta_[n_nuclei];
     double phi_[n_nuclei];
     double sumX_[nGlauberWeights];
@@ -153,10 +164,10 @@ namespace sct {
     double sumX2_[nGlauberWeights];
     double sumY2_[nGlauberWeights];
     double sumXY_[nGlauberWeights];
-    double eccRP2_[nGlauberWeights];
-    double eccPP2_[nGlauberWeights];
-    double eccPP3_[nGlauberWeights];
-    double eccPP4_[nGlauberWeights];
+    double rp2ecc_[nGlauberWeights];
+    double pp2ecc_[nGlauberWeights];
+    double pp3ecc_[nGlauberWeights];
+    double pp4ecc_[nGlauberWeights];
     double pp2_[nGlauberWeights];
     double pp3_[nGlauberWeights];
     double pp4_[nGlauberWeights];
@@ -190,4 +201,4 @@ namespace sct {
 
 } // namespace sct
 
-#endif // SCT_CORE_TREE_HH
+#endif // SCT_CORE_GLAUBER_TREE_HH

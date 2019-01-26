@@ -147,12 +147,20 @@ namespace  sct {
     Backward
   };
   
-  
-  static const unsigned nGlauberWeights = 3; // 0: nPart, 1: ncoll, 3: spectators
-  enum class GlauberWeights {
+  // weights for different observables calculated for each collision
+  static const unsigned nGlauberWeights = 4; // 0: nPart, 1: ncoll, 3: spectators
+  enum  class GlauberWeight {
     NPart = 0,        // weight by number of participants
     NColl = 1,        // weight by number of collisions
-    Spectators = 2    // weight by number of spectators
+    Spectators = 2,   // weight by number of spectators
+    Multiplicity = 3  // weight by multiplicity
+  };
+
+  static const std::set<GlauberWeight> glauberWeightSet {
+    GlauberWeight::NPart, 
+    GlauberWeight::NColl,
+    GlauberWeight::Spectators,
+    GlauberWeight::Multiplicity
   };
   
 } // namespace sct
