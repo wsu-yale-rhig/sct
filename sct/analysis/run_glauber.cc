@@ -6,19 +6,18 @@
  *
  */
 
-#include "sct/core/base.h"
-#include "sct/core/flags.h"
-#include "sct/core/logging.h"
-#include "sct/core/enumerations.h"
-#include "sct/core/mc_glauber.h"
-#include "sct/core/glauber_tree.h"
+#include "sct/lib/flags.h"
+#include "sct/lib/logging.h"
+#include "sct/lib/enumerations.h"
+#include "sct/glauber/mc_glauber.h"
+#include "sct/glauber/glauber_tree.h"
 #include "sct/utils/nucleus_info.h"
 #include "sct/utils/random.h"
 
 #include <string>
 #include <thread>
 #include <algorithm>
-#include <unordered_map>
+
 #include <boost/filesystem.hpp>
 
 #include "TFile.h"

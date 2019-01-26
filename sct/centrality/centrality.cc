@@ -1,7 +1,8 @@
 #include "sct/centrality/centrality.h"
 
 #include "sct/utils/random.h"
-#include "sct/core/logging.h"
+#include "sct/lib/logging.h"
+#include "sct/lib/string/string_utils.h"
 
 #include "TF1.h"
 
@@ -43,19 +44,19 @@ namespace sct {
     simu_->SetDirectory(0);
   }
   
-  vector<unsigned> Centrality::centralityBins(XSecMod mod) {
+  std::vector<unsigned> Centrality::centralityBins(XSecMod mod) {
     if (simu_ == nullptr) {
       LOG(ERROR) << "No simulation refmult distribution set";
       LOG(ERROR) << "Centrality calculation failed";
-      return vector<unsigned>();
+      return std::vector<unsigned>();
     }
     
     // calculate centrality from MC multiplicity distribution
     
     // Perform the calculation twice, first from 0 -> 100%, then from 100 -> 0%
     // as a sanity check
-    vector<unsigned> bounds_forward = integrate(simu_.get(), Integral::Forward, mod);
-    vector<unsigned> bounds_backward = integrate(simu_.get(), Integral::Backward, mod);
+    std::vector<unsigned> bounds_forward = integrate(simu_.get(), Integral::Forward, mod);
+    std::vector<unsigned> bounds_backward = integrate(simu_.get(), Integral::Backward, mod);
     
     if (bounds_forward != bounds_backward) {
       LOG(ERROR) << "Centrality bounds not equal when integrating forwards & backwards";
@@ -77,15 +78,15 @@ namespace sct {
       LOG(ERROR) << "xsec mod: " << mod_string;
       LOG(ERROR) << "bounds forward: " << bounds_forward;
       LOG(ERROR) << "bounds backward: " << bounds_backward;
-      return vector<unsigned>();
+      return std::vector<unsigned>();
     }
     
     return bounds_forward;
   }
   
-  vector<unsigned> Centrality::integrate(TH1D* h, Integral direction, XSecMod mod) {
-    // returns a vector of multiplicity boundaries
-    vector<unsigned> boundaries;
+  std::vector<unsigned> Centrality::integrate(TH1D* h, Integral direction, XSecMod mod) {
+    // returns a std::vector of multiplicity boundaries
+    std::vector<unsigned> boundaries;
     
     // first get xsec modification
     double xsec_percent = 1.0;
@@ -101,9 +102,9 @@ namespace sct {
         break;
     }
     
-    // copy our centrality bounds from sct/core/base.hh
-    vector<double> cent_min = Centrality16BinLowerBound;
-    vector<double> cent_max = Centrality16BinUpperBound;
+    // copy our centrality bounds from sct/lib/enumeration.h
+    std::vector<double> cent_min = Centrality16BinLowerBound;
+    std::vector<double> cent_max = Centrality16BinUpperBound;
     
     // get the number of cuts
     unsigned n_cent_bins = cent_min.size();
@@ -111,7 +112,7 @@ namespace sct {
     
     // now define our boundary cuts depending on if we are integrating forward or backward,
     // and weighted by the xsec modification
-    vector<double> cent_cuts;
+    std::vector<double> cent_cuts;
     switch (direction) {
       case Integral::Forward :
         for (int i = 0; i < n_cent_bins; ++i)
@@ -184,17 +185,17 @@ namespace sct {
     return boundaries;
   }
   
-  std::pair<vector<double>, unique_ptr<TH1D>>
+  std::pair<std::vector<double>, unique_ptr<TH1D>>
   Centrality::weights(unsigned fit_boundary) {
     // make sure both histograms exist
     if (data_.get() == nullptr) {
       LOG(ERROR) << "no data refmult distribution loaded, can't calculate weights";
-      return {vector<double>(), unique_ptr<TH1D>()};
+      return {std::vector<double>(), unique_ptr<TH1D>()};
     }
     
     if (simu_.get() == nullptr) {
       LOG(ERROR) << "no simulated refmult distribution loaded, can't calculate weights";
-      return {vector<double>(), unique_ptr<TH1D>()};
+      return {std::vector<double>(), unique_ptr<TH1D>()};
     }
     
     // now make a copy of the simulated refmult and take the ratio
@@ -210,7 +211,7 @@ namespace sct {
     
     // and fit
     ratio->Fit(ratio_fit.get(), "EMR");
-    vector<double> weights(7);
+    std::vector<double> weights(7);
     for (int par = 0; par < ratio_fit->GetNpar(); ++par)
       weights[par] = ratio_fit->GetParameter(par);
     

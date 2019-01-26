@@ -3,8 +3,9 @@
 #include <algorithm>
 #include <exception>
 
-#include "sct/core/logging.h"
-#include "sct/core/enumerations.h"
+#include "sct/lib/logging.h"
+#include "sct/lib/enumerations.h"
+#include "sct/lib/string/string_utils.h"
 #include "sct/utils/histogram_info.h"
 
 namespace sct {
@@ -72,7 +73,7 @@ namespace sct {
     mult_model_ = make_unique<MultiplicityModel>(npp, k, x, ppEff, aaEff, aaCent, trigEff, constEff);
   }
 
-  void GlauberSystematics::setCentralityBins(vector<double> cent_def) {
+  void GlauberSystematics::setCentralityBins(std::vector<double> cent_def) {
     if (cent_def.size() + 1 != HistogramInfo::instance().bins(GlauberObservable::Centrality)) {
       LOG(ERROR) << "centrality bin does not match the one defined in HistogramInfo: can not set";
       return;

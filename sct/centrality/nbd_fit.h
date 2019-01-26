@@ -14,9 +14,10 @@
  * fitter.scan(...);
  */
  
-#include "sct/core/base.h"
-#include "sct/core/enumerations.h"
+#include "sct/lib/enumerations.h"
 #include "sct/centrality/multiplicity_model.h"
+#include "sct/lib/memory.h"
+#include "sct/lib/map.h"
 
 #include "TH1.h"
 #include "TH2.h"
@@ -67,7 +68,7 @@ namespace sct {
     // K, X values passed by the user and will return all results
     // If saveAllHist == true, then every simulated refmult distribution
     // is saved - otherwise, only the best fit is saved
-    unordered_map<string, unique_ptr<FitResult>>
+    sct_map<string, unique_ptr<FitResult>>
     scan(unsigned nevents, unsigned npp_bins, double npp_min, double npp_max,
          unsigned k_bins, double k_min, double k_max, unsigned x_bins, double x_min,
          double x_max, double ppEff, double AAEff, double centMult, double triggerBias,

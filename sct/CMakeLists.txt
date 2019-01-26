@@ -9,17 +9,18 @@ set(SCT_BENCH_SRCS)
 set(SCT_BINARY_SRCS)
 
 ## add all subdirectories
-add_subdirectory(core)
+add_subdirectory(lib)
+add_subdirectory(glauber)
 add_subdirectory(utils)
 add_subdirectory(analysis)
 add_subdirectory(centrality)
 add_subdirectory(systematics)
 
 ## handle any files that have to be configured
-configure_file(${PROJECT_SOURCE_DIR}/sct/core/macros.h.in
-               ${PROJECT_BINARY_DIR}/sct/core/macros.h)
-install(FILES ${PROJECT_BINARY_DIR}/sct/core/macros.h
-        DESTINATION include/sct/core)
+configure_file(${PROJECT_SOURCE_DIR}/sct/lib/macros.h.in
+               ${PROJECT_BINARY_DIR}/sct/lib/macros.h)
+install(FILES ${PROJECT_BINARY_DIR}/sct/lib/macros.h
+        DESTINATION include/sct/lib)
 
 ## compile libraries
 add_library(sct ${SCT_SRCS})

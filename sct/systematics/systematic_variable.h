@@ -6,11 +6,12 @@
 // for each systematic variation, and provides a 
 // single fill interface for each event
 
-#include "sct/core/base.h"
-#include "sct/core/enumerations.h"
+#include "sct/lib/enumerations.h"
 #include "sct/systematics/histogram_collection.h"
+#include "sct/lib/memory.h"
 
 #include <set>
+#include <vector>
 
 #include "TH1.h"
 #include "TH2.h"
@@ -20,7 +21,7 @@
 namespace sct {
 
   template<class T>
-  using EventDict = unordered_map<GlauberObservable, T, EnumClassHash>;
+  using EventDict = sct_map<GlauberObservable, T, EnumClassHash>;
   
   class SystematicVariable {
   public:
@@ -63,8 +64,8 @@ namespace sct {
     // calculates the nth order cumulant from profile values
     // these functions have essentially been copied from the old maker for completeness -
     // the math has not been verified. 
-    double nthOrderCumulant(vector<double> moments, unsigned order);
-    double nthOrderCumulantError(vector<double> moments, vector<double> errors, unsigned order);
+    double nthOrderCumulant(std::vector<double> moments, unsigned order);
+    double nthOrderCumulantError(std::vector<double> moments, std::vector<double> errors, unsigned order);
     
     GlauberObservable y_; // variable flag
     string name_; // variable name (ncoll, npart, etc)

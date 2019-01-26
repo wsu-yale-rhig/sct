@@ -9,10 +9,10 @@
  * output trees of the two libraries are slightly different
  */
 
-#include "sct/core/base.h"
-#include "sct/core/flags.h"
-#include "sct/core/logging.h"
-#include "sct/core/enumerations.h"
+#include "sct/lib/flags.h"
+#include "sct/lib/logging.h"
+#include "sct/lib/enumerations.h"
+#include "sct/lib/string/string_utils.h"
 #include "sct/utils/print_helper.h"
 
 #include <boost/filesystem.hpp>

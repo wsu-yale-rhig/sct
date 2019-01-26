@@ -1,5 +1,3 @@
-// sct/utils/random.hh
-
 #ifndef SCT_UTILS_RANDOM_H
 #define SCT_UTILS_RANDOM_H
 

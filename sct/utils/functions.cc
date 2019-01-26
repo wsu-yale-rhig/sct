@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+#include "sct/lib/math.h"
+
 namespace sct {
     
   double StepFunction(double *x, double *par) {

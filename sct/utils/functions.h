@@ -4,7 +4,6 @@
 // Implementation of a few functions that are used in the MC glauber
 // generator. 
 
-#include "sct/core/base.h"
 
 namespace sct {
     

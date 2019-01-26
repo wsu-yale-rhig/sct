@@ -11,7 +11,6 @@
  *  it works well in the model.
  */
 
-#include "sct/core/base.h"
 #include "sct/utils/negative_binomial.h"
 
 namespace sct {

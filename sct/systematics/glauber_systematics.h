@@ -1,13 +1,15 @@
 #ifndef SCT_SYSTEMATICS_GLAUBER_SYSTEMATICS_H
 #define SCT_SYSTEMATICS_GLAUBER_SYSTEMATICS_H
 
-#include "sct/core/base.h"
 #include "sct/centrality/multiplicity_model.h"
 #include "sct/systematics/systematic_variable.h"
-#include "sct/core/glauber_tree.h"
+#include "sct/glauber/glauber_tree.h"
+#include "sct/lib/memory.h"
+#include "sct/lib/map.h"
 
 #include <array>
 #include <set>
+#include <vector>
 
 namespace sct {
 
@@ -41,7 +43,7 @@ namespace sct {
     // the one defined in HistogramInfo. For instance, if HistogramInfo defines
     // a 17-bin definition, then cent_def should have 16 entries (one less,
     // because the last bin (usually 80-100%) is always defined from 0)
-    void setCentralityBins(vector<double> cent_def);
+    void setCentralityBins(std::vector<double> cent_def);
     
     // flag to turn on/off npp variations in the multiplicity model as  another
     // variation. Looks for a variation named "nominal" when running, will error out
@@ -84,12 +86,12 @@ namespace sct {
     unique_ptr<TFile> out_file_;
     
     // holder for all TFiles (should be one file per variation)
-    unordered_map<GlauberMod, shared_ptr<TFile>, EnumClassHash> variations_;
+    sct_map<GlauberMod, shared_ptr<TFile>, EnumClassHash> variations_;
     
     unique_ptr<MultiplicityModel> mult_model_;
 
     // centrality lower bounds
-    vector<double> centrality_lower_bounds_;
+    std::vector<double> centrality_lower_bounds_;
 
     // flags 
     bool do_npp_variations_;

@@ -1,12 +1,11 @@
 #ifndef SCT_SYSTEMATICS_HISTOGRAM_COLLECTION_H
 #define SCT_SYSTEMATICS_HISTOGRAM_COLLECTION_H
 
-#include <string>
-#include <unordered_map>
-#include <memory>
 #include <iostream>
 
-#include "sct/core/base.h"
+#include "sct/lib/map.h"
+#include "sct/lib/memory.h"
+#include "sct/lib/string/string.h"
 
 namespace sct {
     
@@ -47,7 +46,7 @@ namespace sct {
     
   private:
     
-    unordered_map<Key, unique_ptr<H>, hash> histograms_ = {};
+    sct_map<Key, unique_ptr<H>, hash> histograms_ = {};
     
     bool keyExists(string key) {
       for (auto& h : histograms_) {

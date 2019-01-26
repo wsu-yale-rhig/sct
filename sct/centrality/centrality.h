@@ -6,8 +6,10 @@
  * boundaries (0-5%, 5-10%, etc).
  */
 
-#include "sct/core/base.h"
-#include "sct/core/enumerations.h"
+#include "sct/lib/enumerations.h"
+#include "sct/lib/memory.h"
+
+#include <vector>
 
 #include "TH1D.h"
 
@@ -27,18 +29,18 @@ namespace sct {
     
     // get the centrality bin edges, calculated from the simulated
     // refmult distribution by integrating bins of 5%
-    vector<unsigned> centralityBins(XSecMod mod = XSecMod::None);
+    std::vector<unsigned> centralityBins(XSecMod mod = XSecMod::None);
     
     // get the relative weight between the simulation and data refmult distribution
     // defined using the functional form:
     // [0] + [1]/([2]*x + [3]) + [4]*([2]*x + [3]) + [5]/([2]*x + [3])^2 + [6]*([2]*x + [3])^2"
     // returns the parameter values for the best fit for parameters 0-6
-    std::pair<vector<double>, unique_ptr<TH1D>> weights(unsigned fit_cutoff = 400);
+    std::pair<std::vector<double>, unique_ptr<TH1D>> weights(unsigned fit_cutoff = 400);
     
   private:
     
-    vector<unsigned> integrate(TH1D* h, Integral direction,
-                               XSecMod mod = XSecMod::None);
+    std::vector<unsigned> integrate(TH1D* h, Integral direction,
+                                    XSecMod mod = XSecMod::None);
     
     unique_ptr<TH1D> data_;
     unique_ptr<TH1D> simu_;

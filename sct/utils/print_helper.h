@@ -18,15 +18,15 @@
  *
  */
 
+#include <iostream>
+#include <vector>
+#include <string>
+
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
 #include "TCanvas.h"
 #include "TLegend.h"
-
-#include <iostream>
-#include <vector>
-#include <string>
 
 #include "boost/filesystem.hpp"
 

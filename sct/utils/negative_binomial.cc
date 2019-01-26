@@ -3,7 +3,8 @@
 #include <limits>
 
 #include "sct/utils/random.h"
-#include "sct/core/logging.h"
+#include "sct/lib/logging.h"
+#include "sct/lib/string/string_utils.h"
 
 #include "TMath.h"
 

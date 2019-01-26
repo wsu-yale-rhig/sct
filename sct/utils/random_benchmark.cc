@@ -1,5 +1,5 @@
 #include "benchmark/benchmark.h"
-#include "sct/core/logging.h"
+#include "sct/lib/logging.h"
 #include "sct/utils/random.h"
 
 #include "TH1.h"

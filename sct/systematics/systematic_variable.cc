@@ -1,6 +1,7 @@
 #include "sct/systematics/systematic_variable.h"
 
-#include "sct/core/logging.h"
+#include "sct/lib/logging.h"
+#include "sct/lib/string/string_utils.h"
 #include "sct/utils/histogram_info.h"
 
 #include "TDirectory.h"
@@ -175,8 +176,8 @@
               // we make vectors of the moments/errors. we need even moments up to the maximum value
               // specified in cumulant_order_. This is a std::set so the maximum value is always stored
               // last, so we get it with rbegin() 
-              vector<double> moments(*cumulant_order_.rbegin()+1, 0);
-              vector<double> moment_errors(*cumulant_order_.rbegin()+1, 0);
+              std::vector<double> moments(*cumulant_order_.rbegin()+1, 0);
+              std::vector<double> moment_errors(*cumulant_order_.rbegin()+1, 0);
 
               // now each cumulant only depends on moments of the same order or less, so we can collect
               // the moments and calculate the cumulants in the same loop
@@ -225,7 +226,7 @@
       }
     }
 
-    double SystematicVariable::nthOrderCumulant(vector<double> moments, unsigned order) {
+    double SystematicVariable::nthOrderCumulant(std::vector<double> moments, unsigned order) {
       // return an unphysical number if anything breaks
       double failure = 999999.0;
 
@@ -263,7 +264,7 @@
       }
     }
 
-    double SystematicVariable::nthOrderCumulantError(vector<double> moments, vector<double> errors, unsigned order) {
+    double SystematicVariable::nthOrderCumulantError(std::vector<double> moments, std::vector<double> errors, unsigned order) {
 
       // return an unphysical number if anything breaks
       double failure = 999999.0;

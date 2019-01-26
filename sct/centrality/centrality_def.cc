@@ -1,6 +1,7 @@
 #include "sct/centrality/centrality_def.h"
-#include "sct/core/logging.h"
+#include "sct/lib/logging.h"
 #include "sct/utils/random.h"
+
 namespace sct {
   
   CentralityDef::CentralityDef() : refmultcorr_(-1.0), centrality_16_(-1), centrality_9_(-1),

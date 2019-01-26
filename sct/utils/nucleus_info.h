@@ -24,8 +24,8 @@
  * *NEW TABLE* https://arxiv.org/pdf/1508.06294.pdf need to check it out
  */
 
-#include "sct/core/base.h"
-#include "sct/core/enumerations.h"
+#include "sct/lib/enumerations.h"
+#include "sct/lib/memory.h"
 
 namespace sct {
   class NucleusInfo {
@@ -46,15 +46,15 @@ namespace sct {
     
   private:
     
-    std::unordered_map<GlauberSpecies, unsigned, EnumClassHash> mass_number_;
-    std::unordered_map<GlauberSpecies, unsigned, EnumClassHash> charge_number_;
-    std::unordered_map<GlauberSpecies, double, EnumClassHash> radius_;
-    std::unordered_map<GlauberSpecies, double, EnumClassHash> skin_depth_;
-    std::unordered_map<GlauberSpecies, double, EnumClassHash> radius_error_;
-    std::unordered_map<GlauberSpecies, double, EnumClassHash> skin_depth_error_;
-    std::unordered_map<GlauberSpecies, double, EnumClassHash> beta2_;
-    std::unordered_map<GlauberSpecies, double, EnumClassHash> beta4_;
-    std::unordered_map<GlauberSpecies, string, EnumClassHash> name_;
+    sct_map<GlauberSpecies, unsigned, EnumClassHash> mass_number_;
+    sct_map<GlauberSpecies, unsigned, EnumClassHash> charge_number_;
+    sct_map<GlauberSpecies, double, EnumClassHash> radius_;
+    sct_map<GlauberSpecies, double, EnumClassHash> skin_depth_;
+    sct_map<GlauberSpecies, double, EnumClassHash> radius_error_;
+    sct_map<GlauberSpecies, double, EnumClassHash> skin_depth_error_;
+    sct_map<GlauberSpecies, double, EnumClassHash> beta2_;
+    sct_map<GlauberSpecies, double, EnumClassHash> beta4_;
+    sct_map<GlauberSpecies, string, EnumClassHash> name_;
     
     NucleusInfo();
     NucleusInfo(const NucleusInfo&);

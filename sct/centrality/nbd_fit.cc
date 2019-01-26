@@ -2,8 +2,9 @@
 
 #include <iomanip>
 
-#include "sct/core/logging.h"
-#include "sct/core/enumerations.h"
+#include "sct/lib/logging.h"
+#include "sct/lib/enumerations.h"
+#include "sct/lib/string/string_utils.h"
 #include "sct/utils/negative_binomial.h"
 #include "sct/utils/random.h"
 
@@ -127,7 +128,7 @@ namespace sct {
     return std::move(result);
   }
   
-  unordered_map<string, unique_ptr<FitResult>>
+  sct_map<string, unique_ptr<FitResult>>
   NBDFit::scan(unsigned nevents, unsigned npp_bins, double npp_min,
                double npp_max, unsigned k_bins, double k_min,
                double k_max, unsigned x_bins, double x_min, double x_max,
@@ -135,7 +136,7 @@ namespace sct {
                bool constEfficiency, bool saveAllHist) {
     // Perform the fit routine over a grid of NBD values (Npp, K, X)
     // and return a dictionary of results
-    unordered_map<string, unique_ptr<FitResult>> result_map;
+    sct_map<string, unique_ptr<FitResult>> result_map;
     
     // total number of bins
     unsigned nBins = npp_bins * k_bins * x_bins;

@@ -3,7 +3,7 @@
 
 // implement histogram for NBD distribution
 
-#include "sct/core/base.h"
+#include "sct/lib/memory.h"
 
 #include "TH1D.h"
 

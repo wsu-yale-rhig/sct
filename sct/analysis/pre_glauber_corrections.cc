@@ -20,9 +20,8 @@
  * some QA histograms for the corrections.
  */
 
-#include "sct/core/base.h"
-#include "sct/core/flags.h"
-#include "sct/core/logging.h"
+#include "sct/lib/flags.h"
+#include "sct/lib/logging.h"
 #include "sct/utils/print_helper.h"
 
 #include <string>

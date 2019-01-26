@@ -4,8 +4,7 @@
 #include <random>
 #include <memory>
 
-#include "sct/core/base.h"
-#include "sct/core/logging.h"
+#include "sct/lib/logging.h"
 
 #include "TF1.h"
 #include "TCanvas.h"

@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "sct/utils/nucleus_info.h"
 
-#include "sct/core/enumerations.h"
+#include "sct/lib/enumerations.h"
 
 TEST(NucleusInfo, Au197) {
   sct::NucleusInfo& info = sct::NucleusInfo::instance();

@@ -1,6 +1,6 @@
 #include "sct/utils/random.h"
 
-#include "sct/core/base.h"
+#include "sct/lib/math.h"
 
 namespace sct {
     
@@ -10,8 +10,8 @@ namespace sct {
   two_unit_centered_uniform_(-1.0, 1.0),
   zero_to_pi_(0.0, pi),
   counter_(0) {
-    vector<double> x = {0.0, 1.0};
-    vector<double> w = {0.0, 1.0};
+    std::vector<double> x = {0.0, 1.0};
+    std::vector<double> w = {0.0, 1.0};
     unit_linear_ = std::piecewise_linear_distribution<>(x.begin(), x.end(), w.begin());
     
     std::random_device rd;
