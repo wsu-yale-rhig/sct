@@ -10,12 +10,6 @@
 
 #include "sct/core/base.hh"
 
-#include "TH1.h"
-#include "TH2.h"
-#include "TH3.h"
-#include "TProfile.h"
-#include "TProfile2D.h"
-
 namespace sct {
     
   template<class H, class Key=std::string, class hash=std::hash<Key>>
@@ -31,8 +25,8 @@ namespace sct {
     }
     
     template <typename... Args>
-    void add(Key key, Args... args) {
-      histograms_[key] = make_unique<H>(key.c_str(), args...);
+    void add(Key key, Key title, Args... args) {
+      histograms_[key] = make_unique<H>(key.c_str(), title.c_str(), args...);
       histograms_[key]->SetDirectory(0);
     }
     
