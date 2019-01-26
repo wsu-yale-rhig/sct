@@ -1,10 +1,8 @@
-// sct/core/collision_benchmark.cc
-
 #include "benchmark/benchmark.h"
-#include "sct/core/collision.hh"
+#include "sct/core/collision.h"
 
-#include "sct/core/nucleus.hh"
-#include "sct/core/logging.hh"
+#include "sct/core/nucleus.h"
+#include "sct/core/logging.h"
 
 static void BM_Collision(benchmark::State& state) {
   

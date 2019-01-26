@@ -1,8 +1,6 @@
-// sct/utils/random.cc
+#include "sct/utils/random.h"
 
-#include "sct/utils/random.hh"
-
-#include "sct/core/base.hh"
+#include "sct/core/base.h"
 
 namespace sct {
     

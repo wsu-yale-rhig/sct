@@ -1,13 +1,11 @@
-// sct/core/flags.hh
-
-#ifndef SCT_CORE_FLAGS_HH
-#define SCT_CORE_FLAGS_HH
+#ifndef SCT_CORE_FLAGS_H
+#define SCT_CORE_FLAGS_H
 
 /* implementation of command line argument parser
  * using gflags
  */
 
-#include "sct/core/base.hh"
+#include "sct/core/base.h"
 
 namespace sct {
   
@@ -64,4 +62,4 @@ namespace sct {
   SCT_GFLAGS_DECLARE(string, name)
   
 
-#endif // SCT_CORE_FLAGS_HH
+#endif // SCT_CORE_FLAGS_H

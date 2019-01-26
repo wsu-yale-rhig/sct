@@ -1,9 +1,7 @@
-// sct/core/enumerations.hh
+#ifndef SCT_CORE_ENUMERATIONS_H
+#define SCT_CORE_ENUMERATIONS_H
 
-#ifndef SCT_CORE_ENUMERATIONS_HH
-#define SCT_CORE_ENUMERATIONS_HH
-
-#include "sct/core/base.hh"
+#include "sct/core/base.h"
 
 #include <set>
 
@@ -165,4 +163,4 @@ namespace  sct {
   
 } // namespace sct
 
-#endif // SCT_CORE_ENUMERATIONS_HH
+#endif // SCT_CORE_ENUMERATIONS_H

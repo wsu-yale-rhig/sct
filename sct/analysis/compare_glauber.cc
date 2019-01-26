@@ -1,5 +1,3 @@
-// sct/analysis/compare_glauber.cc
-
 /* Used to compare the new Glauber MC results to the
  * StFastGlauberMC results for QA of the new library.
  * (it will be labeled in the code where either the
@@ -11,11 +9,11 @@
  * output trees of the two libraries are slightly different
  */
 
-#include "sct/core/base.hh"
-#include "sct/core/flags.hh"
-#include "sct/core/logging.hh"
-#include "sct/core/enumerations.hh"
-#include "sct/utils/print_helper.hh"
+#include "sct/core/base.h"
+#include "sct/core/flags.h"
+#include "sct/core/logging.h"
+#include "sct/core/enumerations.h"
+#include "sct/utils/print_helper.h"
 
 #include <boost/filesystem.hpp>
 

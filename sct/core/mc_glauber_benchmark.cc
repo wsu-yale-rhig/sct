@@ -1,7 +1,5 @@
-// sct/core/mc_glauber_benchmark.cc
-
 #include "benchmark/benchmark.h"
-#include "sct/core/mc_glauber.hh"
+#include "sct/core/mc_glauber.h"
 
 static void BM_ImpactParameter(benchmark::State& state) {
   sct::MCGlauber generator;

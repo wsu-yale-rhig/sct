@@ -1,21 +1,5 @@
-// sct/core/nucleus.hh
-
-#ifndef SCT_CORE_NUCLEUS_HH
-#define SCT_CORE_NUCLEUS_HH
-
-#include <vector>
-#include <memory>
-#include <string>
-
-#include "sct/core/base.hh"
-#include "sct/core/nucleon.hh"
-#include "sct/core/enumerations.hh"
-
-#include "TH3.h"
-#include "TH2.h"
-#include "TF1.h"
-#include "TF3.h"
-#include "TVector3.h"
+#ifndef SCT_CORE_NUCLEUS_H
+#define SCT_CORE_NUCLEUS_H
 
 /*  Nucleus: used internally by MCGlauber to store nucleus parameters,
  *  and to generate & store nucleons for each generated event.
@@ -27,6 +11,21 @@
  *  Generate(b), where b is the impact parameter (constant offset along the
  *  x axis for all generated nucleons)
  */
+
+#include <vector>
+#include <memory>
+#include <string>
+
+#include "sct/core/base.h"
+#include "sct/core/nucleon.h"
+#include "sct/core/enumerations.h"
+
+#include "TH3.h"
+#include "TH2.h"
+#include "TF1.h"
+#include "TF3.h"
+#include "TVector3.h"
+
 
 namespace sct {
   class Nucleus {
@@ -152,4 +151,4 @@ namespace sct {
   
 } // namespace sct
 
-#endif // SCT_CORE_NUCLEUS_HH
+#endif // SCT_CORE_NUCLEUS_H

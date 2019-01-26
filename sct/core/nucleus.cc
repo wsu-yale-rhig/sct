@@ -1,10 +1,8 @@
-// sct/core/nucleus.cc
+#include "sct/core/nucleus.h"
 
-#include "sct/core/nucleus.hh"
-
-#include "sct/core/logging.hh"
-#include "sct/utils/functions.hh"
-#include "sct/utils/random.hh"
+#include "sct/core/logging.h"
+#include "sct/utils/functions.h"
+#include "sct/utils/random.h"
 
 #include "TF2.h"
 

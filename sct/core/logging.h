@@ -1,14 +1,12 @@
-// sct/core/logging.hh
-
-#ifndef SCT_CORE_LOGGING_HH
-#define SCT_CORE_LOGGING_HH
+#ifndef SCT_CORE_LOGGING_H
+#define SCT_CORE_LOGGING_H
 
 /* sct uses GLog for logging
  */
 #include "glog/stl_logging.h"
 #include "glog/logging.h"
 
-#include "sct/core/flags.hh"
+#include "sct/core/flags.h"
 
 
 // used to control levels of output using glog
@@ -76,4 +74,4 @@ namespace sct {
   
 } // namespace sct
 
-#endif // SCT_CORE_LOGGING_HH
+#endif // SCT_CORE_LOGGING_H

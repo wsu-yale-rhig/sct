@@ -1,9 +1,7 @@
-// sct/systematics/systematic_variable.cc
+#include "sct/systematics/systematic_variable.h"
 
-#include "sct/systematics/systematic_variable.hh"
-
-#include "sct/core/logging.hh"
-#include "sct/utils/histogram_info.hh"
+#include "sct/core/logging.h"
+#include "sct/utils/histogram_info.h"
 
 #include "TDirectory.h"
 

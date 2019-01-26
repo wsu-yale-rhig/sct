@@ -1,7 +1,5 @@
-// sct/core/nucleus_benchmark.cc
-
 #include "benchmark/benchmark.h"
-#include "sct/core/nucleus.hh"
+#include "sct/core/nucleus.h"
 
 static void BM_NucleusCreation(benchmark::State& state) {
   for (auto _ : state) {

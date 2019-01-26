@@ -1,9 +1,7 @@
-// sct/centrality/centrality.cc
+#include "sct/centrality/centrality.h"
 
-#include "sct/centrality/centrality.hh"
-
-#include "sct/utils/random.hh"
-#include "sct/core/logging.hh"
+#include "sct/utils/random.h"
+#include "sct/core/logging.h"
 
 #include "TF1.h"
 

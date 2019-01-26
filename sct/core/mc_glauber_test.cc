@@ -1,12 +1,10 @@
-// sct/core/mc_glauber_test.cc
-
 #include "gtest/gtest.h"
-#include "sct/core/mc_glauber.hh"
+#include "sct/core/mc_glauber.h"
 
-#include "sct/core/base.hh"
-#include "sct/core/logging.hh"
-#include "sct/core/glauber_tree.hh"
-#include "sct/utils/nucleus_info.hh"
+#include "sct/core/base.h"
+#include "sct/core/logging.h"
+#include "sct/core/glauber_tree.h"
+#include "sct/utils/nucleus_info.h"
 
 #include "TProfile.h"
 #include "TCanvas.h"

@@ -1,5 +1,3 @@
-// sct/analysis/fit_glauber_to_data.cc
-
 /* Scans through a 3D grid of parameters (Npp, k, x)
  * and builds up  a refmult distribution by sampling the
  * npart vs ncoll distribution from the glauber results
@@ -10,13 +8,13 @@
  *
  */
 
-#include "sct/core/base.hh"
-#include "sct/core/flags.hh"
-#include "sct/core/logging.hh"
-#include "sct/core/enumerations.hh"
-#include "sct/utils/random.hh"
-#include "sct/centrality/nbd_fit.hh"
-#include "sct/centrality/centrality.hh"
+#include "sct/core/base.h"
+#include "sct/core/flags.h"
+#include "sct/core/logging.h"
+#include "sct/core/enumerations.h"
+#include "sct/utils/random.h"
+#include "sct/centrality/nbd_fit.h"
+#include "sct/centrality/centrality.h"
 
 #include <vector>
 #include <iostream>

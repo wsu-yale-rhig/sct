@@ -1,7 +1,5 @@
-// sct/centrality/nbd_fit.hh
-
-#ifndef SCT_CENTRALITY_NBD_FIT_HH
-#define SCT_CENTRALITY_NBD_FIT_HH
+#ifndef SCT_CENTRALITY_NBD_FIT_H
+#define SCT_CENTRALITY_NBD_FIT_H
 
 /* Given a data reference multiplicity, a sct NPart vs NColl
  * distribution, and a set of NBD parameters, will generate a simulated
@@ -16,9 +14,9 @@
  * fitter.scan(...);
  */
  
-#include "sct/core/base.hh"
-#include "sct/core/enumerations.hh"
-#include "sct/centrality/multiplicity_model.hh"
+#include "sct/core/base.h"
+#include "sct/core/enumerations.h"
+#include "sct/centrality/multiplicity_model.h"
 
 #include "TH1.h"
 #include "TH2.h"
@@ -115,4 +113,4 @@ namespace sct {
   };
 } // namespace sct
   
-#endif // SCT_CENTRALITY_NBD_FIT_HH
+#endif // SCT_CENTRALITY_NBD_FIT_H

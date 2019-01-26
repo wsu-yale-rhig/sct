@@ -1,7 +1,5 @@
-// sct/core/nucleon.hh
-
-#ifndef SCT_CORE_NUCLEON_HH
-#define SCT_CORE_NUCLEON_HH
+#ifndef SCT_CORE_NUCLEON_H
+#define SCT_CORE_NUCLEON_H
 
 #include "TVector3.h"
 
@@ -70,4 +68,4 @@ namespace sct {
   
 } // namespace sct
 
-#endif // SCT_CORE_NUCLEON_HH
+#endif // SCT_CORE_NUCLEON_H

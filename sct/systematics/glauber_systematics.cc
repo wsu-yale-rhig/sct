@@ -1,13 +1,11 @@
-// sct/systematics/glauber_systematics.cc
-
-#include "sct/systematics/glauber_systematics.hh"
+#include "sct/systematics/glauber_systematics.h"
 
 #include <algorithm>
 #include <exception>
 
-#include "sct/core/logging.hh"
-#include "sct/core/enumerations.hh"
-#include "sct/utils/histogram_info.hh"
+#include "sct/core/logging.h"
+#include "sct/core/enumerations.h"
+#include "sct/utils/histogram_info.h"
 
 namespace sct {
   

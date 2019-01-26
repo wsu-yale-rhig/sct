@@ -1,13 +1,11 @@
-// sct/utils/negative_binomial_test.cc
-
 #include "gtest/gtest.h"
-#include "sct/utils/negative_binomial.hh"
+#include "sct/utils/negative_binomial.h"
 
 #include <random>
 #include <memory>
 
-#include "sct/core/base.hh"
-#include "sct/core/logging.hh"
+#include "sct/core/base.h"
+#include "sct/core/logging.h"
 
 #include "TF1.h"
 #include "TCanvas.h"

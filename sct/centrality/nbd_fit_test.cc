@@ -1,13 +1,11 @@
-// sct/centrality/nbd_fit_test.cc
-
 #include "gtest/gtest.h"
-#include "sct/centrality/nbd_fit.hh"
+#include "sct/centrality/nbd_fit.h"
 
 #include <random>
 
-#include "sct/core/base.hh"
-#include "sct/core/logging.hh"
-#include "sct/core/enumerations.hh"
+#include "sct/core/base.h"
+#include "sct/core/logging.h"
+#include "sct/core/enumerations.h"
 
 #include "TH1D.h"
 

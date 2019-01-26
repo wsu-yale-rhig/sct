@@ -1,7 +1,5 @@
-// sct/core/collision.hh
-
-#ifndef SCT_CORE_COLLISION_HH
-#define SCT_CORE_COLLISION_HH
+#ifndef SCT_CORE_COLLISION_H
+#define SCT_CORE_COLLISION_H
 
 /* Calculates number of binary collisions, number
  * of participants, average event quantities, and
@@ -10,11 +8,11 @@
 
 #include <array>
 
-#include "sct/core/base.hh"
-#include "sct/core/enumerations.hh"
-#include "sct/core/nucleus.hh"
-#include "sct/core/nucleon.hh"
-#include "sct/centrality/multiplicity_model.hh"
+#include "sct/core/base.h"
+#include "sct/core/enumerations.h"
+#include "sct/core/nucleus.h"
+#include "sct/core/nucleon.h"
+#include "sct/centrality/multiplicity_model.h"
 
 namespace sct {
   class Collision {
@@ -113,4 +111,4 @@ namespace sct {
   };
 } // namespace sct
 
-#endif // SCT_CORE_COLLISION_HH
+#endif // SCT_CORE_COLLISION_H

@@ -1,15 +1,13 @@
-// sct/core/collision_test.cc
-
 #include "gtest/gtest.h"
-#include "sct/core/collision.hh"
+#include "sct/core/collision.h"
 
 #include <vector>
 
-#include "sct/core/base.hh"
-#include "sct/core/logging.hh"
-#include "sct/core/enumerations.hh"
-#include "sct/core/nucleon.hh"
-#include "sct/core/nucleus.hh"
+#include "sct/core/base.h"
+#include "sct/core/logging.h"
+#include "sct/core/enumerations.h"
+#include "sct/core/nucleon.h"
+#include "sct/core/nucleus.h"
 
 //testing that parameters are properly set
 TEST(Collision, initialization) {

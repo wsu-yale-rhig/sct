@@ -1,11 +1,9 @@
-// sct/utils/negative_binomial.hh
-
-#ifndef SCT_UTILS_NEGATIVE_BINOMIAL_HH
-#define SCT_UTILS_NEGATIVE_BINOMIAL_HH
+#ifndef SCT_UTILS_NEGATIVE_BINOMIAL_H
+#define SCT_UTILS_NEGATIVE_BINOMIAL_H
 
 // implement histogram for NBD distribution
 
-#include "sct/core/base.hh"
+#include "sct/core/base.h"
 
 #include "TH1D.h"
 
@@ -46,4 +44,4 @@ namespace sct {
   };
 } // namespace sct
 
-#endif // SCT_UTILS_NEGATIVE_BINOMIAL_HH
+#endif // SCT_UTILS_NEGATIVE_BINOMIAL_H

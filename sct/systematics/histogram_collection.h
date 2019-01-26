@@ -1,14 +1,12 @@
-// sct/systematics/histogram_collection.hh
-
-#ifndef SCT_SYSTEMATICS_HISTOGRAM_COLLECTION_HH
-#define SCT_SYSTEMATICS_HISTOGRAM_COLLECTION_HH
+#ifndef SCT_SYSTEMATICS_HISTOGRAM_COLLECTION_H
+#define SCT_SYSTEMATICS_HISTOGRAM_COLLECTION_H
 
 #include <string>
 #include <unordered_map>
 #include <memory>
 #include <iostream>
 
-#include "sct/core/base.hh"
+#include "sct/core/base.h"
 
 namespace sct {
     
@@ -63,4 +61,4 @@ namespace sct {
   
 } // namespace sct
 
-#endif // SCT_SYSTEMATICS_HISTOGRAM_COLLECTION_HH
+#endif // SCT_SYSTEMATICS_HISTOGRAM_COLLECTION_H

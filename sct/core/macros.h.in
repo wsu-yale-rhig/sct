@@ -1,9 +1,9 @@
 // input for cmake configure - produced macros.hh  that
 // includes common macros used in building sct
 
-#ifndef SCT_CORE_MACROS_HH
-#define SCT_CORE_MACROS_HH
+#ifndef SCT_CORE_MACROS_H
+#define SCT_CORE_MACROS_H
 
 
 
-#endif // SCT_CORE_MACROS_HH
+#endif // SCT_CORE_MACROS_H

@@ -1,20 +1,17 @@
-// sct/core/nucleus_test.cc
-
-// *notice* some of these tests are statistical in nature,
-// so failure does not necessarily imply a bug
-
 #include "gtest/gtest.h"
-#include "sct/core/nucleus.hh"
+#include "sct/core/nucleus.h"
 
-#include "sct/core/base.hh"
-#include "sct/core/logging.hh"
-#include "sct/core/enumerations.hh"
-#include "sct/core/nucleon.hh"
+#include "sct/core/base.h"
+#include "sct/core/logging.h"
+#include "sct/core/enumerations.h"
+#include "sct/core/nucleon.h"
 
 #include "TH3.h"
 #include "TH2.h"
 #include "TH1.h"
 
+// *notice* some of these tests are statistical in nature,
+// so failure does not necessarily imply a bug
 
 TEST(nucleus, defaultGold) {
 

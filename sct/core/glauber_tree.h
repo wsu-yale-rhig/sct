@@ -1,10 +1,8 @@
-// sct/core/glauber_tree.hh
+#ifndef SCT_CORE_GLAUBER_TREE_H
+#define SCT_CORE_GLAUBER_TREE_H
 
-#ifndef SCT_CORE_GLAUBER_TREE_HH
-#define SCT_CORE_GLAUBER_TREE_HH
-
-#include "sct/core/base.hh"
-#include "sct/core/enumerations.hh"
+#include "sct/core/base.h"
+#include "sct/core/enumerations.h"
 
 #include "TTree.h"
 #include "TFile.h"
@@ -201,4 +199,4 @@ namespace sct {
 
 } // namespace sct
 
-#endif // SCT_CORE_GLAUBER_TREE_HH
+#endif // SCT_CORE_GLAUBER_TREE_H

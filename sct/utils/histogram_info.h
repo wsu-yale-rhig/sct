@@ -1,12 +1,12 @@
-#ifndef SCT_UTILS_HISTOGRAM_INFO_HH
-#define SCT_UTILS_HISTOGRAM_INFO_HH
-
-#include "sct/core/base.hh"
-#include "sct/core/enumerations.hh"
+#ifndef SCT_UTILS_HISTOGRAM_INFO_H
+#define SCT_UTILS_HISTOGRAM_INFO_H
 
 // defines constants used in the creation of histograms - 
 // number of bins, lower and upper bounds for common observables
 // such as multiplicity, impact parameter, etc
+
+#include "sct/core/base.h"
+#include "sct/core/enumerations.h"
 
 namespace sct {
 
@@ -42,5 +42,4 @@ namespace sct {
 
 } // namespace sct
 
-
-#endif // SCT_UTILS_HISTOGRAM_INFO_HH
+#endif // SCT_UTILS_HISTOGRAM_INFO_H

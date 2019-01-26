@@ -1,7 +1,5 @@
-// sct/core/mc_glauber.hh
-
-#ifndef SCT_CORE_MC_GLAUBER_HH
-#define SCT_CORE_MC_GLAUBER_HH
+#ifndef SCT_CORE_MC_GLAUBER_H
+#define SCT_CORE_MC_GLAUBER_H
 
 /* Monte Carlo Glauber generator
  * For an overview of Glauber modeling, see
@@ -13,12 +11,12 @@
  *
  */
 
-#include "sct/core/base.hh"
-#include "sct/core/enumerations.hh"
-#include "sct/core/glauber_tree.hh"
-#include "sct/core/nucleon.hh"
-#include "sct/core/nucleus.hh"
-#include "sct/core/collision.hh"
+#include "sct/core/base.h"
+#include "sct/core/enumerations.h"
+#include "sct/core/glauber_tree.h"
+#include "sct/core/nucleon.h"
+#include "sct/core/nucleus.h"
+#include "sct/core/collision.h"
 
 #include "TH1D.h"
 
@@ -157,4 +155,4 @@ namespace sct {
   };
 } // namespace sct
 
-#endif // SCT_CORE_MC_GLAUBER_HH
+#endif // SCT_CORE_MC_GLAUBER_H

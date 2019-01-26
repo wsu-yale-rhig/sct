@@ -1,10 +1,8 @@
-// sct/core/mc_glauber.cc
+#include "sct/core/mc_glauber.h"
 
-#include "sct/core/mc_glauber.hh"
-
-#include "sct/core/logging.hh"
-#include "sct/utils/nucleus_info.hh"
-#include "sct/utils/random.hh"
+#include "sct/core/logging.h"
+#include "sct/utils/nucleus_info.h"
+#include "sct/utils/random.h"
 
 namespace sct {
   

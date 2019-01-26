@@ -1,6 +1,4 @@
-// sct/utils/nucleus_info.cc
-
-#include "sct/utils/nucleus_info.hh"
+#include "sct/utils/nucleus_info.h"
 
 namespace sct {
   

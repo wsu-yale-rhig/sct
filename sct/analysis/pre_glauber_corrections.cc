@@ -1,5 +1,3 @@
-// sct/analysis/luminosity_correction.cc
-
 /* Refmult can depend on detector conditions - for instance,
  * as luminosity increases, average tracking efficiency decreases.
  * Before comparing a refmult distribution to glauber to extract
@@ -22,10 +20,10 @@
  * some QA histograms for the corrections.
  */
 
-#include "sct/core/base.hh"
-#include "sct/core/flags.hh"
-#include "sct/core/logging.hh"
-#include "sct/utils/print_helper.hh"
+#include "sct/core/base.h"
+#include "sct/core/flags.h"
+#include "sct/core/logging.h"
+#include "sct/utils/print_helper.h"
 
 #include <string>
 #include <boost/filesystem.hpp>

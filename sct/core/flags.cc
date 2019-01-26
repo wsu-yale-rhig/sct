@@ -1,6 +1,4 @@
-// sct/core/flags.cc
-
-#include "sct/core/flags.hh"
+#include "sct/core/flags.h"
 
 namespace sct {
   

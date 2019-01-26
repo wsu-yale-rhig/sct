@@ -1,16 +1,14 @@
-// sct/systematics/systematic_variable.hh
-
-#ifndef SCT_SYSTEMATICS_SYSTEMATIC_VARIABLE_HH
-#define SCT_SYSTEMATICS_SYSTEMATIC_VARIABLE_HH
+#ifndef SCT_SYSTEMATICS_SYSTEMATIC_VARIABLE_H
+#define SCT_SYSTEMATICS_SYSTEMATIC_VARIABLE_H
 
 // a histogram container for GlauberSystematics,
 // that allows similar sets of histograms to be made
 // for each systematic variation, and provides a 
 // single fill interface for each event
 
-#include "sct/core/base.hh"
-#include "sct/core/enumerations.hh"
-#include "sct/systematics/histogram_collection.hh"
+#include "sct/core/base.h"
+#include "sct/core/enumerations.h"
+#include "sct/systematics/histogram_collection.h"
 
 #include <set>
 
@@ -97,4 +95,4 @@ namespace sct {
   
 } // namespace sct
 
-#endif // SCT_SYSTEMATICS_SYSTEMATIC_VARIABLE_HH
+#endif // SCT_SYSTEMATICS_SYSTEMATIC_VARIABLE_H

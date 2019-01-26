@@ -1,13 +1,11 @@
-// sct/centrality/nbd_fit.cc
-
-#include "sct/centrality/nbd_fit.hh"
+#include "sct/centrality/nbd_fit.h"
 
 #include <iomanip>
 
-#include "sct/core/logging.hh"
-#include "sct/core/enumerations.hh"
-#include "sct/utils/negative_binomial.hh"
-#include "sct/utils/random.hh"
+#include "sct/core/logging.h"
+#include "sct/core/enumerations.h"
+#include "sct/utils/negative_binomial.h"
+#include "sct/utils/random.h"
 
 #include "TFile.h"
 

@@ -1,9 +1,7 @@
-// sct/core/collision.cc
+#include "sct/core/collision.h"
 
-#include "sct/core/collision.hh"
-
-#include "sct/core/logging.hh"
-#include "sct/utils/random.hh"
+#include "sct/core/logging.h"
+#include "sct/utils/random.h"
 
 namespace sct {
   Collision::Collision()

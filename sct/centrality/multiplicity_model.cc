@@ -1,11 +1,9 @@
-// sct/centrality/multiplicity_model.cc
-
-#include "sct/centrality/multiplicity_model.hh"
+#include "sct/centrality/multiplicity_model.h"
 
 #include <limits>
 
-#include "sct/utils/random.hh"
-#include "sct/core/logging.hh"
+#include "sct/utils/random.h"
+#include "sct/core/logging.h"
 
 #include "TMath.h"
 

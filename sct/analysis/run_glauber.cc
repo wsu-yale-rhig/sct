@@ -1,5 +1,3 @@
-// sct/analysis/run_glauber.cc
-
 /* Runs the Glauber Monte-Carlo model
  *
  * Can run systematic variations of the glauber model
@@ -8,14 +6,14 @@
  *
  */
 
-#include "sct/core/base.hh"
-#include "sct/core/flags.hh"
-#include "sct/core/logging.hh"
-#include "sct/core/enumerations.hh"
-#include "sct/core/mc_glauber.hh"
-#include "sct/core/glauber_tree.hh"
-#include "sct/utils/nucleus_info.hh"
-#include "sct/utils/random.hh"
+#include "sct/core/base.h"
+#include "sct/core/flags.h"
+#include "sct/core/logging.h"
+#include "sct/core/enumerations.h"
+#include "sct/core/mc_glauber.h"
+#include "sct/core/glauber_tree.h"
+#include "sct/utils/nucleus_info.h"
+#include "sct/utils/random.h"
 
 #include <string>
 #include <thread>

@@ -1,8 +1,6 @@
-// sct/core/glauber_tree.cc
+#include "sct/core/glauber_tree.h"
 
-#include "sct/core/glauber_tree.hh"
-
-#include "sct/core/logging.hh"
+#include "sct/core/logging.h"
 
 namespace sct {
   

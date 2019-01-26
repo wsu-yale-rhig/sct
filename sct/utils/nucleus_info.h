@@ -1,7 +1,5 @@
-// sct/utils/nucleus_info.hh
-
-#ifndef SCT_UTILS_NUCLEUS_INFO_HH
-#define SCT_UTILS_NUCLEUS_INFO_HH
+#ifndef SCT_UTILS_NUCLEUS_INFO_H
+#define SCT_UTILS_NUCLEUS_INFO_H
 
 /* Table of nucleus parameters -
  * mass number
@@ -26,8 +24,8 @@
  * *NEW TABLE* https://arxiv.org/pdf/1508.06294.pdf need to check it out
  */
 
-#include "sct/core/base.hh"
-#include "sct/core/enumerations.hh"
+#include "sct/core/base.h"
+#include "sct/core/enumerations.h"
 
 namespace sct {
   class NucleusInfo {
@@ -64,4 +62,4 @@ namespace sct {
   };
 } // namespace sct
 
-#endif // SCT_UTILS_NUCLEUS_INFO_HH
+#endif // SCT_UTILS_NUCLEUS_INFO_H

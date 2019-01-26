@@ -1,7 +1,5 @@
-// sct/centrality/centrality_test.cc
-
 #include "gtest/gtest.h"
-#include "sct/centrality/centrality.hh"
+#include "sct/centrality/centrality.h"
 
 #include <random>
 

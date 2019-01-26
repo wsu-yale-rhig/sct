@@ -1,10 +1,8 @@
 // sct/utils/random.hh
 
-#ifndef SCT_UTILS_RANDOM_HH
-#define SCT_UTILS_RANDOM_HH
+#ifndef SCT_UTILS_RANDOM_H
+#define SCT_UTILS_RANDOM_H
 
-#include <random>
-#include <atomic>
 
 // implements all of the random number distributions we need
 // to sample during MC glauber generation, as well as a globally
@@ -12,6 +10,9 @@
 
 // to use the generator inside the sct library, call the singleton
 // Random::instance().
+
+#include <random>
+#include <atomic>
 
 namespace sct {
     
@@ -67,4 +68,4 @@ namespace sct {
     
 } // namespace sct
 
-#endif // SCT_UTILS_RANDOM_HH
+#endif // SCT_UTILS_RANDOM_H

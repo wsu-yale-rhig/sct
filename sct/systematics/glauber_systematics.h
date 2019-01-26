@@ -1,12 +1,10 @@
-// sct/systematics/glauber_systematics.hh
+#ifndef SCT_SYSTEMATICS_GLAUBER_SYSTEMATICS_H
+#define SCT_SYSTEMATICS_GLAUBER_SYSTEMATICS_H
 
-#ifndef SCT_SYSTEMATICS_GLAUBER_SYSTEMATICS_HH
-#define SCT_SYSTEMATICS_GLAUBER_SYSTEMATICS_HH
-
-#include "sct/core/base.hh"
-#include "sct/centrality/multiplicity_model.hh"
-#include "sct/systematics/systematic_variable.hh"
-#include "sct/core/glauber_tree.hh"
+#include "sct/core/base.h"
+#include "sct/centrality/multiplicity_model.h"
+#include "sct/systematics/systematic_variable.h"
+#include "sct/core/glauber_tree.h"
 
 #include <array>
 #include <set>
@@ -113,4 +111,4 @@ namespace sct {
   
 } // namespace sct
 
-#endif // SCT_SYSTEMATICS_GLAUBER_SYSTEMATICS_HH
+#endif // SCT_SYSTEMATICS_GLAUBER_SYSTEMATICS_H

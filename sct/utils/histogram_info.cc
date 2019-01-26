@@ -1,6 +1,4 @@
-// sct/utils/histogram_info.cc
-
-#include "sct/utils/histogram_info.hh"
+#include "sct/utils/histogram_info.h"
 
 namespace sct {
   

@@ -1,7 +1,5 @@
-//sct/centrality/centrality_def.hh
-
-#ifndef SCT_CENTRALITY_CENTRALITY_DEF_HH
-#define SCT_CENTRALITY_CENTRALITY_DEF_HH
+#ifndef SCT_CENTRALITY_CENTRALITY_DEF_H
+#define SCT_CENTRALITY_CENTRALITY_DEF_H
 
 // defines a lightweight class that can handle StRefMultCorr corrections
 // allows similar cuts to be set, but by hand instead of reading from a
@@ -105,4 +103,4 @@ namespace sct {
   
 } // namespace sct
 
-#endif // SCT_CENTRALITY_CENTRALITY_DEF_HH
+#endif // SCT_CENTRALITY_CENTRALITY_DEF_H

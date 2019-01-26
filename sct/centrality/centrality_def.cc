@@ -1,8 +1,6 @@
-// sct/centrality/centrality_def.cc
-
-#include "sct/centrality/centrality_def.hh"
-#include "sct/core/logging.hh"
-#include "sct/utils/random.hh"
+#include "sct/centrality/centrality_def.h"
+#include "sct/core/logging.h"
+#include "sct/utils/random.h"
 namespace sct {
   
   CentralityDef::CentralityDef() : refmultcorr_(-1.0), centrality_16_(-1), centrality_9_(-1),

@@ -1,9 +1,7 @@
-// sct/core/nucleon.cc
+#include "sct/core/nucleon.h"
 
-#include "sct/core/nucleon.hh"
-
-#include "sct/core/base.hh"
-#include "sct/core/logging.hh"
+#include "sct/core/base.h"
+#include "sct/core/logging.h"
 
 namespace sct {
   Nucleon::Nucleon()

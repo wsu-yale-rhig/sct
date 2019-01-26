@@ -1,6 +1,4 @@
-// sct/utils/functions.cc
-
-#include "sct/utils/functions.hh"
+#include "sct/utils/functions.h"
 
 #include <cmath>
 

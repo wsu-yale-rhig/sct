@@ -1,11 +1,9 @@
-// sct/utils/negative_binomial.cc
-
-#include "sct/utils/negative_binomial.hh"
+#include "sct/utils/negative_binomial.h"
 
 #include <limits>
 
-#include "sct/utils/random.hh"
-#include "sct/core/logging.hh"
+#include "sct/utils/random.h"
+#include "sct/core/logging.h"
 
 #include "TMath.h"
 

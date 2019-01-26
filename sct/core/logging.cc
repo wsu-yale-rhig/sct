@@ -1,6 +1,4 @@
-// sct/core/logging.cc
-
-#include "sct/core/logging.hh"
+#include "sct/core/logging.h"
 
 // initial setting for logging level
 SCT_DEFINE_int(sct_log_level, google::ERROR,

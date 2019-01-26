@@ -1,12 +1,10 @@
-// sct/utils/functions.hh
-
-#ifndef SCT_UTIL_FUNCTIONS_HH
-#define SCT_UTIL_FUNCTIONS_HH
+#ifndef SCT_UTIL_FUNCTIONS_H
+#define SCT_UTIL_FUNCTIONS_H
 
 // Implementation of a few functions that are used in the MC glauber
 // generator. 
 
-#include "sct/core/base.hh"
+#include "sct/core/base.h"
 
 namespace sct {
     
@@ -49,4 +47,4 @@ namespace sct {
   
 } // namespace sct
 
-#endif // SCT_UTIL_FUNCTIONS_HH
+#endif // SCT_UTIL_FUNCTIONS_H

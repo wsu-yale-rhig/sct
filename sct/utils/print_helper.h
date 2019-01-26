@@ -1,7 +1,5 @@
-// sct/utils/print_helper.hh
-
-#ifndef SCT_UTILS_PRINT_HELPER_HH
-#define SCT_UTILS_PRINT_HELPER_HH
+#ifndef SCT_UTILS_PRINT_HELPER_H
+#define SCT_UTILS_PRINT_HELPER_H
 
 /* Printing routine templates for ROOT 1D and 2D histograms.
  * Uses histogramOpts and canvasOpts structs to set values for
@@ -483,4 +481,4 @@ namespace sct {
   
 } // namespace sct
 
-#endif // SCT_UTILS_PRINT_HELPER_HH
+#endif // SCT_UTILS_PRINT_HELPER_H

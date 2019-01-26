@@ -1,10 +1,8 @@
-// sct/utils/random_test.cc
+#include "gtest/gtest.h"
+#include "sct/utils/random.h"
 
 // tests the boundaries and the averages of the
-// distributions implemented in random.hh
-
-#include "gtest/gtest.h"
-#include "sct/utils/random.hh"
+// distributions implemented in random.h
 
 TEST(unit_random, bounds) {
   sct::Random& random = sct::Random::instance();

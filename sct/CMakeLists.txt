@@ -3,6 +3,7 @@
 ## SCT_TEST_SRCS contains all test sources
 
 set(SCT_SRCS)
+set(SCT_HEADERS)
 set(SCT_TEST_SRCS)
 set(SCT_BENCH_SRCS)
 set(SCT_BINARY_SRCS)
@@ -15,9 +16,9 @@ add_subdirectory(centrality)
 add_subdirectory(systematics)
 
 ## handle any files that have to be configured
-configure_file(${PROJECT_SOURCE_DIR}/sct/core/macros.hh.in
-               ${PROJECT_BINARY_DIR}/sct/core/macros.hh)
-install(FILES ${PROJECT_BINARY_DIR}/sct/core/macros.hh
+configure_file(${PROJECT_SOURCE_DIR}/sct/core/macros.h.in
+               ${PROJECT_BINARY_DIR}/sct/core/macros.h)
+install(FILES ${PROJECT_BINARY_DIR}/sct/core/macros.h
         DESTINATION include/sct/core)
 
 ## compile libraries

@@ -1,7 +1,5 @@
-// sct/centrality/multiplicity_model.hh
-
-#ifndef SCT_CENTRALITY_MULTIPLICITY_MODEL_HH
-#define SCT_CENTRALITY_MULTIPLICITY_MODEL_HH
+#ifndef SCT_CENTRALITY_MULTIPLICITY_MODEL_H
+#define SCT_CENTRALITY_MULTIPLICITY_MODEL_H
 
 /*  Implements the two-component multilpicity model used in the
  *  glauber MC. multiplicity per collision is sampled using a
@@ -13,8 +11,8 @@
  *  it works well in the model.
  */
 
-#include "sct/core/base.hh"
-#include "sct/utils/negative_binomial.hh"
+#include "sct/core/base.h"
+#include "sct/utils/negative_binomial.h"
 
 namespace sct {
   class MultiplicityModel : public NegativeBinomial {
@@ -92,4 +90,4 @@ namespace sct {
   };
 } // namespace sct
 
-#endif // SCT_CENTRALITY_MULTIPLICITY_MODEL_HH
+#endif // SCT_CENTRALITY_MULTIPLICITY_MODEL_H

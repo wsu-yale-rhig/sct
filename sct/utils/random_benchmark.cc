@@ -1,8 +1,6 @@
-// sct/utils/random_benchmark.cc
-
 #include "benchmark/benchmark.h"
-#include "sct/core/logging.hh"
-#include "sct/utils/random.hh"
+#include "sct/core/logging.h"
+#include "sct/utils/random.h"
 
 #include "TH1.h"
 #include "TF1.h"

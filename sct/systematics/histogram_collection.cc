@@ -1,6 +1,4 @@
-// sct/systematics/histogram_collection.cc
-
-#include "sct/systematics/histogram_collection.hh"
+#include "sct/systematics/histogram_collection.h"
 
 #include "TH1.h"
 #include "TH2.h"
