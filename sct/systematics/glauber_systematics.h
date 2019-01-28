@@ -13,7 +13,6 @@
 
 namespace sct {
 
-  
   class GlauberSystematics {
   public:
     
@@ -63,7 +62,7 @@ namespace sct {
   private:
     
     // used to create all histograms and initialize output
-    bool initialize();
+    void initialize();
 
     // deletes all histograms
     void clearHistograms();
@@ -80,6 +79,9 @@ namespace sct {
 
     // used to check that output file can be created
     bool openOutput();
+
+    // runs a single file (+- npp variation)
+    void runFile(GlauberMod key, shared_ptr<TFile> file);
     
     // output file and output file name
     string out_filename_;
@@ -88,7 +90,7 @@ namespace sct {
     // holder for all TFiles (should be one file per variation)
     sct_map<GlauberMod, shared_ptr<TFile>, EnumClassHash> variations_;
     
-    unique_ptr<MultiplicityModel> mult_model_;
+    sct_map<GlauberMod, unique_ptr<MultiplicityModel>, EnumClassHash> mult_model_;
 
     // centrality lower bounds
     std::vector<double> centrality_lower_bounds_;

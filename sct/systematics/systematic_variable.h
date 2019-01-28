@@ -9,6 +9,7 @@
 #include "sct/lib/enumerations.h"
 #include "sct/systematics/histogram_collection.h"
 #include "sct/lib/memory.h"
+#include "sct/lib/string/string.h"
 
 #include <set>
 #include <vector>
@@ -19,6 +20,26 @@
 #include "TFile.h"
 
 namespace sct {
+
+  enum class HistType {
+    TH1,
+    TH2,
+    Prof,
+    Weight,
+    MomentTH1,
+    MomentProf,
+    Cumulant
+  };
+
+  static sct_map<HistType, string, EnumClassHash> histTypeString {
+    {HistType::TH1, "1d"},
+    {HistType::TH2, "2d"},
+    {HistType::Prof, "prof"},
+    {HistType::Weight, "weight"},
+    {HistType::MomentTH1, "1dmoment"},
+    {HistType::MomentProf, "profmoment"},
+    {HistType::Cumulant, "1dcumulant"}
+  };
 
   template<class T>
   using EventDict = sct_map<GlauberObservable, T, EnumClassHash>;
@@ -40,7 +61,7 @@ namespace sct {
     // CAUTION: this has been copied from the old STAR maker without validation of the
     // correctness of the math or the algorithm. It has only been confirmed to produce 
     // the same results as the old maker.
-    void calculateCumulants(bool flag = true) {}
+    void calculateCumulants(bool flag = true) {cumulant_flag_ = flag;}
 
     // initializes histograms for a specific glauber variation
     void add(GlauberMod mod);
@@ -53,10 +74,13 @@ namespace sct {
     // write histograms to specified TFile (will not change current TDirectory to file)
     void write(TFile* file);
 
+    // access to histograms - for testing and debugging
+    TH1* get(GlauberMod mod, GlauberObservable x_axis, HistType tag, unsigned cumulant_order = 0);
+
   private:
 
     // returns a name for a histogram given the specifics
-    string getHistogramName(GlauberMod mod, GlauberObservable x_axis, string tag, unsigned cumulant_order = 0);
+    string getHistogramName(GlauberMod mod, GlauberObservable x_axis, HistType tag, unsigned cumulant_order = 0);
 
     // used to build the properly weighted histograms before writing 
     void reweight(TProfile* source, TProfile* weight, TH1D* target);
@@ -64,8 +88,8 @@ namespace sct {
     // calculates the nth order cumulant from profile values
     // these functions have essentially been copied from the old maker for completeness -
     // the math has not been verified. 
-    double nthOrderCumulant(std::vector<double> moments, unsigned order);
-    double nthOrderCumulantError(std::vector<double> moments, std::vector<double> errors, unsigned order);
+    double nthOrderCumulant(std::vector<double>& moments, unsigned order);
+    double nthOrderCumulantError(std::vector<double>& moments, std::vector<double>& errors, unsigned order);
     
     GlauberObservable y_; // variable flag
     string name_; // variable name (ncoll, npart, etc)

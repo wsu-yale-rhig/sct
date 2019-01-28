@@ -58,10 +58,10 @@
         // across the same root namespace do not have the same name, or there will
         // be name collisions.
         string name = base_name + histInfo.name(obs);
-        string name_1d = name + "1d";
-        string name_2d = name + "2d";
-        string name_prof = name + "prof";
-        string name_weight = name + "weight";
+        string name_1d = name + histTypeString[HistType::TH1];
+        string name_2d = name + histTypeString[HistType::TH2];
+        string name_prof = name + histTypeString[HistType::Prof];
+        string name_weight = name + histTypeString[HistType::Weight];
         string title = MakeString(";", histInfo.label(obs), ";", name_);
         string title_weight = MakeString(";", histInfo.label(obs), ";weight");
         
@@ -78,15 +78,15 @@
         // check if we are calculating cumulants for this observable
         if (cumulant_flag_) {
           for (auto& order : cumulant_order_) {
-            string name_1d_moment = name_1d + "moment" + std::to_string(order);
-            string name_prof_moment = name_prof + "moment" + std::to_string(order);
-            string name_1d_cumulant = name_1d + "cumulant" + std::to_string(order);
-
+            string name_1d_moment = name + histTypeString[HistType::MomentTH1] + std::to_string(order);
+            string name_prof_moment = name + histTypeString[HistType::MomentProf] + std::to_string(order);
+            string name_1d_cumulant = name + histTypeString[HistType::Cumulant] + std::to_string(order);
+            
             string title_cumulant = MakeString(";", histInfo.label(obs), ";", name_);
 
             moment_th1_ .add(name_1d_moment, title_cumulant, xbins, xlow, xhigh);
             moment_tprof_.add(name_prof_moment, title_cumulant, xbins, xlow, xhigh);
-
+            cumulant_th1_.add(name_1d_cumulant, title_cumulant, xbins, xlow, xhigh);
           }
         }
       }
@@ -113,9 +113,9 @@
         double y_val = dict[y_];
 
         // build names for 2d, prof and weight histograms
-        string name_2d = getHistogramName(mod, x, "2d");
-        string name_prof = getHistogramName(mod, x, "prof");
-        string name_weight = getHistogramName(mod, x, "weight");
+        string name_2d = getHistogramName(mod, x, HistType::TH2);
+        string name_prof = getHistogramName(mod, x, HistType::Prof);
+        string name_weight = getHistogramName(mod, x, HistType::Weight);
 
         th2_.fill(name_2d, x_val, y_val);
         tprof_.fill(name_prof, x_val, y_val * weight);
@@ -125,7 +125,8 @@
         if (cumulant_flag_) {
           for (auto& order : cumulant_order_) {
             // get historam names
-            string name_moment = name_prof + MakeString("moment", std::to_string(order));
+            string name_moment = getHistogramName(mod, x, HistType::MomentProf, order);
+            
             double weighted_moment = pow(y_val, order) * weight;
             moment_tprof_.fill(name_moment, x_val, weighted_moment);
           }
@@ -148,9 +149,9 @@
 
           // TH1 contents should be the weighted entries, profile / weight
           // we reweight by hand to get this
-          TProfile* tmp_p = tprof_.get(getHistogramName(mod, x, "prof"));
-          TProfile* tmp_weight = weights_.get(getHistogramName(mod, x, "weight"));
-          TH1D* hist_1d = th1_.get(getHistogramName(mod, x, "1d"));
+          TProfile* tmp_p = tprof_.get(getHistogramName(mod, x, HistType::Prof));
+          TProfile* tmp_weight = weights_.get(getHistogramName(mod, x, HistType::Weight));
+          TH1D* hist_1d = th1_.get(getHistogramName(mod, x, HistType::TH1));
           reweight(tmp_p, tmp_weight, hist_1d);
 
           
@@ -161,9 +162,9 @@
             std::vector<TH1D*> corrected_moments(*cumulant_order_.rbegin() + 1, nullptr);
             std::vector<TH1D*> cumulants(*cumulant_order_.rbegin() + 1, nullptr);
             for (auto& order : cumulant_order_) {
-              TProfile* tmp_moment_p = tprof_.get(getHistogramName(mod, x, MakeString("prof", "moment", std::to_string(order))));
-              TH1D* tmp_moment_1d = th1_.get(getHistogramName(mod, x, MakeString("1d", "moment", std::to_string(order))));
-              TH1D* tmp_cumulant_1d = th1_.get(getHistogramName(mod, x, MakeString("1d", "cumulant", std::to_string(order))));
+              TProfile* tmp_moment_p = tprof_.get(getHistogramName(mod, x, HistType::MomentProf, order));
+              TH1D* tmp_moment_1d = th1_.get(getHistogramName(mod, x, HistType::MomentTH1, order));
+              TH1D* tmp_cumulant_1d = th1_.get(getHistogramName(mod, x, HistType::Cumulant, order));
               
               reweight(tmp_moment_p, tmp_weight, tmp_moment_1d);
               
@@ -203,14 +204,44 @@
       weights_.write();
       moment_th1_.write();
       moment_tprof_.write();
+      cumulant_th1_.write();
 
       // cd back to the directory root was in before
       current_dir->cd();
     }
 
-    string SystematicVariable::getHistogramName(GlauberMod mod, GlauberObservable x_axis, string tag, unsigned cumulant_order) {
+    TH1* SystematicVariable::get(GlauberMod mod, GlauberObservable x_axis, HistType tag, unsigned cumulant_order) {
+      string hist_name = getHistogramName(mod, x_axis, tag, cumulant_order);
+      
+      if (tag == HistType::TH1)
+        return th1_.get(hist_name);
+      if (tag == HistType::TH2)
+        return th2_.get(hist_name);
+      if (tag == HistType::Prof)
+        return tprof_.get(hist_name);
+      if (tag == HistType::Weight)
+        return weights_.get(hist_name);
+      
+      if (cumulant_flag_) {
+        for (auto& order : cumulant_order_) {
+          string moment_tag_1d = histTypeString[HistType::MomentTH1] + std::to_string(order);
+          string moment_tag_prof = histTypeString[HistType::MomentProf] + std::to_string(order);
+          string cumulant_tag = histTypeString[HistType::Cumulant] + std::to_string(order);
+      
+          if (tag == HistType::MomentTH1 && cumulant_order == order)
+            return moment_th1_.get(hist_name);
+          if (tag == HistType::MomentProf && cumulant_order == order)
+            return moment_tprof_.get(hist_name);
+          if (tag == HistType::Cumulant && cumulant_order == order)
+            return cumulant_th1_.get(hist_name);
+        }
+      }
+      return nullptr;
+    }
+
+    string SystematicVariable::getHistogramName(GlauberMod mod, GlauberObservable x_axis, HistType tag, unsigned cumulant_order) {
       return glauberModToString[mod] + name_ 
-             + HistogramInfo::instance().name(x_axis) + tag 
+             + HistogramInfo::instance().name(x_axis) + histTypeString[tag] 
              + (cumulant_order > 0 ? std::to_string(cumulant_order) : "");
     }
 
@@ -226,7 +257,7 @@
       }
     }
 
-    double SystematicVariable::nthOrderCumulant(std::vector<double> moments, unsigned order) {
+    double SystematicVariable::nthOrderCumulant(std::vector<double>& moments, unsigned order) {
       // return an unphysical number if anything breaks
       double failure = 999999.0;
 
@@ -245,7 +276,7 @@
       switch (order) {
       case 2:
         mu_2 = moments[2];
-        return mu_2 > 0.0 ? mu_2 : failure;
+        return mu_2 > 0.0 ? sqrt(mu_2) : failure;
       
       case 4:
         mu_2 = moments[2];
@@ -264,7 +295,7 @@
       }
     }
 
-    double SystematicVariable::nthOrderCumulantError(std::vector<double> moments, std::vector<double> errors, unsigned order) {
+    double SystematicVariable::nthOrderCumulantError(std::vector<double>& moments, std::vector<double>& errors, unsigned order) {
 
       // return an unphysical number if anything breaks
       double failure = 999999.0;
