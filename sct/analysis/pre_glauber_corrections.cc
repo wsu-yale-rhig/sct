@@ -22,6 +22,7 @@
 
 #include "sct/lib/flags.h"
 #include "sct/lib/logging.h"
+#include "sct/lib/string/string_utils.h"
 #include "sct/utils/print_helper.h"
 
 #include <string>

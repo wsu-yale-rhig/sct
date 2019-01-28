@@ -9,6 +9,7 @@
 #include "sct/lib/flags.h"
 #include "sct/lib/logging.h"
 #include "sct/lib/enumerations.h"
+#include "sct/lib/string/string_utils.h"
 #include "sct/glauber/mc_glauber.h"
 #include "sct/glauber/glauber_tree.h"
 #include "sct/utils/nucleus_info.h"
