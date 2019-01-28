@@ -77,9 +77,11 @@ TEST(SystematicVariable, cumulantInitialization) {
                                       sct::HistType::Prof,
                                       sct::HistType::Weight};
 
-  std::set<sct::HistType> empty_types{sct::HistType::Cumulant,
-                                      sct::HistType::MomentProf,
-                                      sct::HistType::MomentTH1};
+  std::set<sct::HistType> cumulant_types{sct::HistType::Cumulant,
+                                         sct::HistType::MomentProf,
+                                         sct::HistType::MomentTH1};
+
+  std::set<sct::HistType> empty_types{};
 
   sct::SystematicVariable var(sct::GlauberObservable::Centrality);
   var.calculateCumulants();
@@ -125,9 +127,11 @@ TEST(SystematicVariable, filling) {
                                       sct::HistType::Prof,
                                       sct::HistType::Weight};
 
-  std::set<sct::HistType> empty_types{sct::HistType::Cumulant,
-                                      sct::HistType::MomentProf,
-                                      sct::HistType::MomentTH1};
+  std::set<sct::HistType> cumulant_types{sct::HistType::Cumulant,
+                                         sct::HistType::MomentProf,
+                                         sct::HistType::MomentTH1};
+
+  std::set<sct::HistType> empty_types{};
 
   sct::SystematicVariable var(sct::GlauberObservable::Centrality);
   var.calculateCumulants();
