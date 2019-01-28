@@ -1,11 +1,11 @@
-#include "gtest/gtest.h"
 #include "sct/utils/nucleus_info.h"
-
 #include "sct/lib/enumerations.h"
+
+#include "gtest/gtest.h"
 
 TEST(NucleusInfo, Au197) {
   sct::NucleusInfo& info = sct::NucleusInfo::instance();
-  
+
   EXPECT_EQ(info.massNumber(sct::GlauberSpecies::Au197), 197);
   EXPECT_EQ(info.chargeNumber(sct::GlauberSpecies::Au197), 79);
   EXPECT_NEAR(info.radius(sct::GlauberSpecies::Au197), 6.38, 1e-3);
@@ -19,7 +19,7 @@ TEST(NucleusInfo, Au197) {
 
 TEST(NucleusInfo, Sm154) {
   sct::NucleusInfo& info = sct::NucleusInfo::instance();
-  
+
   EXPECT_EQ(info.massNumber(sct::GlauberSpecies::Sm154), 154);
   EXPECT_EQ(info.chargeNumber(sct::GlauberSpecies::Sm154), 62);
   EXPECT_NEAR(info.radius(sct::GlauberSpecies::Sm154), 5.9387, 1e-3);
@@ -33,7 +33,7 @@ TEST(NucleusInfo, Sm154) {
 
 TEST(NucleusInfo, U238) {
   sct::NucleusInfo& info = sct::NucleusInfo::instance();
-  
+
   EXPECT_EQ(info.massNumber(sct::GlauberSpecies::U238), 238);
   EXPECT_EQ(info.chargeNumber(sct::GlauberSpecies::U238), 92);
   EXPECT_NEAR(info.radius(sct::GlauberSpecies::U238), 6.8054, 1e-3);
@@ -47,7 +47,7 @@ TEST(NucleusInfo, U238) {
 
 TEST(NucleusInfo, Pb208) {
   sct::NucleusInfo& info = sct::NucleusInfo::instance();
-  
+
   EXPECT_EQ(info.massNumber(sct::GlauberSpecies::Pb208), 208);
   EXPECT_EQ(info.chargeNumber(sct::GlauberSpecies::Pb208), 82);
   EXPECT_NEAR(info.radius(sct::GlauberSpecies::Pb208), 6.62, 1e-3);
@@ -61,7 +61,7 @@ TEST(NucleusInfo, Pb208) {
 
 TEST(NucleusInfo, Cu63) {
   sct::NucleusInfo& info = sct::NucleusInfo::instance();
-  
+
   EXPECT_EQ(info.massNumber(sct::GlauberSpecies::Cu63), 63);
   EXPECT_EQ(info.chargeNumber(sct::GlauberSpecies::Cu63), 29);
   EXPECT_NEAR(info.radius(sct::GlauberSpecies::Cu63), 4.218, 1e-3);

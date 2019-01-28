@@ -1,43 +1,40 @@
-#include "gtest/gtest.h"
 #include "sct/glauber/collision.h"
+#include "sct/glauber/nucleon.h"
+#include "sct/glauber/nucleus.h"
+#include "sct/lib/enumerations.h"
+#include "sct/lib/logging.h"
+#include "sct/lib/math.h"
 
 #include <vector>
 
-#include "sct/lib/logging.h"
-#include "sct/lib/math.h"
-#include "sct/lib/enumerations.h"
-#include "sct/glauber/nucleon.h"
-#include "sct/glauber/nucleus.h"
+#include "gtest/gtest.h"
 
-//testing that parameters are properly set
+// testing that parameters are properly set
 TEST(Collision, initialization) {
   sct::Collision collision;
   collision.setCollisionProfile(sct::CollisionProfile::HardCore);
   collision.setNNCrossSection(1.0);
 
-  EXPECT_EQ(collision.collisionProfile(),
-            sct::CollisionProfile::HardCore);
+  EXPECT_EQ(collision.collisionProfile(), sct::CollisionProfile::HardCore);
   EXPECT_EQ(collision.NNCrossSection(), 1.0);
 
   collision.setCollisionProfile(sct::CollisionProfile::Gaussian);
   collision.setNNCrossSection(2.0);
 
-  EXPECT_EQ(collision.collisionProfile(),
-            sct::CollisionProfile::Gaussian);
+  EXPECT_EQ(collision.collisionProfile(), sct::CollisionProfile::Gaussian);
   EXPECT_EQ(collision.NNCrossSection(), 2.0);
 }
 
 // test that a single proton-proton collision occurs as expected
 TEST(Collision, singleProtonCollision) {
-
   sct::Collision collision;
   collision.setCollisionProfile(sct::CollisionProfile::HardCore);
   collision.setNNCrossSection(1.0 * sct::pi);
 
   sct::Nucleon nucleonA;
-  nucleonA.set(TVector3(0,0,0));
+  nucleonA.set(TVector3(0, 0, 0));
   sct::Nucleon nucleonB;
-  nucleonB.set(TVector3(0,0,0));
+  nucleonB.set(TVector3(0, 0, 0));
 
   std::vector<sct::Nucleon> nucleusA;
   nucleusA.push_back(nucleonA);
@@ -53,15 +50,14 @@ TEST(Collision, singleProtonCollision) {
 
 // test that multiple proton-proton collisions occur as expected
 TEST(Collision, multipleProtonCollision) {
-
   sct::Collision collision;
   collision.setCollisionProfile(sct::CollisionProfile::HardCore);
   collision.setNNCrossSection(1.0 * sct::pi);
 
   sct::Nucleon nucleonA;
-  nucleonA.set(TVector3(0,0,0));
+  nucleonA.set(TVector3(0, 0, 0));
   sct::Nucleon nucleonB;
-  nucleonB.set(TVector3(0,0,0));
+  nucleonB.set(TVector3(0, 0, 0));
 
   std::vector<sct::Nucleon> nucleusA;
   nucleusA.push_back(nucleonA);
@@ -81,15 +77,14 @@ TEST(Collision, multipleProtonCollision) {
 
 // test that a single proton-proton miss occurs as expected
 TEST(Collision, singleProtonMiss) {
-
   sct::Collision collision;
   collision.setCollisionProfile(sct::CollisionProfile::HardCore);
   collision.setNNCrossSection(1.0 * sct::pi);
 
   sct::Nucleon nucleonA;
-  nucleonA.set(TVector3(0,0,0));
+  nucleonA.set(TVector3(0, 0, 0));
   sct::Nucleon nucleonB;
-  nucleonB.set(TVector3(1.01,0,0));
+  nucleonB.set(TVector3(1.01, 0, 0));
 
   std::vector<sct::Nucleon> nucleusA;
   nucleusA.push_back(nucleonA);
@@ -110,9 +105,9 @@ TEST(Collision, singleProtonCollisionAverages) {
   collision.setNNCrossSection(1.0 * sct::pi);
 
   sct::Nucleon nucleonA;
-  nucleonA.set(TVector3(0.5,0,0));
+  nucleonA.set(TVector3(0.5, 0, 0));
   sct::Nucleon nucleonB;
-  nucleonB.set(TVector3(1,0,0));
+  nucleonB.set(TVector3(1, 0, 0));
 
   std::vector<sct::Nucleon> nucleusA;
   nucleusA.push_back(nucleonA);
@@ -233,20 +228,20 @@ TEST(Collision, participantPlane2) {
   nucleusB.push_back(nucleonB);
 
   collision.collide(nucleusA, nucleusB);
-  
+
   EXPECT_NEAR(-999, collision.partPlane2()[0], 1e-8);
 
   nucleusA.push_back(nucleonC);
 
   collision.collide(nucleusA, nucleusB);
-  
+
   double phi1 = 3.0 / 4.0 * sct::pi;
   double phi2 = phi1 + sct::pi;
   double weight = h * h;
-  
+
   double qx = weight * (cos(2.0 * phi1) + cos(2.0 * phi2));
   double qy = weight * (sin(2.0 * phi1) + sin(2.0 * phi2));
-  
+
   EXPECT_NEAR(atan2(qy, -qx), collision.partPlane2()[0], 1e-8);
 }
 
@@ -262,7 +257,7 @@ TEST(Collision, participantPlane2Rotated) {
   double h = sqrt(x * x + y * y);
 
   sct::Nucleon nucleonA;
-  nucleonA.set(TVector3(-x-0.06, 0, 0.0));
+  nucleonA.set(TVector3(-x - 0.06, 0, 0.0));
   sct::Nucleon nucleonB;
   nucleonB.set(TVector3(0.0, y, 0.0));
   sct::Nucleon nucleonC;
@@ -280,22 +275,22 @@ TEST(Collision, participantPlane2Rotated) {
   nucleusA.push_back(nucleonB);
 
   collision.collide(nucleusA, nucleusB);
-  
+
   double avg_y = y / 3.0;
-  double avg_x = (0.1 - 0.1 -0.06 + 0) / 3.0;
-  
-  TVector3 v1(-x-0.06 - avg_x, -avg_y, 0);
-  TVector3 v2(0.0 - avg_x, y-avg_y, 0);
+  double avg_x = (0.1 - 0.1 - 0.06 + 0) / 3.0;
+
+  TVector3 v1(-x - 0.06 - avg_x, -avg_y, 0);
+  TVector3 v2(0.0 - avg_x, y - avg_y, 0);
   TVector3 v3(x - avg_x, -avg_y, 0);
-  
+
   double qx = v1.Perp() * v1.Perp() * cos(3.0 * v1.Phi()) +
               v2.Perp() * v2.Perp() * cos(3.0 * v2.Phi()) +
               v3.Perp() * v3.Perp() * cos(3.0 * v3.Phi());
   double qy = v1.Perp() * v1.Perp() * sin(3.0 * v1.Phi()) +
               v2.Perp() * v2.Perp() * sin(3.0 * v2.Phi()) +
               v3.Perp() * v3.Perp() * sin(3.0 * v3.Phi());
-  
-  EXPECT_NEAR(atan2(qy/3.0, -qx/3.0), collision.partPlane3()[0], 1e-8);
+
+  EXPECT_NEAR(atan2(qy / 3.0, -qx / 3.0), collision.partPlane3()[0], 1e-8);
 }
 
 // test that the participant plane eccentricity is calculated correctly
@@ -380,7 +375,6 @@ TEST(Collision, reactionPlaneEccentricity2) {
   // calculate eccentricity
   double e = (sigmaY2 - sigmaX2) / (sigmaX2 + sigmaY2);
 
-
   EXPECT_NEAR(e, collision.reactionPlane2Ecc()[0], 1e-8);
 }
 
@@ -411,6 +405,6 @@ TEST(Collision, multipleProtonCollisionSpectators) {
 
   EXPECT_EQ(collision.nColl(), 3);
   EXPECT_EQ(collision.countArray()[2], 2);
-  EXPECT_EQ(collision.countArray()[1]/2, 3);
+  EXPECT_EQ(collision.countArray()[1] / 2, 3);
   EXPECT_EQ(collision.countArray()[0], 4);
 }

@@ -1,5 +1,6 @@
-#include "gtest/gtest.h"
 #include "sct/utils/random.h"
+
+#include "gtest/gtest.h"
 
 // tests the boundaries and the averages of the
 // distributions implemented in random.h
@@ -81,5 +82,5 @@ TEST(linear_random, average) {
   for (int i = 0; i < n_throws; ++i) {
     counter += random.linear();
   }
-  EXPECT_NEAR(2.0/3.0, counter / n_throws, 1e-3);
+  EXPECT_NEAR(2.0 / 3.0, counter / n_throws, 1e-3);
 }

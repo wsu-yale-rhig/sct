@@ -8,13 +8,12 @@
 
 namespace sct {
 
-    // strips the path and returns the file name
-    string GetFileName(const string& path);
-    
-    // strips the file name and returns the path
-    string GetPath(const string& path);
+// strips the path and returns the file name
+string GetFileName(const string& path);
 
-} // namespace sct
+// strips the file name and returns the path
+string GetPath(const string& path);
 
+}  // namespace sct
 
-#endif // SCT_LIB_STRING_PATH_UTILS_H
+#endif  // SCT_LIB_STRING_PATH_UTILS_H

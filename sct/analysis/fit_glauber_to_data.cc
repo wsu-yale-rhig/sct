@@ -8,39 +8,45 @@
  *
  */
 
+#include "sct/centrality/centrality.h"
+#include "sct/centrality/nbd_fit.h"
+#include "sct/lib/enumerations.h"
 #include "sct/lib/flags.h"
 #include "sct/lib/logging.h"
-#include "sct/lib/enumerations.h"
 #include "sct/lib/string/string_utils.h"
 #include "sct/utils/random.h"
-#include "sct/centrality/nbd_fit.h"
-#include "sct/centrality/centrality.h"
 
-#include <vector>
+#include <boost/filesystem.hpp>
+#include <fstream>
 #include <iostream>
 #include <string>
-#include <fstream>
-#include <boost/filesystem.hpp>
+#include <vector>
 
-#include "TFile.h"
-#include "TH2D.h"
-#include "TH1D.h"
 #include "TCanvas.h"
-#include "TROOT.h"
 #include "TError.h"
-#include "TTreeReaderValue.h"
-#include "TTreeReader.h"
+#include "TFile.h"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TROOT.h"
 #include "TTree.h"
+#include "TTreeReader.h"
+#include "TTreeReaderValue.h"
 
 // program settings
 SCT_DEFINE_string(outDir, "tmp",
-                      "Path to directory to store output ROOT files");
+                  "Path to directory to store output ROOT files");
 SCT_DEFINE_string(outFile, "fit_results", "output file name (no extension)");
-SCT_DEFINE_bool(saveAll, false, "save all fit histograms: if false, only saves best fit");
-SCT_DEFINE_string(glauberFile, "npartncoll.root", "path to root file containing the npart x ncoll distribution");
-SCT_DEFINE_string(glauberHistName, "npartncoll", "name of npart x ncoll histogram");
-SCT_DEFINE_string(dataFile, "refmult.root", "path to root file containing data refmult distribution");
-SCT_DEFINE_string(dataHistName, "refmult", "name of reference multiplicty histogram");
+SCT_DEFINE_bool(saveAll, false,
+                "save all fit histograms: if false, only saves best fit");
+SCT_DEFINE_string(
+    glauberFile, "npartncoll.root",
+    "path to root file containing the npart x ncoll distribution");
+SCT_DEFINE_string(glauberHistName, "npartncoll",
+                  "name of npart x ncoll histogram");
+SCT_DEFINE_string(dataFile, "refmult.root",
+                  "path to root file containing data refmult distribution");
+SCT_DEFINE_string(dataHistName, "refmult",
+                  "name of reference multiplicty histogram");
 SCT_DEFINE_int(events, 1e5, "number of events per fit");
 
 // model settings
@@ -57,22 +63,26 @@ SCT_DEFINE_double(ppEfficiency, 0.98, "pp efficiency");
 SCT_DEFINE_double(AuAuEfficiency, 0.84, "0-5% central AuAu efficiency");
 SCT_DEFINE_int(centMult, 540, "average 0-5% central multiplicity");
 SCT_DEFINE_bool(constEff, false, "turn on to use only pp efficiency");
-SCT_DEFINE_bool(useStGlauberChi2, false, "use StGlauber Chi2 calculation instead of ROOT");
+SCT_DEFINE_bool(useStGlauberChi2, false,
+                "use StGlauber Chi2 calculation instead of ROOT");
 SCT_DEFINE_double(trigBias, 1.0, "trigger bias");
-SCT_DEFINE_int(minMult, 100, "minimum multiplicity for chi2 comparisons in fit");
+SCT_DEFINE_int(minMult, 100,
+               "minimum multiplicity for chi2 comparisons in fit");
 
-// if you want to create a reweighted refmult distribution, you can pass in a tree
-// with refmult info,
+// if you want to create a reweighted refmult distribution, you can pass in a
+// tree with refmult info,
 SCT_DEFINE_string(refmultTreeFile, "", "file containing refmult tree");
 SCT_DEFINE_string(refmultTreeName, "refMultTree", "name of refmult tree");
 SCT_DEFINE_string(refmultBranchName, "refMult", "name of refmult branch");
 SCT_DEFINE_string(vzBranchName, "vz", "name of Vz branch");
-SCT_DEFINE_string(lumiBranchName, "lumi", "name of luminosity branch (zdc rate, bbc rate, etc)");
-SCT_DEFINE_string(preGlauberCorrFile, "", "name of file containing lumi & vz correction parameters");
+SCT_DEFINE_string(lumiBranchName, "lumi",
+                  "name of luminosity branch (zdc rate, bbc rate, etc)");
+SCT_DEFINE_string(preGlauberCorrFile, "",
+                  "name of file containing lumi & vz correction parameters");
 SCT_DEFINE_double(vzNorm, 0.0, "normalization point for vz corrections");
 SCT_DEFINE_double(lumiNorm, 0.0, "normalization point for zdcX corrections");
 
-template<typename T>
+template <typename T>
 bool CanCast(std::string s) {
   std::istringstream iss(s);
   T dummy;
@@ -80,7 +90,7 @@ bool CanCast(std::string s) {
   return iss && iss.eof();
 }
 
-template<typename T>
+template <typename T>
 T CastTo(std::string s) {
   std::istringstream iss(s);
   T dummy;
@@ -88,11 +98,11 @@ T CastTo(std::string s) {
   return dummy;
 }
 
-template<typename T>
+template <typename T>
 std::vector<T> ParseStrToVec(std::string str) {
   std::vector<T> ret;
   std::string token;
-  while ( str.find(" ") != std::string::npos ) {
+  while (str.find(" ") != std::string::npos) {
     size_t pos = str.find(" ");
     token = str.substr(0, pos);
     if (CanCast<T>(token)) {
@@ -100,14 +110,13 @@ std::vector<T> ParseStrToVec(std::string str) {
     }
     str.erase(0, pos + 1);
   }
-  if (CanCast<T>(str))
-    ret.push_back(CastTo<T>(str));
-  
+  if (CanCast<T>(str)) ret.push_back(CastTo<T>(str));
+
   return ret;
 }
 
-
-double LumiScaling(double zdcX, double zdc_norm_point, std::vector<double>& pars) {
+double LumiScaling(double zdcX, double zdc_norm_point,
+                   std::vector<double>& pars) {
   if (pars.size() != 2) {
     LOG(ERROR) << "expected 2 parameters for luminosity scaling, returning 1";
     return 1.0;
@@ -128,44 +137,46 @@ double VzScaling(double vz, double vz_norm_point, std::vector<double>& pars) {
     vz_scaling += pars[i] * pow(vz, i);
     vz_norm += pars[i] * pow(vz_norm_point, i);
   }
-  if ((vz_norm / vz_scaling) <= 0)
-    return 1.0;
+  if ((vz_norm / vz_scaling) <= 0) return 1.0;
   return vz_norm / vz_scaling;
 }
 
 double GlauberScaling(double refmult, double cutoff, std::vector<double> pars) {
-  if (refmult > cutoff)
-    return 1;
-  double denom = pars[0] + pars[1] / (pars[2] * refmult + pars[3]) + pars[4] * (pars[2] * refmult + pars[3]);
-  denom += pars[5] / pow(pars[2] * refmult + pars[3], 2) + pars[6] * pow(pars[2] * refmult + pars[3], 2);
+  if (refmult > cutoff) return 1;
+  double denom = pars[0] + pars[1] / (pars[2] * refmult + pars[3]) +
+                 pars[4] * (pars[2] * refmult + pars[3]);
+  denom += pars[5] / pow(pars[2] * refmult + pars[3], 2) +
+           pars[6] * pow(pars[2] * refmult + pars[3], 2);
   return pars[0] / denom;
-  
 }
 
 int main(int argc, char* argv[]) {
   // shut ROOT up :)
   gErrorIgnoreLevel = kWarning;
-  
+
   // set help message
-  std::string usage = "Performs a grid search over the multiplicity model parameter space: ";
-  usage += "[Npp, k, x, pp efficiency, central AuAu efficiency, trigger efficiency], using a chi2 ";
+  std::string usage =
+      "Performs a grid search over the multiplicity model parameter space: ";
+  usage +=
+      "[Npp, k, x, pp efficiency, central AuAu efficiency, trigger "
+      "efficiency], using a chi2 ";
   usage += "fit to a measured refmult distribution as the objective function.";
   sct::SetUsageMessage(usage);
-  
+
   sct::InitLogging(&argc, argv);
   sct::ParseCommandLineFlags(&argc, argv);
-  
+
   // build output directory if it doesn't exist, using boost::filesystem
   boost::filesystem::path dir(FLAGS_outDir);
   boost::filesystem::create_directories(dir);
-  
+
   // load the input files data refmult histogram & glauber npart x ncoll
   TFile* glauber_file = new TFile(FLAGS_glauberFile.c_str(), "READ");
   TFile* data_file = new TFile(FLAGS_dataFile.c_str(), "READ");
-  
+
   if (!glauber_file->IsOpen()) {
-    LOG(ERROR) << "Glauber input file could not be opened: " << FLAGS_glauberFile
-               << " not found or corrupt";
+    LOG(ERROR) << "Glauber input file could not be opened: "
+               << FLAGS_glauberFile << " not found or corrupt";
     return 1;
   }
   if (!data_file->IsOpen()) {
@@ -173,14 +184,14 @@ int main(int argc, char* argv[]) {
                << " not found or corrupt";
     return 1;
   }
-  
+
   // load data refmult histogram & glauber npart x ncoll
-  TH2D* npartncoll = (TH2D*) glauber_file->Get(FLAGS_glauberHistName.c_str());
-  TH1D* refmult = (TH1D*) data_file->Get(FLAGS_dataHistName.c_str());
-  
+  TH2D* npartncoll = (TH2D*)glauber_file->Get(FLAGS_glauberHistName.c_str());
+  TH1D* refmult = (TH1D*)data_file->Get(FLAGS_dataHistName.c_str());
+
   if (npartncoll == nullptr) {
-    LOG(ERROR) << "NPart x NColl histogram: " << FLAGS_glauberHistName << " not found in file: "
-               << FLAGS_glauberFile;
+    LOG(ERROR) << "NPart x NColl histogram: " << FLAGS_glauberHistName
+               << " not found in file: " << FLAGS_glauberFile;
     return 1;
   }
   if (refmult == nullptr) {
@@ -188,32 +199,33 @@ int main(int argc, char* argv[]) {
                << " not found in file: " << FLAGS_dataFile;
     return 1;
   }
-  
+
   // create our fitting model
   sct::NBDFit fitter(refmult, npartncoll);
   fitter.minimumMultiplicityCut(FLAGS_minMult);
   fitter.useStGlauberChi2(FLAGS_useStGlauberChi2);
-  
+
   // scan
-  auto results = fitter.scan(FLAGS_events, FLAGS_npp_steps, FLAGS_npp_min, FLAGS_npp_max,
-                             FLAGS_k_steps, FLAGS_k_min, FLAGS_k_max, FLAGS_x_steps,
-                             FLAGS_x_min, FLAGS_x_max, FLAGS_ppEfficiency, FLAGS_AuAuEfficiency,
-                             FLAGS_centMult, FLAGS_trigBias, FLAGS_constEff);
-  
+  auto results = fitter.scan(
+      FLAGS_events, FLAGS_npp_steps, FLAGS_npp_min, FLAGS_npp_max,
+      FLAGS_k_steps, FLAGS_k_min, FLAGS_k_max, FLAGS_x_steps, FLAGS_x_min,
+      FLAGS_x_max, FLAGS_ppEfficiency, FLAGS_AuAuEfficiency, FLAGS_centMult,
+      FLAGS_trigBias, FLAGS_constEff);
+
   // find best fit
   double best_chi2 = 9999;
   std::string best_key;
-  
+
   // and we will parse the parameters
   double x = 0.0;
   double npp = 0.0;
   double k = 0.0;
-  
+
   for (auto& result : results) {
-    if (result.second->chi2/result.second->ndf < best_chi2) {
-      best_chi2 = result.second->chi2/result.second->ndf;
+    if (result.second->chi2 / result.second->ndf < best_chi2) {
+      best_chi2 = result.second->chi2 / result.second->ndf;
       best_key = result.first;
-      
+
       // parse the parameters
       std::vector<std::string> split;
       sct::SplitString(best_key, split, '_');
@@ -222,41 +234,43 @@ int main(int argc, char* argv[]) {
       x = strtof(split[5].c_str(), 0);
     }
   }
-  
+
   LOG(INFO) << "BEST FIT: " << best_key;
   LOG(INFO) << "chi2/ndf: " << best_chi2;
-  
+
   // now we will generate a new simulation curve using the fitter,
   // but we will use greater statistics
   fitter.setParameters(npp, k, x, FLAGS_ppEfficiency, FLAGS_AuAuEfficiency,
                        FLAGS_centMult, FLAGS_trigBias, FLAGS_constEff);
   auto refit = fitter.fit(1e6);
   LOG(INFO) << "finished fitting";
-  
+
   // and we save the results to disk
   std::string output_name = FLAGS_outDir + "/" + FLAGS_outFile + ".root";
   TFile out(output_name.c_str(), "RECREATE");
   refit->data->Write();
   refit->simu->SetName(best_key.c_str());
   refit->simu->Write();
-  
+
   // now calculate centrality definition for the best fit
   sct::Centrality cent;
   cent.setDataRefmult(refit->data);
   cent.setSimuRefmult(refit->simu.get());
   std::vector<unsigned> cent_bounds = cent.centralityBins(sct::XSecMod::None);
-  std::vector<unsigned> cent_bounds_p5 = cent.centralityBins(sct::XSecMod::Plus5);
-  std::vector<unsigned> cent_bounds_m5 = cent.centralityBins(sct::XSecMod::Minus5);
+  std::vector<unsigned> cent_bounds_p5 =
+      cent.centralityBins(sct::XSecMod::Plus5);
+  std::vector<unsigned> cent_bounds_m5 =
+      cent.centralityBins(sct::XSecMod::Minus5);
   LOG(INFO) << "finished calculating centrality";
   // get weights
   auto weights = cent.weights();
-  
+
   // write the ratio to file
   weights.second->SetName("ratio_fit");
   weights.second->Write();
-  
-  // if we have a refmult tree file, we can create a reweighted refmult distribution
-  // and take the ratio with the glauber distribution
+
+  // if we have a refmult tree file, we can create a reweighted refmult
+  // distribution and take the ratio with the glauber distribution
   if (!FLAGS_refmultTreeFile.empty()) {
     LOG(INFO) << "will be calculating corrected ratio";
     // first, read in vz/luminosity corrections if we use them
@@ -277,7 +291,7 @@ int main(int argc, char* argv[]) {
         }
       }
     }
-    
+
     // setup TTreeReader
     LOG(INFO) << "reading in refmult tree";
     TFile refmult_tree_file(FLAGS_refmultTreeFile.c_str(), "read");
@@ -288,34 +302,32 @@ int main(int argc, char* argv[]) {
     // create our histogram
     TH1D* refmult_scaled = new TH1D("weighted_refmult", "", 800, 0, 800);
     refmult_scaled->SetDirectory(0);
-    
+
     while (reader.Next()) {
       double refmultcorr = *refmult;
-      
-      if (fabs(*vz) > 30 || fabs(*zdcx) > 100000)
-        continue;
-      
+
+      if (fabs(*vz) > 30 || fabs(*zdcx) > 100000) continue;
+
       if (lumi_pars.size() && vz_pars.size()) {
         double lumi_scaling = LumiScaling(*zdcx, FLAGS_lumiNorm, lumi_pars);
-        double vz_scaling   = VzScaling(*vz, FLAGS_vzNorm, vz_pars);
+        double vz_scaling = VzScaling(*vz, FLAGS_vzNorm, vz_pars);
         refmultcorr *= lumi_scaling;
         refmultcorr *= vz_scaling;
       }
-      
+
       double weight = GlauberScaling(refmultcorr, 400, weights.first);
-      refmult_scaled->Fill(refmultcorr, 1.0/weight);
+      refmult_scaled->Fill(refmultcorr, 1.0 / weight);
     }
-    
+
     TH1D* scaled_ratio = new TH1D(*refmult_scaled);
     scaled_ratio->SetDirectory(0);
     scaled_ratio->SetName("corrected_ratio");
-    
+
     // normalize it
     double scale_factor = fitter.norm(scaled_ratio, refit->simu.get());
     scaled_ratio->Scale(1.0 / scale_factor);
     scaled_ratio->Divide(refit->simu.get());
-    
-    
+
     // write to file
     LOG(INFO) << "done with corrected spectra";
     refmult_tree_file.Close();
@@ -323,33 +335,30 @@ int main(int argc, char* argv[]) {
     scaled_ratio->Write();
     refmult_scaled->Write();
   }
-  
+
   // close root file
-  //out.Close();
-  
+  // out.Close();
+
   std::ofstream cent_file;
   cent_file.open(FLAGS_outDir + "/" + FLAGS_outFile + ".txt");
-  
+
   cent_file << "nominal centrality definitions\n";
-  for (auto i : cent_bounds)
-    cent_file << i << " ";
+  for (auto i : cent_bounds) cent_file << i << " ";
   cent_file << "\n";
   cent_file << "+5 xsec% centrality definitions\n";
-  for (auto i : cent_bounds_p5)
-    cent_file << i << " ";
+  for (auto i : cent_bounds_p5) cent_file << i << " ";
   cent_file << "\n";
   cent_file << "-5 xsec% centrality definitions\n";
-  for (auto i : cent_bounds_m5)
-    cent_file << i << " ";
+  for (auto i : cent_bounds_m5) cent_file << i << " ";
   cent_file << "\n";
-  
-  cent_file << "\n\n" << "glauber weighting parameters: \n";
-  for (auto par : weights.first)
-    cent_file << par << " ";
+
+  cent_file << "\n\n"
+            << "glauber weighting parameters: \n";
+  for (auto par : weights.first) cent_file << par << " ";
   cent_file << "\n";
-  
+
   cent_file.close();
-  
+
   gflags::ShutDownCommandLineFlags();
   return 0;
 }

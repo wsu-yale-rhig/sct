@@ -1,22 +1,22 @@
-#include "gtest/gtest.h"
 #include "sct/glauber/mc_glauber.h"
-
+#include "sct/glauber/glauber_tree.h"
 #include "sct/lib/logging.h"
 #include "sct/lib/string/string_utils.h"
-#include "sct/glauber/glauber_tree.h"
 #include "sct/utils/nucleus_info.h"
 
-#include "TProfile.h"
+#include "gtest/gtest.h"
+
 #include "TCanvas.h"
 #include "TH2.h"
+#include "TProfile.h"
 
 TEST(MCGlauber, eventCounter) {
   int nEvents = 5;
-  
+
   sct::MCGlauber generator;
   generator.run(nEvents);
   sct::GlauberTree* tree = generator.results();
-  
+
   EXPECT_EQ(tree->getEntries(), nEvents);
 }
 
@@ -33,10 +33,18 @@ TEST(MCGlauber, defaultHeader) {
   EXPECT_EQ(tree->nameNucleusB(), "Au197");
   EXPECT_EQ(tree->massNumberA(), 197);
   EXPECT_EQ(tree->massNumberB(), 197);
-  EXPECT_NEAR(tree->radiusA(), sct::NucleusInfo::instance().radius(sct::GlauberSpecies::Au197), 1e-8);
-  EXPECT_NEAR(tree->radiusB(), sct::NucleusInfo::instance().radius(sct::GlauberSpecies::Au197), 1e-8);
-  EXPECT_NEAR(tree->skinDepthA(), sct::NucleusInfo::instance().skinDepth(sct::GlauberSpecies::Au197), 1e-8);
-  EXPECT_NEAR(tree->skinDepthB(), sct::NucleusInfo::instance().skinDepth(sct::GlauberSpecies::Au197), 1e-8);
+  EXPECT_NEAR(tree->radiusA(),
+              sct::NucleusInfo::instance().radius(sct::GlauberSpecies::Au197),
+              1e-8);
+  EXPECT_NEAR(tree->radiusB(),
+              sct::NucleusInfo::instance().radius(sct::GlauberSpecies::Au197),
+              1e-8);
+  EXPECT_NEAR(
+      tree->skinDepthA(),
+      sct::NucleusInfo::instance().skinDepth(sct::GlauberSpecies::Au197), 1e-8);
+  EXPECT_NEAR(
+      tree->skinDepthB(),
+      sct::NucleusInfo::instance().skinDepth(sct::GlauberSpecies::Au197), 1e-8);
   EXPECT_NEAR(tree->beta2A(), 0.0, 1e-8);
   EXPECT_NEAR(tree->beta2B(), 0.0, 1e-8);
   EXPECT_NEAR(tree->beta4A(), 0.0, 1e-8);
@@ -53,7 +61,7 @@ TEST(MCGlauber, defaultHeader) {
 
 TEST(MCGlauber, nonDefaultHeader) {
   int nEvents = 1;
-  
+
   unsigned massNumberA = 195;
   unsigned massNumberB = 200;
   double radiusA = 6.0;
@@ -68,16 +76,16 @@ TEST(MCGlauber, nonDefaultHeader) {
   double energy = 100;
   double bMin = 0.5;
   double bMax = 10.0;
-  
+
   sct::MCGlauber generator(massNumberA, radiusA, skinDepthA, beta2A, beta4A,
-                               massNumberB, radiusB, skinDepthB, beta2B, beta4B,
-                               inelasticXsec, energy);
+                           massNumberB, radiusB, skinDepthB, beta2B, beta4B,
+                           inelasticXsec, energy);
   generator.setSmearing(sct::NucleonSmearing::HardCore);
   generator.setCollisionProfile(sct::CollisionProfile::Gaussian);
   generator.setImpactParameterRange(bMin, bMax);
   generator.run(nEvents);
   sct::GlauberTree* tree = generator.results();
-  
+
   EXPECT_EQ(tree->getEntries(), nEvents);
   tree->getHeaderEntry(0);
   EXPECT_EQ(tree->nameNucleusA(), sct::MakeString(massNumberA));
@@ -104,7 +112,7 @@ TEST(MCGlauber, nonDefaultHeader) {
 
 TEST(MCGlauber, nonDefaultSymmetricHeader) {
   int nEvents = 1;
-  
+
   unsigned massNumber = 195;
   double radius = 6.0;
   double skinDepth = 0.4;
@@ -114,15 +122,15 @@ TEST(MCGlauber, nonDefaultSymmetricHeader) {
   double energy = 100;
   double bMin = 0.5;
   double bMax = 10.0;
-  
+
   sct::MCGlauber generator(massNumber, radius, skinDepth, beta2, beta4,
-                               inelasticXsec, energy);
+                           inelasticXsec, energy);
   generator.setSmearing(sct::NucleonSmearing::Gaussian);
   generator.setCollisionProfile(sct::CollisionProfile::HardCore);
   generator.setImpactParameterRange(bMin, bMax);
   generator.run(nEvents);
   sct::GlauberTree* tree = generator.results();
-  
+
   EXPECT_EQ(tree->getEntries(), nEvents);
   tree->getHeaderEntry(0);
   EXPECT_EQ(tree->nameNucleusA(), sct::MakeString(massNumber));
@@ -146,4 +154,3 @@ TEST(MCGlauber, nonDefaultSymmetricHeader) {
   EXPECT_NEAR(tree->BMax(), bMax, 1e-8);
   EXPECT_NEAR(tree->BMin(), bMin, 1e-8);
 }
-

@@ -1,20 +1,19 @@
-#include "gtest/gtest.h"
 #include "sct/glauber/nucleus.h"
-
+#include "sct/glauber/nucleon.h"
+#include "sct/lib/enumerations.h"
 #include "sct/lib/logging.h"
 #include "sct/lib/math.h"
-#include "sct/lib/enumerations.h"
-#include "sct/glauber/nucleon.h"
 
-#include "TH3.h"
-#include "TH2.h"
+#include "gtest/gtest.h"
+
 #include "TH1.h"
+#include "TH2.h"
+#include "TH3.h"
 
 // *notice* some of these tests are statistical in nature,
 // so failure does not necessarily imply a bug
 
 TEST(nucleus, defaultGold) {
-
   sct::Nucleus nucleus;
   nucleus.setParameters(197, 6.38, 0.535, 0.0, 0.0);
   nucleus.setRepulsionDistance(0.01);
@@ -29,13 +28,11 @@ TEST(nucleus, defaultGold) {
   EXPECT_EQ(nucleus.skinDepth(), 0.535);
   EXPECT_EQ(nucleus.nnCrossSection(), 0.0);
   EXPECT_EQ(nucleus.repulsionDistance(), 0.01);
-  EXPECT_LE(abs(nucleus.nucleusTheta()), sct::pi); // [0, pi]
-  EXPECT_LE(abs(nucleus.nucleusPhi()), sct::pi); // [-pi, pi]
-
+  EXPECT_LE(abs(nucleus.nucleusTheta()), sct::pi);  // [0, pi]
+  EXPECT_LE(abs(nucleus.nucleusPhi()), sct::pi);    // [-pi, pi]
 }
 
 TEST(nucleus, repulsionDistance) {
-
   sct::Nucleus nucleus;
   nucleus.setParameters(197, 6.38, 0.535, 0.0, 0.0);
   nucleus.setNucleonSmearing(sct::NucleonSmearing::None, 0.0);
@@ -142,7 +139,6 @@ TEST(nucleus, sphericalDistribution) {
 }
 
 TEST(nucleus, woodsSaxon1D) {
-
   sct::Nucleus nucleus;
   double radius = 6.38;
   double skin_depth = 0.535;
@@ -167,11 +163,9 @@ TEST(nucleus, woodsSaxon1D) {
 
   EXPECT_NEAR(radius, WS->GetParameter(0), 5e-3);
   EXPECT_NEAR(skin_depth, WS->GetParameter(1), 5e-3);
-
 }
 
-double WoodsSaxonDeformed(double *x,
-                          double *par) {
+double WoodsSaxonDeformed(double* x, double* par) {
   double r = x[0];
   double costheta = x[1];
   double R0 = par[0];
@@ -186,7 +180,8 @@ double WoodsSaxonDeformed(double *x,
 
   // spherical harmonics Y(l=2, m=0), Y(l=4, m=0)
   double Y20 = std::sqrt(5.0 / sct::pi) / 4.0 * (3.0 * costheta2 - 1.0);
-  double Y40 = std::sqrt(1.0 / sct::pi) * 3.0 / 16.0 * (35.0 * costheta4 - 30.0 * costheta2 + 3.0);
+  double Y40 = std::sqrt(1.0 / sct::pi) * 3.0 / 16.0 *
+               (35.0 * costheta4 - 30.0 * costheta2 + 3.0);
 
   double R = R0 * (1.0 + beta2 * Y20 + beta4 * Y40);
 
@@ -194,7 +189,6 @@ double WoodsSaxonDeformed(double *x,
 }
 
 TEST(nucleus, woodsSaxon2D) {
-  
   sct::Nucleus nucleus;
   double radius = 6.38;
   double skin_depth = 0.535;
@@ -203,7 +197,7 @@ TEST(nucleus, woodsSaxon2D) {
   nucleus.setParameters(197, radius, skin_depth, beta2, beta4);
   nucleus.setRepulsionDistance(0.00);
   nucleus.setRandomOrientation(false);
-  
+
   TF2* fWSD = new TF2("WSD", WoodsSaxonDeformed, 0, 20, -1, 1, 5);
   fWSD->SetNpx(200);
   fWSD->SetNpy(200);
@@ -212,18 +206,19 @@ TEST(nucleus, woodsSaxon2D) {
   fWSD->SetParameter(2, beta2);
   fWSD->SetParameter(3, beta4);
   fWSD->SetParameter(4, 1);
-  
-  TH2D* rcostheta = new TH2D("rcostheta", ";R;cos(#theta)", 100, 0, 20, 100, -1, 1);
-  
+
+  TH2D* rcostheta =
+      new TH2D("rcostheta", ";R;cos(#theta)", 100, 0, 20, 100, -1, 1);
+
   for (int i = 0; i < 5 * 1e4; ++i) {
     nucleus.generate();
     for (int j = 0; j < nucleus.size(); ++j) {
       rcostheta->Fill(nucleus[j].r(), cos(nucleus[j].theta()));
     }
   }
-  
+
   rcostheta->Fit(fWSD, "Q");
-  
+
   EXPECT_NEAR(fWSD->GetParameter(0), radius, 1e-2);
   EXPECT_NEAR(fWSD->GetParameter(1), skin_depth, 1e-2);
   EXPECT_NEAR(fWSD->GetParameter(2), beta2, 1e-2);

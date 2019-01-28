@@ -3,11 +3,10 @@
 
 /* sct uses GLog for logging
  */
-#include "glog/stl_logging.h"
 #include "glog/logging.h"
+#include "glog/stl_logging.h"
 
 #include "sct/lib/flags.h"
-
 
 // used to control levels of output using glog
 // levels: INFO = 0, WARNING = 1, ERROR = 2,
@@ -18,12 +17,12 @@ SCT_DECLARE_int(minloglevel);
 SCT_DECLARE_int(v);
 // logs all output to stderr
 SCT_DECLARE_bool(logtostderr);
-  
-namespace sct {
-  
-  bool InitLogging(int* argc, char** argv);
-  bool InitLogging(char* argv);
-  
-} // namespace sct
 
-#endif // SCT_LIB_LOGGING_H
+namespace sct {
+
+bool InitLogging(int* argc, char** argv);
+bool InitLogging(char* argv);
+
+}  // namespace sct
+
+#endif  // SCT_LIB_LOGGING_H

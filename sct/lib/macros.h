@@ -7,4 +7,4 @@
  * in the build tree
  */
 
-#endif // SCT_LIB_MACROS_H
+#endif  // SCT_LIB_MACROS_H

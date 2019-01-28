@@ -1,7 +1,8 @@
-#include "gtest/gtest.h"
 #include "sct/systematics/histogram_collection.h"
 
 #include <string>
+
+#include "gtest/gtest.h"
 
 #include "TH1.h"
 #include "TH2.h"
@@ -13,8 +14,8 @@ using std::string;
 TEST(HistogramCollection, creation) {
   sct::HistogramCollection<TH1D> collection;
 
-  collection.add("h", "htest",100, 0, 10);
-  collection.add("h2", "hello",20, 1, 100);
+  collection.add("h", "htest", 100, 0, 10);
+  collection.add("h2", "hello", 20, 1, 100);
 
   EXPECT_NE(collection.get("h"), nullptr);
   EXPECT_NE(collection.get("h2"), nullptr);
@@ -29,7 +30,7 @@ TEST(HistogramCollection, creation) {
 
   sct::HistogramCollection<TProfile> collection_prof;
 
-  collection_prof.add("hprof", "hproftest",50, 0, 10);
+  collection_prof.add("hprof", "hproftest", 50, 0, 10);
 
   EXPECT_NE(collection_prof.get("hprof"), nullptr);
   EXPECT_EQ(collection_prof.get("hprof2"), nullptr);
@@ -38,8 +39,8 @@ TEST(HistogramCollection, creation) {
 TEST(HistogramCollection, initialization) {
   sct::HistogramCollection<TH1D> c;
 
-  c.add("h", "htest",100, 0, 10);
-  c.add("h2", "hello",20, 1, 100);
+  c.add("h", "htest", 100, 0, 10);
+  c.add("h2", "hello", 20, 1, 100);
 
   EXPECT_EQ(string(c.get("h")->GetName()), "h");
   EXPECT_EQ(string(c.get("h2")->GetName()), "h2");
@@ -51,7 +52,7 @@ TEST(HistogramCollection, initialization) {
 
   sct::HistogramCollection<TH2D> c_2d;
 
-  c_2d.add("h2d", "2d", 100, 0, 1, 101, 1, 10);  
+  c_2d.add("h2d", "2d", 100, 0, 1, 101, 1, 10);
 
   EXPECT_EQ(string(c_2d.get("h2d")->GetName()), "h2d");
   EXPECT_EQ(string(c_2d.get("h2d")->GetTitle()), "2d");
@@ -67,18 +68,16 @@ TEST(HistogramCollection, fill) {
   sct::HistogramCollection<TH1D> c;
 
   int nbins = 10;
-  c.add("h", "htest",nbins, 0, nbins);
+  c.add("h", "htest", nbins, 0, nbins);
   c.fill("h", 0.5);
   c.fill("h", 5.5, 2.0);
 
   for (int i = 1; i < nbins; ++i) {
     switch (i) {
-      case 1 :
+      case 1:
         EXPECT_NEAR(c.get("h")->GetBinContent(1), 1.0, 1e-10);
-      case 6 :
+      case 6:
         EXPECT_NEAR(c.get("h")->GetBinContent(6), 2.0, 1e-10);
     }
   }
 }
-
-
