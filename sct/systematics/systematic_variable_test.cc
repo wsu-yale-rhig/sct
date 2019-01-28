@@ -116,19 +116,18 @@ TEST(SystematicVariable, filling) {
   std::set<sct::GlauberMod> mods{sct::GlauberMod::Nominal,
                                  sct::GlauberMod::Large,
                                  sct::GlauberMod::SmallXSec};
+
   std::set<sct::GlauberObservable> x_axis_observables{
       sct::GlauberObservable::B, sct::GlauberObservable::Ncoll,
       sct::GlauberObservable::Npart, sct::GlauberObservable::Multiplicity};
-  std::set<sct::HistType> built_types{
-      sct::HistType::TH1,
-      sct::HistType::TH2,
-      sct::HistType::Prof,
-      sct::HistType::Weight,
-  };
-  std::set<sct::HistType> cumulant_types{sct::HistType::Cumulant,
-                                         sct::HistType::MomentProf,
-                                         sct::HistType::MomentTH1};
-  std::set<sct::HistType> empty_types{};
+
+  std::set<sct::HistType> built_types{sct::HistType::TH1, sct::HistType::TH2,
+                                      sct::HistType::Prof,
+                                      sct::HistType::Weight};
+
+  std::set<sct::HistType> empty_types{sct::HistType::Cumulant,
+                                      sct::HistType::MomentProf,
+                                      sct::HistType::MomentTH1};
 
   sct::SystematicVariable var(sct::GlauberObservable::Centrality);
   var.calculateCumulants();

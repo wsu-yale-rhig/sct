@@ -1,4 +1,5 @@
 #include "sct/utils/random.h"
+
 #include "sct/lib/math.h"
 
 namespace sct {
