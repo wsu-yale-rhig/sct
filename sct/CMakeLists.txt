@@ -6,6 +6,7 @@ set(SCT_HEADERS)
 set(SCT_TEST_SRCS)
 set(SCT_BENCH_SRCS)
 set(SCT_BINARY_SRCS)
+set(SCT_TEST_MAIN)
 
 # add all subdirectories
 add_subdirectory(lib)
@@ -14,6 +15,7 @@ add_subdirectory(utils)
 add_subdirectory(analysis)
 add_subdirectory(centrality)
 add_subdirectory(systematics)
+add_subdirectory(test)
 
 # handle any files that have to be configured
 configure_file(${PROJECT_SOURCE_DIR}/sct/lib/macros.h.in
@@ -62,6 +64,13 @@ if(BUILD_TEST)
     add_test(NAME ${test_name} COMMAND $<TARGET_FILE:${test_name}>)
     install(TARGETS ${test_name} DESTINATION test)
   endforeach()
+
+  ## build gtest main
+  add_executable(sct_gtest_main ${SCT_TEST_MAIN} ${SCT_TEST_SRCS})
+  add_dependencies(sct_gtest_main ${SCT_LIBS})
+  target_link_libraries(sct_gtest_main ${SCT_LIBS} 
+                        ${SCT_DEPENDENCY_LIBS} gtest_main)
+  install(TARGETS sct_gtest_main DESTINATION test)
 endif()
 
 # benchmark binaries
