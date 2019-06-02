@@ -30,9 +30,9 @@ class GlauberSystematics {
 
   // need to set the multiplicity model parameters to the best-fit to data
   // to generate a multiplicity on-the-fly for the glauber events
-  void setMultiplicityModel(double npp, double k, double x, double ppEff,
-                            double aaEff, double aaCent, double trigEff = 1.0,
-                            bool constEff = false);
+  void setMultiplicityModel(double npp, double k, double x, double pp_eff,
+                            double aa_eff, double aa_cent, double trig_eff = 1.0,
+                            bool const_eff = false);
 
   // must supply centrality definition if one wants centrality results.
   // these should be lower bounds - i.e. 0-5%, multiplicity >= 520,

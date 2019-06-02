@@ -10,62 +10,39 @@
 namespace sct {
 
 Nucleus::Nucleus()
-    : name_(""),
-      mass_number_(0),
-      radius_(0),
-      skin_depth_(0),
-      beta2_(0),
-      beta4_(0),
-      smear_(NucleonSmearing::None),
-      sigmaNN_(0.0),
-      repulsion_distance_(0.0),
-      random_orientation_(true),
-      nucleus_theta_(0.0),
-      nucleus_phi_(0.0),
-      b_(0.0),
-      generated_rcostheta_(nullptr),
-      generated_position_(nullptr),
-      generated_smear_(nullptr),
+    : name_(""), mass_number_(0), radius_(0), skin_depth_(0), beta2_(0),
+      beta4_(0), smear_(NucleonSmearing::None), sigmaNN_(0.0),
+      repulsion_distance_(0.0), random_orientation_(true), nucleus_theta_(0.0),
+      nucleus_phi_(0.0), b_(0.0), generated_rcos_theta_(nullptr),
+      generated_position_(nullptr), generated_smear_(nullptr),
       smeared_position_(nullptr) {}
 
-Nucleus::Nucleus(unsigned massNumber, double radius, double skinDepth,
+Nucleus::Nucleus(unsigned mass_number, double radius, double skin_depth,
                  double beta2, double beta4)
-    : name_(""),
-      mass_number_(massNumber),
-      radius_(radius),
-      skin_depth_(skinDepth),
-      beta2_(beta2),
-      beta4_(beta4),
-      smear_(NucleonSmearing::None),
-      sigmaNN_(0.0),
-      repulsion_distance_(0.0),
-      random_orientation_(true),
-      nucleus_theta_(0.0),
-      nucleus_phi_(0.0),
+    : name_(""), mass_number_(mass_number), radius_(radius),
+      skin_depth_(skin_depth), beta2_(beta2), beta4_(beta4),
+      smear_(NucleonSmearing::None), sigmaNN_(0.0), repulsion_distance_(0.0),
+      random_orientation_(true), nucleus_theta_(0.0), nucleus_phi_(0.0),
       b_(0.0) {
   // reserve space for the correct number of nucleons
-  nucleons_.reserve(massNumber);
+  nucleons_.reserve(mass_number);
 
   initWoodsSaxon();
   initHistograms();
 }
 
-Nucleus::Nucleus(const Nucleus& rhs)
-    : name_(rhs.name()),
-      mass_number_(rhs.massNumber()),
-      radius_(rhs.radius()),
-      beta2_(rhs.beta2()),
-      beta4_(rhs.beta4()),
-      smear_(rhs.nucleonSmearing()),
+Nucleus::Nucleus(const Nucleus &rhs)
+    : name_(rhs.name()), mass_number_(rhs.massNumber()), radius_(rhs.radius()),
+      beta2_(rhs.beta2()), beta4_(rhs.beta4()), smear_(rhs.nucleonSmearing()),
       sigmaNN_(rhs.nnCrossSection()),
       repulsion_distance_(rhs.repulsionDistance()),
       random_orientation_(rhs.randomOrientation()),
-      nucleus_theta_(rhs.nucleusTheta()),
-      nucleus_phi_(rhs.nucleusPhi()),
+      nucleus_theta_(rhs.nucleusTheta()), nucleus_phi_(rhs.nucleusPhi()),
       b_(rhs.impactParameter()) {
   // reserve space for the correct number of nucleons
   nucleons_.reserve(mass_number_);
-  for (int i = 0; i < rhs.size(); ++i) nucleons_.push_back(rhs[i]);
+  for (int i = 0; i < rhs.size(); ++i)
+    nucleons_.push_back(rhs[i]);
 
   initWoodsSaxon();
   initHistograms();
@@ -80,9 +57,9 @@ void Nucleus::clear() {
   b_ = 0.0;
 }
 
-void Nucleus::setParameters(unsigned massNumber, double radius,
-                            double skinDepth, double beta2, double beta4) {
-  if (massNumber == 0) {
+void Nucleus::setParameters(unsigned mass_number, double radius,
+                            double skin_depth, double beta2, double beta4) {
+  if (mass_number == 0) {
     LOG(ERROR) << "mass number can not be zero, nucleus in invalid state";
     return;
   }
@@ -92,11 +69,11 @@ void Nucleus::setParameters(unsigned massNumber, double radius,
   }
 
   clear();
-  nucleons_.reserve(massNumber);
+  nucleons_.reserve(mass_number);
 
-  mass_number_ = massNumber;
+  mass_number_ = mass_number;
   radius_ = radius;
-  skin_depth_ = skinDepth;
+  skin_depth_ = skin_depth;
   beta2_ = beta2;
   beta4_ = beta4;
 
@@ -155,26 +132,26 @@ void Nucleus::setNucleonSmearing(NucleonSmearing smear, double sigmaNN) {
   smearing_profile_.release();
 
   switch (smear) {
-    case NucleonSmearing::HardCore: {
-      double rMax = sqrt(sigmaNN_ / pi);
-      smearing_profile_ = make_unique<TF3>(
-          MakeString("hardCoreSmear_", Random::instance().counter()).c_str(),
-          StepFunction, -rMax, rMax, -rMax, rMax, -rMax, rMax, 1);
-      smearing_profile_->SetParameter(0, sigmaNN_);
-      break;
-    }
-    case NucleonSmearing::Gaussian: {
-      double rMax = sigmaNN_ * 5.0;
-      double sigma = 0.79 / sqrt(3.0);
-      smearing_profile_ = make_unique<TF3>(
-          MakeString("gaussianSmear_", Random::instance().counter()).c_str(),
-          Gaussian, -rMax, rMax, -rMax, rMax, -rMax, rMax, 1);
-      smearing_profile_->SetParameter(0, sigma);
-      break;
-    }
-    default:
-      smearing_profile_ = nullptr;
-      break;
+  case NucleonSmearing::HardCore: {
+    double rMax = sqrt(sigmaNN_ / pi);
+    smearing_profile_ = make_unique<TF3>(
+        MakeString("hardCoreSmear_", Random::instance().counter()).c_str(),
+        StepFunction, -rMax, rMax, -rMax, rMax, -rMax, rMax, 1);
+    smearing_profile_->SetParameter(0, sigmaNN_);
+    break;
+  }
+  case NucleonSmearing::Gaussian: {
+    double rMax = sigmaNN_ * 5.0;
+    double sigma = 0.79 / sqrt(3.0);
+    smearing_profile_ = make_unique<TF3>(
+        MakeString("gaussianSmear_", Random::instance().counter()).c_str(),
+        Gaussian, -rMax, rMax, -rMax, rMax, -rMax, rMax, 1);
+    smearing_profile_->SetParameter(0, sigma);
+    break;
+  }
+  default:
+    smearing_profile_ = nullptr;
+    break;
   }
 }
 
@@ -205,10 +182,10 @@ void Nucleus::addNucleon(double b) {
     TVector3 smearing = smear();
 
     // get x, y, z
-    TVector3 smearedPosition = position + smearing;
+    TVector3 smeared_position = position + smearing;
 
     // create the nucleon
-    nucleon.set(smearedPosition, b, nucleus_theta_, nucleus_phi_, true);
+    nucleon.set(smeared_position, b, nucleus_theta_, nucleus_phi_, true);
 
     // if no repulsion, we don't need to check against other nucleon
     // positions, just add and break out
@@ -218,15 +195,16 @@ void Nucleus::addNucleon(double b) {
       // record QA data
       generated_position_->Fill(position.X(), position.Y(), position.Z());
       generated_smear_->Fill(smearing.X(), smearing.Y(), smearing.Z());
-      smeared_position_->Fill(smearedPosition.X(), smearedPosition.Y(),
-                              smearedPosition.Z());
+      smeared_position_->Fill(smeared_position.X(), smeared_position.Y(),
+                              smeared_position.Z());
       break;
     } else {
       // otherwise, we have to check every generated nucleon to see
       // if it overlaps
       bool collision = false;
       for (auto nucleon2 : nucleons_) {
-        if (nucleon.deltaR(nucleon2) <= repulsion_distance_) collision = true;
+        if (nucleon.deltaR(nucleon2) <= repulsion_distance_)
+          collision = true;
       }
       if (collision == false) {
         // if there was no overlap, add the nucleon
@@ -235,8 +213,8 @@ void Nucleus::addNucleon(double b) {
         // record QA data
         generated_position_->Fill(position.X(), position.Y(), position.Z());
         generated_smear_->Fill(smearing.X(), smearing.Y(), smearing.Z());
-        smeared_position_->Fill(smearedPosition.X(), smearedPosition.Y(),
-                                smearedPosition.Z());
+        smeared_position_->Fill(smeared_position.X(), smeared_position.Y(),
+                                smeared_position.Z());
         break;
       }
     }
@@ -269,21 +247,21 @@ void Nucleus::initWoodsSaxon() {
     woods_saxon_->SetParName(3, "#beta_{4}");
     woods_saxon_->SetParameter(3, beta4_);
     woods_saxon_->SetNpx(400);
-    ((TF2*)woods_saxon_.get())->SetNpy(400);
+    ((TF2 *)woods_saxon_.get())->SetNpy(400);
   }
 }
 
 void Nucleus::initHistograms() {
-  generated_rcostheta_.release();
+  generated_rcos_theta_.release();
   generated_position_.release();
   generated_smear_.release();
   smeared_position_.release();
 
   // initialize QA histograms
-  generated_rcostheta_ = make_unique<TH2D>(
-      MakeString("r_costheta_", Random::instance().counter()).c_str(),
+  generated_rcos_theta_ = make_unique<TH2D>(
+      MakeString("r_cos_theta_", Random::instance().counter()).c_str(),
       ";R;cos(#theta)", 400, 0, 3 * radius_, 100, -1.0, 1.0);
-  generated_rcostheta_->SetDirectory(0);
+  generated_rcos_theta_->SetDirectory(0);
   generated_position_ = make_unique<TH3D>(
       MakeString("nucleonpos_", Random::instance().counter()).c_str(),
       ";dx;dy;dz", 100, -3.0 * radius_, 3.0 * radius_, 100, -3.0 * radius_,
@@ -310,13 +288,13 @@ TVector3 Nucleus::generateNucleonPosition() {
   }
   // otherwise we use a 2D woods-saxon
   else {
-    double cosTheta;
-    ((TF2*)woods_saxon_.get())->GetRandom2(r, cosTheta);
-    theta = acos(cosTheta);
+    double cos_theta;
+    ((TF2 *)woods_saxon_.get())->GetRandom2(r, cos_theta);
+    theta = acos(cos_theta);
   }
 
   // record the generated R & cos theta for QA
-  generated_rcostheta_->Fill(r, cos(theta), 1.0 / pow(r, 2.0));
+  generated_rcos_theta_->Fill(r, cos(theta), 1.0 / pow(r, 2.0));
 
   // finally, generate phi flat in -pi < phi < pi
   phi = Random::instance().zeroToPi() * 2.0 - pi;
@@ -339,14 +317,16 @@ TVector3 Nucleus::smear() {
   return TVector3(dx, dy, dz);
 }
 
-const Nucleon& Nucleus::operator[](unsigned idx) const {
-  if (idx > nucleons_.size()) throw "Out of bounds access";
+const Nucleon &Nucleus::operator[](unsigned idx) const {
+  if (idx > nucleons_.size())
+    throw "Out of bounds access";
   return nucleons_[idx];
 }
 
-Nucleon& Nucleus::operator[](unsigned idx) {
-  if (idx > nucleons_.size()) throw "Out of bounds access";
+Nucleon &Nucleus::operator[](unsigned idx) {
+  if (idx > nucleons_.size())
+    throw "Out of bounds access";
   return nucleons_[idx];
 }
 
-}  // namespace sct
+} // namespace sct

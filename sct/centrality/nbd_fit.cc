@@ -14,29 +14,27 @@ namespace sct {
 
 // helper function to try and avoid rounding errors, when doing
 // the fractional calculations in the centrality definitions
-template <typename T>
-T Round(T t, int digits) {
-  if (t == 0.0)  // otherwise it will return 'nan' due to the log10() of zero
+template <typename T> T Round(T t, int digits) {
+  if (t == 0.0) // otherwise it will return 'nan' due to the log10() of zero
     return 0.0;
 
   double factor = pow(10.0, digits - ceil(log10(fabs(t))));
   return round(t * factor) / factor;
 }
 
-NBDFit::NBDFit(TH1D* data, TH2D* glauber)
-    : multiplicity_model_(nullptr),
-      refmult_data_(nullptr),
-      npart_ncoll_(nullptr),
-      minmult_fit_(100),
-      use_stglauber_chi2_(false) {
-  if (data != nullptr) loadData(*data);
+NBDFit::NBDFit(TH1D *data, TH2D *glauber)
+    : multiplicity_model_(nullptr), refmult_data_(nullptr),
+      npart_ncoll_(nullptr), minmult_fit_(100), use_stglauber_chi2_(false) {
+  if (data != nullptr)
+    loadData(*data);
 
-  if (glauber != nullptr) loadGlauber(*glauber);
+  if (glauber != nullptr)
+    loadGlauber(*glauber);
 }
 
 NBDFit::~NBDFit() {}
 
-void NBDFit::loadData(const TH1D& data) {
+void NBDFit::loadData(const TH1D &data) {
   // first clear the old histogram
   refmult_data_.reset();
 
@@ -48,7 +46,7 @@ void NBDFit::loadData(const TH1D& data) {
   refmult_data_->SetDirectory(0);
 }
 
-void NBDFit::loadGlauber(const TH2D& glauber) {
+void NBDFit::loadGlauber(const TH2D &glauber) {
   // first clear the old histogram
   npart_ncoll_.reset();
 
@@ -61,11 +59,11 @@ void NBDFit::loadGlauber(const TH2D& glauber) {
 }
 
 // When using Fit(...) must set the NBD parameters beforehand
-void NBDFit::setParameters(double npp, double k, double x, double ppEff,
-                           double AAEff, double centMult, double triggerBias,
-                           bool constEfficiency) {
+void NBDFit::setParameters(double npp, double k, double x, double pp_eff,
+                           double aa_eff, double cent_mult, double trigger_bias,
+                           bool const_efficiency) {
   multiplicity_model_ = make_unique<MultiplicityModel>(
-      npp, k, x, ppEff, AAEff, centMult, triggerBias, constEfficiency);
+      npp, k, x, pp_eff, aa_eff, cent_mult, trigger_bias, const_efficiency);
 }
 
 unique_ptr<FitResult> NBDFit::fit(unsigned nevents, string name) {
@@ -105,7 +103,8 @@ unique_ptr<FitResult> NBDFit::fit(unsigned nevents, string name) {
     npart_ncoll_->GetRandom2(npart, ncoll);
 
     // check if any collisions took place
-    if (npart < 2 || ncoll < 1) continue;
+    if (npart < 2 || ncoll < 1)
+      continue;
 
     unsigned mult = multiplicity_model_->multiplicity(static_cast<int>(npart),
                                                       static_cast<int>(ncoll));
@@ -131,11 +130,12 @@ unique_ptr<FitResult> NBDFit::fit(unsigned nevents, string name) {
   return std::move(result);
 }
 
-sct_map<string, unique_ptr<FitResult>> NBDFit::scan(
-    unsigned nevents, unsigned npp_bins, double npp_min, double npp_max,
-    unsigned k_bins, double k_min, double k_max, unsigned x_bins, double x_min,
-    double x_max, double ppEff, double AAEff, double centMult,
-    double triggerBias, bool constEfficiency, bool saveAllHist) {
+sct_map<string, unique_ptr<FitResult>>
+NBDFit::scan(unsigned nevents, unsigned npp_bins, double npp_min,
+             double npp_max, unsigned k_bins, double k_min, double k_max,
+             unsigned x_bins, double x_min, double x_max, double pp_eff,
+             double aa_eff, double cent_mult, double trigger_bias,
+             bool const_efficiency, bool save_all_hist) {
   // Perform the fit routine over a grid of NBD values (Npp, K, X)
   // and return a dictionary of results
   sct_map<string, unique_ptr<FitResult>> result_map;
@@ -160,8 +160,8 @@ sct_map<string, unique_ptr<FitResult>> NBDFit::scan(
         double k = k_min + dK * bin_k;
         double x = x_min + dX * bin_x;
 
-        setParameters(npp, k, x, ppEff, AAEff, centMult, triggerBias,
-                      constEfficiency);
+        setParameters(npp, k, x, pp_eff, aa_eff, cent_mult, trigger_bias,
+                      const_efficiency);
 
         string key = MakeString("npp_", npp, "_k_", k, "_x_", x);
 
@@ -169,7 +169,7 @@ sct_map<string, unique_ptr<FitResult>> NBDFit::scan(
 
         // if we only save the best fit, we will check if this fit is better
         // than the current result and update
-        if (saveAllHist == false) {
+        if (save_all_hist == false) {
           if (best_chi2_key.empty() || best_chi2 <= 0.0) {
             best_chi2 = result->chi2 / result->ndf;
             best_chi2_key = key;
@@ -202,7 +202,7 @@ sct_map<string, unique_ptr<FitResult>> NBDFit::scan(
   return result_map;
 }
 
-double NBDFit::norm(TH1D* h1, TH1D* h2) {
+double NBDFit::norm(TH1D *h1, TH1D *h2) {
   // get the normalization between two histograms in the region from
   // minmult_fit_ to h1->GetXaxis()->GetXmax()
   double min = minmult_fit_;
@@ -218,7 +218,8 @@ double NBDFit::norm(TH1D* h1, TH1D* h2) {
     double n1Error = h1->GetBinContent(i);
     double n2 = h2->GetBinContent(i);
 
-    if (n1 == 0.0 || n1Error == 0.0) continue;
+    if (n1 == 0.0 || n1Error == 0.0)
+      continue;
 
     numerator += n1 * n2 / pow(n1Error, 2.0);
     denominator += n2 * n2 / pow(n1Error, 2.0);
@@ -226,7 +227,7 @@ double NBDFit::norm(TH1D* h1, TH1D* h2) {
   return (denominator == 0.0 ? 1.0 : numerator / denominator);
 }
 
-std::pair<double, int> NBDFit::chi2(TH1* h1, TH1* h2) {
+std::pair<double, int> NBDFit::chi2(TH1 *h1, TH1 *h2) {
   // calculate the chi2 from data and simulation - return a pair of (chi2, ndf)
   // note: only calculates from minmult_fit_ to max bin, same range used for the
   // normalization. By default, we'll use ROOT's chi2 test by using set range,
@@ -238,7 +239,7 @@ std::pair<double, int> NBDFit::chi2(TH1* h1, TH1* h2) {
     return chi2_root(h1, h2);
 }
 
-std::pair<double, int> NBDFit::chi2_root(TH1* h1, TH1* h2) {
+std::pair<double, int> NBDFit::chi2_root(TH1 *h1, TH1 *h2) {
   double min = minmult_fit_;
   int min_bin = h1->GetXaxis()->FindBin(min + 0.001);
   int max_bin = h1->GetXaxis()->GetNbins();
@@ -259,7 +260,7 @@ std::pair<double, int> NBDFit::chi2_root(TH1* h1, TH1* h2) {
 
   return std::pair<double, int>{chi2, ndf};
 }
-std::pair<double, int> NBDFit::chi2_stglauber(TH1* h1, TH1* h2) {
+std::pair<double, int> NBDFit::chi2_stglauber(TH1 *h1, TH1 *h2) {
   int min_bin = h1->GetXaxis()->FindBin(minmult_fit_ + 0.001);
   double chi2 = 0.0;
   int ndf = 0;
@@ -268,7 +269,8 @@ std::pair<double, int> NBDFit::chi2_stglauber(TH1* h1, TH1* h2) {
     // Check there are entries and the error is not zero
     // to protect against dividing by zero
     double error = h1->GetBinError(i);
-    if (error <= 0.0) continue;
+    if (error <= 0.0)
+      continue;
 
     // Calculate chi2
     double h1_value = h1->GetBinContent(i);
@@ -281,4 +283,4 @@ std::pair<double, int> NBDFit::chi2_stglauber(TH1* h1, TH1* h2) {
   return std::pair<double, int>{chi2, ndf};
 }
 
-}  // namespace sct
+} // namespace sct

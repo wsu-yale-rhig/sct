@@ -26,19 +26,19 @@
 
 namespace sct {
 class Nucleus {
- public:
+public:
   // default constructor initializes to an invalid state,
   // to avoid ambiguity
   Nucleus();
 
   // generic constructor
-  Nucleus(unsigned mass_number,  // number of nucleons
-          double radius,         // radius of the nucleus (in fm)
-          double skin_depth,     // skin depth of the nucleus (in fm)
-          double beta2,          // 2nd order deformation parameter
-          double beta4);         // 4th order deformation parameter
+  Nucleus(unsigned mass_number, // number of nucleons
+          double radius,        // radius of the nucleus (in fm)
+          double skin_depth,    // skin depth of the nucleus (in fm)
+          double beta2,         // 2nd order deformation parameter
+          double beta4);        // 4th order deformation parameter
 
-  Nucleus(const Nucleus& rhs);
+  Nucleus(const Nucleus &rhs);
 
   virtual ~Nucleus();
 
@@ -77,8 +77,8 @@ class Nucleus {
   inline bool randomOrientation() const { return random_orientation_; }
 
   // access to nucleons
-  const Nucleon& operator[](unsigned idx) const;
-  Nucleon& operator[](unsigned idx);
+  const Nucleon &operator[](unsigned idx) const;
+  Nucleon &operator[](unsigned idx);
 
   // access to parameters
   inline unsigned massNumber() const { return mass_number_; }
@@ -94,20 +94,20 @@ class Nucleus {
   inline double nucleusPhi() const { return nucleus_phi_; }
   inline double impactParameter() const { return b_; }
 
-  inline TH2D* generatedRCosTheta() const {
-    return (TH2D*)generated_rcostheta_.get();
+  inline TH2D *generatedRCosTheta() const {
+    return (TH2D *)generated_rcos_theta_.get();
   }
-  inline TH3D* generatedPosition() const {
-    return (TH3D*)generated_position_.get();
+  inline TH3D *generatedPosition() const {
+    return (TH3D *)generated_position_.get();
   }
-  inline TH3D* generatedSmear() const { return (TH3D*)generated_smear_.get(); }
-  inline TH3D* smearedPosition() const {
-    return (TH3D*)smeared_position_.get();
+  inline TH3D *generatedSmear() const { return (TH3D *)generated_smear_.get(); }
+  inline TH3D *smearedPosition() const {
+    return (TH3D *)smeared_position_.get();
   }
 
-  inline TF1* woodsSaxon() const { return woods_saxon_.get(); }
+  inline TF1 *woodsSaxon() const { return woods_saxon_.get(); }
 
- private:
+private:
   // generates one random nucleon and rotates it wrt the nucleus orientation, if
   // applicable
   void addNucleon(double b);
@@ -123,42 +123,41 @@ class Nucleus {
   TVector3 generateNucleonPosition();
   TVector3 smear();
 
-  std::vector<Nucleon> nucleons_;  // container for nucleons
+  std::vector<Nucleon> nucleons_; // container for nucleons
 
-  string name_;  // string identifier
+  string name_; // string identifier
 
-  unsigned mass_number_;  // nuclear mass number
-  double radius_;         // radius of nucleus
-  double skin_depth_;     // skin depth of nucleus
-  double beta2_;          // 2nd order deformation parameter
-  double beta4_;          // 4th order deformation parameter
+  unsigned mass_number_; // nuclear mass number
+  double radius_;        // radius of nucleus
+  double skin_depth_;    // skin depth of nucleus
+  double beta2_;         // 2nd order deformation parameter
+  double beta4_;         // 4th order deformation parameter
 
-  NucleonSmearing smear_;      // flag for nucleon position smearing
-  double sigmaNN_;             // nucleon-nucleon inellastic cross section
-  double repulsion_distance_;  // force nucleons to be minimum
-                               // repulsionDistance_ away from each other
+  NucleonSmearing smear_;     // flag for nucleon position smearing
+  double sigmaNN_;            // nucleon-nucleon inellastic cross section
+  double repulsion_distance_; // force nucleons to be minimum
+                              // repulsionDistance_ away from each other
 
-  bool random_orientation_;  // if set to true, the nucleus will be oriented in
-                             // a random direction (only useful if beta2 or
-                             // beta4 are non-zero)
-  double
-      nucleus_theta_;   // for deformed nuclei, specifies the polar & azimuthal
-  double nucleus_phi_;  // angles in the collision frame for a specific event
-  double b_;            // impact parameter for a specific event
+  bool random_orientation_; // if set to true, the nucleus will be oriented in
+                            // a random direction (only useful if beta2 or
+                            // beta4 are non-zero)
+  double nucleus_theta_; // for deformed nuclei, specifies the polar & azimuthal
+  double nucleus_phi_;   // angles in the collision frame for a specific event
+  double b_;             // impact parameter for a specific event
 
-  unique_ptr<TF1> woods_saxon_;  // density profile for nucleons
+  unique_ptr<TF1> woods_saxon_; // density profile for nucleons
   unique_ptr<TF3>
-      smearing_profile_;  // Used to smear nucleon position if requested
+      smearing_profile_; // Used to smear nucleon position if requested
 
-  unique_ptr<TH2> generated_rcostheta_;  // histogram recording sampled r/theta
+  unique_ptr<TH2> generated_rcos_theta_; // histogram recording sampled r/theta
                                          // from woods-saxon
   unique_ptr<TH3> generated_position_;   // histogram recording the generated
                                          // nucleon position
   unique_ptr<TH3>
-      generated_smear_;  // histogram recording the generated smearing
+      generated_smear_; // histogram recording the generated smearing
   unique_ptr<TH3>
-      smeared_position_;  // histogram recording the final smeared position
+      smeared_position_; // histogram recording the final smeared position
 };
-}  // namespace sct
+} // namespace sct
 
-#endif  // SCT_GLAUBER_NUCLEUS_H
+#endif // SCT_GLAUBER_NUCLEUS_H

@@ -12,29 +12,31 @@ Collision::Collision()
 Collision::~Collision() {}
 
 void Collision::setMultiplicityModel(double npp, double k, double x,
-                                     double ppEff, double aaEff, double aaCent,
-                                     double trigEff, bool constEff) {
-  mult_model_ = make_unique<MultiplicityModel>(npp, k, x, ppEff, aaEff, aaCent,
-                                               trigEff, constEff);
+                                     double pp_eff, double aa_eff,
+                                     double aa_cent, double trig_eff,
+                                     bool const_eff) {
+  mult_model_ = make_unique<MultiplicityModel>(npp, k, x, pp_eff, aa_eff,
+                                               aa_cent, trig_eff, const_eff);
 }
 
 template <typename Container>
-bool Collision::collide(Container& nucleusA, Container& nucleusB) {
+bool Collision::collide(Container &nucleus_A, Container &nucleus_B) {
   clear();
 
   // count the number of binary collisions
-  for (int i = 0; i < nucleusA.size(); ++i) {
-    for (int j = 0; j < nucleusB.size(); ++j) {
-      if (nucleonCollision(nucleusA[i], nucleusB[j])) {
+  for (int i = 0; i < nucleus_A.size(); ++i) {
+    for (int j = 0; j < nucleus_B.size(); ++j) {
+      if (nucleonCollision(nucleus_A[i], nucleus_B[j])) {
         nColl_++;
-        nucleusA[i].incrementNColl();
-        nucleusB[j].incrementNColl();
+        nucleus_A[i].incrementNColl();
+        nucleus_B[j].incrementNColl();
       }
     }
   }
 
   // if there are no binary collisions, return
-  if (nColl_ == 0) return false;
+  if (nColl_ == 0)
+    return false;
 
   // get indices for the arrays
   int nPart_index = static_cast<int>(GlauberWeight::NPart);
@@ -43,7 +45,7 @@ bool Collision::collide(Container& nucleusA, Container& nucleusB) {
   int multiplicity_index = static_cast<int>(GlauberWeight::Multiplicity);
 
   // calculate kinematic event averages
-  for (auto nucleus : {&nucleusA, &nucleusB}) {
+  for (auto nucleus : {&nucleus_A, &nucleus_B}) {
     for (int i = 0; i < nucleus->size(); ++i) {
       Nucleon nucleon = (*nucleus)[i];
 
@@ -90,9 +92,11 @@ bool Collision::collide(Container& nucleusA, Container& nucleusB) {
   // now calculate eccentricity for each class
   for (int idx :
        {nPart_index, nColl_index, spectator_index, multiplicity_index}) {
-    if (count_[idx] == 0) continue;
+    if (count_[idx] == 0)
+      continue;
 
-    if (idx == multiplicity_index && mult_model_ == nullptr) continue;
+    if (idx == multiplicity_index && mult_model_ == nullptr)
+      continue;
 
     avgX_[idx] /= count_[idx];
     avgY_[idx] /= count_[idx];
@@ -115,7 +119,7 @@ bool Collision::collide(Container& nucleusA, Container& nucleusB) {
     // calculate nth order participant plane eccentricity
     for (int order : {2, 3, 4}) {
       std::pair<double, double> pp_ecc =
-          participantPlaneEcc(nucleusA, nucleusB, order, idx);
+          participantPlaneEcc(nucleus_A, nucleus_B, order, idx);
       if (order == 2) {
         pp2_[idx] = pp_ecc.first;
         eccPP2_[idx] = pp_ecc.second;
@@ -128,28 +132,31 @@ bool Collision::collide(Container& nucleusA, Container& nucleusB) {
         pp4_[idx] = pp_ecc.first;
         eccPP4_[idx] = pp_ecc.second;
       }
-    }  // participant plane order
-  }    // weight index
+    } // participant plane order
+  }   // weight index
   return true;
 }
 
 // instantiate for common containers
-template bool Collision::collide<std::vector<Nucleon>>(
-    std::vector<Nucleon>& nucleusA, std::vector<Nucleon>& nucleusB);
-template bool Collision::collide<Nucleus>(Nucleus& nucleusA, Nucleus& nucleusB);
+template bool
+Collision::collide<std::vector<Nucleon>>(std::vector<Nucleon> &nucleus_A,
+                                         std::vector<Nucleon> &nucleus_B);
+template bool Collision::collide<Nucleus>(Nucleus &nucleus_A,
+                                          Nucleus &nucleus_B);
 
-bool Collision::nucleonCollision(Nucleon nucleonA, Nucleon nucleonB) {
-  double dR = nucleonA.deltaXY(nucleonB);
+bool Collision::nucleonCollision(Nucleon nucleon_A, Nucleon nucleon_B) {
+  double dR = nucleon_A.deltaXY(nucleon_B);
   double dRMax = sqrt(inelasticXSec_ / pi);
 
   switch (profile_) {
-    case CollisionProfile::HardCore:
-      if (dR <= dRMax) return true;
-      return false;
-      break;
-    case CollisionProfile::Gaussian:
-      return Random::instance().uniform() <= exp(-pow(dR / dRMax, 2.0) / 2.0);
-      break;
+  case CollisionProfile::HardCore:
+    if (dR <= dRMax)
+      return true;
+    return false;
+    break;
+  case CollisionProfile::Gaussian:
+    return Random::instance().uniform() <= exp(-pow(dR / dRMax, 2.0) / 2.0);
+    break;
   }
 }
 
@@ -171,15 +178,15 @@ void Collision::clear() {
 }
 
 template <typename Container>
-std::pair<double, double> Collision::participantPlaneEcc(Container& nucleusA,
-                                                         Container& nucleusB,
-                                                         int order,
-                                                         int weightIdx) {
+std::pair<double, double>
+Collision::participantPlaneEcc(Container &nucleus_A, Container &nucleus_B,
+                               int order, int weightIdx) {
   double qx = 0;
   double qy = 0;
   double qw = 0;
 
-  if (nPart() <= 2) return {-999.0, -999.0};
+  if (nPart() <= 2)
+    return {-999.0, -999.0};
 
   // get indices for the arrays
   constexpr unsigned nPart_index = static_cast<int>(GlauberWeight::NPart);
@@ -189,16 +196,18 @@ std::pair<double, double> Collision::participantPlaneEcc(Container& nucleusA,
   constexpr unsigned multiplicity_index =
       static_cast<int>(GlauberWeight::Multiplicity);
 
-  for (auto nucleus : {&nucleusA, &nucleusB}) {
+  for (auto nucleus : {&nucleus_A, &nucleus_B}) {
     for (int i = 0; i < nucleus->size(); ++i) {
       Nucleon nucleon = (*nucleus)[i];
       double nColl = nucleon.nColl();
 
       // spectators have zero collisions
-      if (weightIdx == spectator_index && nColl > 0) continue;
+      if (weightIdx == spectator_index && nColl > 0)
+        continue;
 
       // participants have one or more collisions
-      if (weightIdx != spectator_index && nColl == 0) continue;
+      if (weightIdx != spectator_index && nColl == 0)
+        continue;
 
       TVector3 tmp(nucleon.x() - avgX_[weightIdx],
                    nucleon.y() - avgY_[weightIdx], nucleon.z());
@@ -226,4 +235,4 @@ std::pair<double, double> Collision::participantPlaneEcc(Container& nucleusA,
   return {participant_plane, eccentricity};
 }
 
-}  // namespace sct
+} // namespace sct

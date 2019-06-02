@@ -51,8 +51,8 @@ class NBDFit {
   void makeCentDefs(bool flag = true);
 
   // When using fit(...) must set the NBD parameters beforehand
-  void setParameters(double npp, double k, double x, double ppEff, double AAEff,
-                     double centMult, double triggerBias, bool constEfficiency);
+  void setParameters(double npp, double k, double x, double pp_eff, double aa_eff,
+                     double cent_mult, double trigger_bias, bool const_efficiency);
 
   // From the given NPart x NColl distribution, samples nevents times,
   // and generates a refmult distribution (with name name) from a negative
@@ -69,8 +69,8 @@ class NBDFit {
   sct_map<string, unique_ptr<FitResult>> scan(
       unsigned nevents, unsigned npp_bins, double npp_min, double npp_max,
       unsigned k_bins, double k_min, double k_max, unsigned x_bins,
-      double x_min, double x_max, double ppEff, double AAEff, double centMult,
-      double triggerBias, bool constEfficiency, bool saveAllHist = false);
+      double x_min, double x_max, double pp_eff, double aa_eff, double cent_mult,
+      double trigger_bias, bool const_efficiency, bool save_all_hist = false);
 
   // to restrict the fits to multiplicity > minmult_fit_, which will have an
   // effect on the chi2, since the low multiplicity regime is where the data

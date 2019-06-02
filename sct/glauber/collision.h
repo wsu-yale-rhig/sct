@@ -21,7 +21,7 @@ class Collision {
   ~Collision();
 
   // defines the cross section for a collision between two nucleons
-  inline void setNNCrossSection(double NNxSec) { inelasticXSec_ = NNxSec; }
+  inline void setNNCrossSection(double nn_xsec) { inelasticXSec_ = nn_xsec; }
   inline double NNCrossSection() const { return inelasticXSec_; }
 
   // defines the method for calculating nucleon-nucleon collisions:
@@ -43,19 +43,19 @@ class Collision {
   // so it may be required to run the model twice. Once to generate
   // Npart Ncoll pairs for fitting, and again once the multiplicity model
   // has been optimized
-  void setMultiplicityModel(double npp, double k, double x, double ppEff,
-                            double aaEff, double aaCent, double trigEff = 1.0,
-                            bool constEff = false);
+  void setMultiplicityModel(double npp, double k, double x, double pp_eff,
+                            double aa_eff, double aa_cent, double trig_eff = 1.0,
+                            bool const_eff = false);
 
   // collide two lists of nucleons - return true if at least one
   // nucleon-nucleon collision occurred. This is instantiated for both
   // Nucleus & std::vector<Nucleon> in the library. For other containers,
   // you'll need to instantiate and recompile :)
   template <typename Container>
-  bool collide(Container& nucleusA, Container& nucleusB);
+  bool collide(Container& nucleus_A, Container& nucleus_B);
 
   // checks if two nucleons collide using the specified collision profile
-  bool nucleonCollision(Nucleon nucleonA, Nucleon nucleonB);
+  bool nucleonCollision(Nucleon nucleon_A, Nucleon nucleon_B);
 
   // zeros collision statistics
   void clear();

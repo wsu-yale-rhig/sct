@@ -19,8 +19,8 @@ class MultiplicityModel : public NegativeBinomial {
   // creates a negative binomial distribution with parameters (npp, k), and
   // sets efficiencies & the trigger bias.
   MultiplicityModel(double npp = 2.38, double k = 2.00, double x = 0.13,
-                    double ppEff = 0.98, double centEff = 0.84,
-                    double centMult = 540, double triggerBias = 1.0,
+                    double pp_eff = 0.98, double cent_eff = 0.84,
+                    double cent_mult = 540, double trigger_bias = 1.0,
                     bool const_eff = false);
   MultiplicityModel(const MultiplicityModel& rhs);
   virtual ~MultiplicityModel();

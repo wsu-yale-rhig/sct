@@ -14,12 +14,12 @@ class Nucleon {
   void clear();
 
   // sets r, theta, phi, and rotates wrt the orientation
-  // of the nucleus (given by nucleusTheta, nucleusPhi),
+  // of the nucleus (given by nucleus_theta, nucleus_phi),
   // and modifies position along X given the impact parameter
-  // rotation is done along theta axis first if thetaFirst is set
+  // rotation is done along theta axis first if theta_first is set
   // to true
-  void set(TVector3 position, double b = 0, double nucleusTheta = 0.0,
-           double nucleusPhi = 0.0, bool thetaFirst = true);
+  void set(TVector3 position, double b = 0, double nucleus_theta = 0.0,
+           double nucleus_phi = 0.0, bool theta_first = true);
 
   inline TVector3 position() const { return position_; }
   inline double phi() const { return position_.Phi(); }

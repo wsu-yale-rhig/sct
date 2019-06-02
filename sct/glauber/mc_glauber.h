@@ -21,38 +21,38 @@
 
 namespace sct {
 class MCGlauber {
- public:
+public:
   // Constructor that provides access to default settings
   // for specific nuclei (Au, Pb, Sm, Cu, U)
   // default construction is for AuAu at 200 GeV, spherical
   // with no modification to the glauber parameters
-  MCGlauber(GlauberSpecies speciesA = GlauberSpecies::Au197,
-            GlauberSpecies speciesB = GlauberSpecies::Au197,
+  MCGlauber(GlauberSpecies species_A = GlauberSpecies::Au197,
+            GlauberSpecies species_B = GlauberSpecies::Au197,
             CollisionEnergy energy = CollisionEnergy::E200,
-            GlauberMod mod = GlauberMod::Nominal, bool deformationA = false,
-            bool deformationB = false);
+            GlauberMod mod = GlauberMod::Nominal, bool deformation_A = false,
+            bool deformation_B = false);
 
   // generic symmetric collision constructor
-  MCGlauber(unsigned massNumber,  // mass number of nucleus (number of nucleons)
+  MCGlauber(unsigned mass_number, // mass number of nucleus (number of nucleons)
             double radius,        // radius of nucleus
-            double skinDepth,     // skin depth of nucleus
+            double skin_depth,    // skin depth of nucleus
             double beta2,         // second order deformation parameter
             double beta4,         // 4th order deformation parameter
-            double inelasticXSec,  // inelastic NN cross section
+            double inelastic_xsec, // inelastic NN cross section
             double energy);        // energy (sqrt(sNN))
 
   // generic asymmetric collision cross section
-  MCGlauber(unsigned massNumberA,  // mass number nucleus A
-            double radiusA,        // radius nucleus A
-            double skinDepthA,     // skin depth nucleus A
-            double beta2A,  // second order deformation parameter nucleus A
-            double beta4A,  // fourth order deformation parameter nucleus A
-            unsigned massNumberB,  // mass number nucleus B
-            double radiusB,        // radius nucleus B
-            double skinDepthB,     // skin depth nucleus B
-            double beta2B,  // second order deformation parameter nucleus B
-            double beta4B,  // second order deformation parameter nucleus B
-            double inelasticXSec,  // inelastic NN cross section
+  MCGlauber(unsigned mass_number_A, // mass number nucleus A
+            double radius_A,        // radius nucleus A
+            double skin_depth_A,    // skin depth nucleus A
+            double beta2_A, // second order deformation parameter nucleus A
+            double beta4_A, // fourth order deformation parameter nucleus A
+            unsigned mass_number_B, // mass number nucleus B
+            double radius_B,        // radius nucleus B
+            double skin_depth_B,    // skin depth nucleus B
+            double beta2_B, // second order deformation parameter nucleus B
+            double beta4_B, // second order deformation parameter nucleus B
+            double inelastic_xsec, // inelastic NN cross section
             double energy);        // energy (sqrt(sNN))
 
   virtual ~MCGlauber();
@@ -92,9 +92,9 @@ class MCGlauber {
   // from fits or some other source, they can be used to generate multiplicity
   // estimates in the glauber trees. This also allows observables like
   // eccentricity to be estimated with a multiplicity weighting
-  void setMultiplicityModel(double npp, double k, double x, double ppEff,
-                            double aaEff, double aaCent, double trigEff = 1.0,
-                            bool constEff = false);
+  void setMultiplicityModel(double npp, double k, double x, double pp_eff,
+                            double aa_eff, double aa_cent,
+                            double trig_eff = 1.0, bool const_eff = false);
 
   // run the glauber MC for N events
   void run(unsigned N = 1000);
@@ -109,21 +109,22 @@ class MCGlauber {
   void writeHeader();
 
   // gives access to tree
-  GlauberTree* results() const { return tree_.get(); }
+  GlauberTree *results() const { return tree_.get(); }
 
   // gives access to generated parameters
-  TH2D* woodsSaxonA() { return nucleusA_->generatedRCosTheta(); }
-  TH2D* woodsSaxonB() { return nucleusB_->generatedRCosTheta(); }
-  TH1D* generatedImpactParameter() { return generated_ip_.get(); }
-  TH1D* acceptedImpactParameter() { return accepted_ip_.get(); }
+  TH2D *woodsSaxonA() { return nucleusA_->generatedRCosTheta(); }
+  TH2D *woodsSaxonB() { return nucleusB_->generatedRCosTheta(); }
+  TH1D *generatedImpactParameter() { return generated_ip_.get(); }
+  TH1D *acceptedImpactParameter() { return accepted_ip_.get(); }
 
   // clears current tree entry & nuclei
   void clear();
 
- private:
-  void init(unsigned massNumberA, double radiusA, double skinDepthA,
-            double beta2A, double beta4A, unsigned massNumberB, double radiusB,
-            double skinDepthB, double beta2B, double beta4B);
+private:
+  void init(unsigned mass_number_A, double radius_A, double skin_depth_A,
+            double beta2_A, double beta4_A, unsigned mass_number_B,
+            double radius_B, double skin_depth_b, double beta2_B,
+            double beta4_B);
 
   void initOutput();
   void initQA();
@@ -138,23 +139,22 @@ class MCGlauber {
   Collision collision_;
 
   // counters
-  unsigned eventsGenerated_;
-  unsigned eventsAccepted_;
+  unsigned events_generated_;
+  unsigned events_accepted_;
 
   // impact parameter
   double b_min_;
   double b_max_;
 
   // collision parameters
-  double energy_;  // center of mass energy
-  GlauberMod
-      modification_;  // Used for systematics: define a chance in the glauber
-                      // parameters default is GlauberMod::Nominal
+  double energy_;           // center of mass energy
+  GlauberMod modification_; // Used for systematics: define a chance in the
+                            // glauber parameters default is GlauberMod::Nominal
 
   // QA histograms for impact parameter
   unique_ptr<TH1D> generated_ip_;
   unique_ptr<TH1D> accepted_ip_;
 };
-}  // namespace sct
+} // namespace sct
 
-#endif  // SCT_GLAUBER_MC_GLAUBER_H
+#endif // SCT_GLAUBER_MC_GLAUBER_H

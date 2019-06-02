@@ -19,17 +19,17 @@ void Nucleon::clear() {
   multiplicity_ = 0;
 }
 
-void Nucleon::set(TVector3 position, double b, double nucleusTheta,
-                  double nucleusPhi, bool thetaFirst) {
+void Nucleon::set(TVector3 position, double b, double nucleus_theta,
+                  double nucleus_phi, bool theta_first) {
   position_ = position;
 
   // rotate the nucleus
-  if (thetaFirst) {
-    position_.RotateY(nucleusTheta);
-    position_.RotateZ(nucleusPhi);
+  if (theta_first) {
+    position_.RotateY(nucleus_theta);
+    position_.RotateZ(nucleus_phi);
   } else {
-    position_.RotateZ(nucleusPhi);
-    position_.RotateY(nucleusTheta);
+    position_.RotateZ(nucleus_phi);
+    position_.RotateY(nucleus_theta);
   }
 
   // offset by impact parameter

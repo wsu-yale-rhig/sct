@@ -11,13 +11,13 @@
 namespace sct {
 
 MultiplicityModel::MultiplicityModel(double npp, double k, double x,
-                                     double ppEff, double centEff,
-                                     double centMult, double triggerBias,
+                                     double pp_eff, double cent_eff,
+                                     double cent_mult, double trigger_bias,
                                      bool const_eff)
-    : pp_efficiency_(ppEff),
-      central_efficiency_(centEff),
-      cent_mult_(centMult),
-      trigger_bias_(triggerBias),
+    : pp_efficiency_(pp_eff),
+      central_efficiency_(cent_eff),
+      cent_mult_(cent_mult),
+      trigger_bias_(trigger_bias),
       x_(x),
       const_efficiency_(const_eff) {
   setNBD(npp, k);
