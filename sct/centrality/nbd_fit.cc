@@ -144,9 +144,9 @@ NBDFit::scan(unsigned nevents, unsigned npp_bins, double npp_min,
   unsigned nBins = npp_bins * k_bins * x_bins;
 
   // define the step widths in all three parameters
-  double dNpp = (npp_max - npp_min) / static_cast<double>(npp_bins);
-  double dK = (k_max - k_min) / static_cast<double>(k_bins);
-  double dX = (x_max - x_min) / static_cast<double>(x_bins);
+  double dNpp = (npp_max - npp_min) / (npp_bins > 1 ? npp_bins - 1 : 1);
+  double dK = (k_max - k_min) / (k_bins > 1 ? k_bins - 1 : 1);
+  double dX = (x_max - x_min) / (x_bins > 1 ? x_bins - 1 : 1);
 
   // for book-keeping
   double best_chi2 = 0.0;
