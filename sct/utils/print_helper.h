@@ -53,13 +53,13 @@ struct histogramOpts {
       : colors({kBlack, kRed, kBlue, kGreen, kCyan, kMagenta, kOrange, kYellow,
                 kRed + 2, kGreen + 3, kBlue - 7}),
         markers({kFullCircle, kFullSquare, kFullDiamond, kFullCrossX}) {
-    label_size_x = 0.060;
+    label_size_x = 0.050;
     title_size_x = 0.075;
     title_offset_x = 0.800;
     center_title_x = false;
-    label_size_y = 0.055;
+    label_size_y = 0.045;
     title_size_y = 0.075;
-    title_offset_y = 0.800;
+    title_offset_y = 0.950;
     center_title_y = true;
     current = 0;
     line_width = 2;
@@ -102,7 +102,7 @@ struct canvasOpts {
   bool log_z;
 
   canvasOpts() {
-    left_margin = 0.13;
+    left_margin = 0.17;
     bottom_margin = 0.15;
     right_margin = 0.08;
     upper_margin = 0.10;
@@ -159,6 +159,9 @@ void PrettyPrint1D(H *h, histogramOpts hopts, canvasOpts copts,
   TCanvas c;
   copts.SetMargins(&c);
   copts.SetLogScale(&c);
+
+  if (!canvas_title.empty())
+    h->SetTitle(canvas_title.c_str());
 
   h->Draw();
 
