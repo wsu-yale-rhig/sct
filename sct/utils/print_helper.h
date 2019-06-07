@@ -25,6 +25,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "TF1.h"
 #include "TLegend.h"
 
 namespace sct {
@@ -65,8 +66,7 @@ struct histogramOpts {
     marker_size = 1.5;
   }
 
-  template <typename H>
-  void SetHistogram(H* h) {
+  template <typename H> void SetHistogram(H *h) {
     h->GetXaxis()->SetLabelSize(label_size_x);
     h->GetXaxis()->SetTitleSize(title_size_x);
     h->GetXaxis()->SetTitleOffset(title_offset_x);
@@ -118,22 +118,20 @@ struct canvasOpts {
     log_z = false;
   }
 
-  template <typename C>
-  void SetMargins(C* c) {
+  template <typename C> void SetMargins(C *c) {
     c->SetLeftMargin(left_margin);
     c->SetRightMargin(right_margin);
     c->SetBottomMargin(bottom_margin);
     c->SetTopMargin(upper_margin);
   }
 
-  template <typename C>
-  void SetLogScale(C* c) {
+  template <typename C> void SetLogScale(C *c) {
     c->SetLogx(log_x);
     c->SetLogy(log_y);
     c->SetLogz(log_z);
   }
 
-  TLegend* Legend() {
+  TLegend *Legend() {
     if (do_legend) {
       return new TLegend(leg_left_bound, leg_lower_bound, leg_right_bound,
                          leg_upper_bound);
@@ -143,7 +141,7 @@ struct canvasOpts {
 };
 
 template <typename H>
-void PrettyPrint1D(H* h, histogramOpts hopts, canvasOpts copts,
+void PrettyPrint1D(H *h, histogramOpts hopts, canvasOpts copts,
                    std::string hist_title, std::string output_loc,
                    std::string output_name, std::string canvas_title,
                    std::string x_axis_label, std::string y_axis_label,
@@ -164,7 +162,7 @@ void PrettyPrint1D(H* h, histogramOpts hopts, canvasOpts copts,
 
   h->Draw();
 
-  TLegend* leg = copts.Legend();
+  TLegend *leg = copts.Legend();
   if (leg != nullptr) {
     leg->SetHeader(legend_title.c_str());
     leg->AddEntry(h, hist_title.c_str(), "lep");
@@ -175,7 +173,7 @@ void PrettyPrint1D(H* h, histogramOpts hopts, canvasOpts copts,
 }
 
 template <typename H>
-void Overlay1D(const std::vector<H*>& h, std::vector<std::string> hist_titles,
+void Overlay1D(const std::vector<H *> &h, std::vector<std::string> hist_titles,
                histogramOpts hopts, canvasOpts copts, std::string output_loc,
                std::string output_name, std::string canvas_title,
                std::string x_axis_label, std::string y_axis_label,
@@ -212,7 +210,7 @@ void Overlay1D(const std::vector<H*>& h, std::vector<std::string> hist_titles,
       h[i]->Draw("SAME");
   }
 
-  TLegend* leg = copts.Legend();
+  TLegend *leg = copts.Legend();
   if (leg != nullptr) {
     leg->SetTextSize(0.04);
     leg->SetHeader(legend_title.c_str());
@@ -226,7 +224,59 @@ void Overlay1D(const std::vector<H*>& h, std::vector<std::string> hist_titles,
 }
 
 template <typename H>
-void Overlay1D(H* h1, H* h2, std::string h1_title, std::string h2_title,
+void Overlay1D(const std::vector<std::shared_ptr<H>> &h,
+               std::vector<std::string> hist_titles, histogramOpts hopts,
+               canvasOpts copts, std::string output_loc,
+               std::string output_name, std::string canvas_title,
+               std::string x_axis_label, std::string y_axis_label,
+               std::string legend_title = "") {
+  // first, check that there is a name for each histogram
+  if (h.size() != hist_titles.size()) {
+    std::cerr
+        << "incorrect number of histogram names for given set of histograms"
+        << std::endl;
+    std::cerr << "for canvas: " << canvas_title << ", exiting" << std::endl;
+    return;
+  }
+
+  // we assume the output location exists, so create
+  // the final output string that will be used for pdf creation
+  std::string canvas_name = output_loc + "/" + output_name + ".pdf";
+
+  // set axis labels on zeroth histogram
+  h[0]->GetXaxis()->SetTitle(x_axis_label.c_str());
+  h[0]->GetYaxis()->SetTitle(y_axis_label.c_str());
+
+  // generate a canvas
+  TCanvas c;
+  copts.SetMargins(&c);
+  copts.SetLogScale(&c);
+
+  // print histograms, giving them some nominal settings to differentiate them
+  for (int i = 0; i < h.size(); ++i) {
+    hopts.SetHistogram(h[i].get());
+
+    if (i == 0)
+      h[i]->Draw();
+    else
+      h[i]->Draw("SAME");
+  }
+
+  TLegend *leg = copts.Legend();
+  if (leg != nullptr) {
+    leg->SetTextSize(0.04);
+    leg->SetHeader(legend_title.c_str());
+    for (int i = 0; i < h.size(); ++i) {
+      leg->AddEntry(h[i].get(), hist_titles[i].c_str(), "lep");
+    }
+    leg->Draw();
+  }
+
+  c.SaveAs(canvas_name.c_str());
+}
+
+template <typename H>
+void Overlay1D(H *h1, H *h2, std::string h1_title, std::string h2_title,
                histogramOpts hopts, canvasOpts copts, std::string output_loc,
                std::string output_name, std::string canvas_title,
                std::string x_axis_label, std::string y_axis_label,
@@ -251,7 +301,7 @@ void Overlay1D(H* h1, H* h2, std::string h1_title, std::string h2_title,
   h1->Draw();
   h2->Draw("SAME");
 
-  TLegend* leg = copts.Legend();
+  TLegend *leg = copts.Legend();
   if (leg != nullptr) {
     leg->SetHeader(legend_title.c_str());
     leg->AddEntry(h1, h1_title.c_str(), "lep");
@@ -263,7 +313,7 @@ void Overlay1D(H* h1, H* h2, std::string h1_title, std::string h2_title,
 }
 
 template <typename H>
-void Print2DSimple(H* h, histogramOpts hopts, canvasOpts copts,
+void Print2DSimple(H *h, histogramOpts hopts, canvasOpts copts,
                    std::string output_loc, std::string output_name,
                    std::string canvas_title, std::string x_axis_label,
                    std::string y_axis_label, std::string opt = "COLZ") {
@@ -287,7 +337,7 @@ void Print2DSimple(H* h, histogramOpts hopts, canvasOpts copts,
 
 // print histograms & their ratios
 template <typename H>
-void PrintWithRatio(H* h1, H* h2, std::string h1_title, std::string h2_title,
+void PrintWithRatio(H *h1, H *h2, std::string h1_title, std::string h2_title,
                     histogramOpts hopts, canvasOpts copts,
                     std::string output_loc, std::string output_name,
                     std::string canvas_title, std::string x_axis_label,
@@ -297,7 +347,7 @@ void PrintWithRatio(H* h1, H* h2, std::string h1_title, std::string h2_title,
   std::string canvas_name = output_loc + "/" + output_name + ".pdf";
 
   TCanvas c;
-  TPad* pad1 = new TPad("pad1", "pad1", 0, 0.35, 1.0, 1.0);
+  TPad *pad1 = new TPad("pad1", "pad1", 0, 0.35, 1.0, 1.0);
   copts.SetMargins(pad1);
   pad1->SetBottomMargin(0.0);
   copts.SetLogScale(pad1);
@@ -314,7 +364,7 @@ void PrintWithRatio(H* h1, H* h2, std::string h1_title, std::string h2_title,
   hopts.SetHistogram(h2);
   h2->Draw("SAME");
 
-  TLegend* leg = copts.Legend();
+  TLegend *leg = copts.Legend();
   if (leg != nullptr) {
     leg->SetTextSize(0.04);
     leg->SetHeader(legend_title.c_str());
@@ -325,7 +375,7 @@ void PrintWithRatio(H* h1, H* h2, std::string h1_title, std::string h2_title,
 
   // lower pad
   c.cd();
-  TPad* pad2 = new TPad("pad2", "pad2", 0, 0.0, 1, 0.35);
+  TPad *pad2 = new TPad("pad2", "pad2", 0, 0.0, 1, 0.35);
   copts.SetMargins(pad2);
   pad2->SetTopMargin(0.0);
   pad2->SetBottomMargin(0.35);
@@ -334,7 +384,7 @@ void PrintWithRatio(H* h1, H* h2, std::string h1_title, std::string h2_title,
   pad2->Draw();
   pad2->cd();
 
-  TH1D* tmp = (TH1D*)h1->Clone();
+  TH1D *tmp = (TH1D *)h1->Clone();
   tmp->Divide(h2);
   hopts.SetHistogram(tmp);
 
@@ -362,7 +412,7 @@ void PrintWithRatio(H* h1, H* h2, std::string h1_title, std::string h2_title,
 
 // print histograms & their ratios
 template <typename H>
-void PrintWithRatios(H* ref, std::vector<H*> h, std::string ref_name,
+void PrintWithRatios(H *ref, std::vector<H *> h, std::string ref_name,
                      std::vector<std::string> h_titles, histogramOpts hopts,
                      canvasOpts copts, std::string output_loc,
                      std::string output_name, std::string canvas_title,
@@ -385,7 +435,7 @@ void PrintWithRatios(H* ref, std::vector<H*> h, std::string ref_name,
   std::string canvas_name = output_loc + "/" + output_name + ".pdf";
 
   TCanvas c;
-  TPad* pad1 = new TPad("pad1", "pad1", 0, 0.3, 1.0, 1.0);
+  TPad *pad1 = new TPad("pad1", "pad1", 0, 0.3, 1.0, 1.0);
   copts.SetMargins(pad1);
   pad1->SetBottomMargin(0.0);
   copts.SetLogScale(pad1);
@@ -404,7 +454,7 @@ void PrintWithRatios(H* ref, std::vector<H*> h, std::string ref_name,
     hist->Draw("SAME");
   }
 
-  TLegend* leg = copts.Legend();
+  TLegend *leg = copts.Legend();
   if (leg != nullptr) {
     leg->SetTextSize(0.04);
     leg->SetHeader(legend_title.c_str());
@@ -417,7 +467,7 @@ void PrintWithRatios(H* ref, std::vector<H*> h, std::string ref_name,
 
   // lower pad
   c.cd();
-  TPad* pad2 = new TPad("pad2", "pad2", 0, 0.05, 1, 0.3);
+  TPad *pad2 = new TPad("pad2", "pad2", 0, 0.05, 1, 0.3);
   copts.SetMargins(pad2);
   pad2->SetTopMargin(0.0);
   copts.SetLogScale(pad2);
@@ -427,7 +477,7 @@ void PrintWithRatios(H* ref, std::vector<H*> h, std::string ref_name,
 
   for (int i = 0; i < h.size(); ++i) {
     std::string tmp_name = "tmp_" + std::to_string(i);
-    TH1D* tmp = (TH1D*)ref->Clone(tmp_name.c_str());
+    TH1D *tmp = (TH1D *)ref->Clone(tmp_name.c_str());
     tmp->Divide(h[i]);
     tmp->GetXaxis()->SetTitle(x_axis_label.c_str());
     tmp->GetYaxis()->SetTitle("Ratio");
@@ -442,6 +492,6 @@ void PrintWithRatios(H* ref, std::vector<H*> h, std::string ref_name,
   c.SaveAs(canvas_name.c_str());
 }
 
-}  // namespace sct
+} // namespace sct
 
-#endif  // SCT_UTILS_PRINT_HELPER_H
+#endif // SCT_UTILS_PRINT_HELPER_H
