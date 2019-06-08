@@ -1,10 +1,8 @@
-/* Scans through a 3D grid of parameters (Npp, k, x)
- * and builds up  a refmult distribution by sampling the
- * npart vs ncoll distribution from the glauber results
- * N times for every set of parameters. Compares the
- * generated refmult distribution to a data refmult
- * distribution using a chi2 similarity measure. Reports
- * the best fit parameters.
+/* Scans through a 3D grid of parameters (Npp, k, x) and builds up  a refmult
+ * distribution by sampling the npart vs ncoll distribution from the glauber
+ * results N times for every set of parameters. Compares the generated refmult
+ * distribution to a data refmult distribution using a chi2 similarity measure.
+ * Reports the best fit parameters.
  *
  */
 
@@ -14,13 +12,15 @@
 #include "sct/lib/flags.h"
 #include "sct/lib/logging.h"
 #include "sct/lib/string/string_utils.h"
+#include "sct/lib/string/string_cast.h"
 #include "sct/utils/random.h"
 
-#include <boost/filesystem.hpp>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
+
+#include "boost/filesystem.hpp"
 
 #include "TCanvas.h"
 #include "TError.h"
@@ -52,13 +52,13 @@ SCT_DEFINE_int(events, 1e5, "number of events per fit");
 // model settings
 SCT_DEFINE_double(npp_min, 1.0, "minimum Npp for negative binomial");
 SCT_DEFINE_double(npp_max, 4.0, "maximum Npp for negative binomial");
-SCT_DEFINE_int(npp_steps, 30, "number of steps in Npp range to sample");
+SCT_DEFINE_int(npp_steps, 31, "number of steps in Npp range to sample");
 SCT_DEFINE_double(k_min, 1.0, "minimum k for negative binomial");
 SCT_DEFINE_double(k_max, 4.0, "maximum k for negative binomial");
-SCT_DEFINE_int(k_steps, 30, "number of steps in k range to sample");
+SCT_DEFINE_int(k_steps, 31, "number of steps in k range to sample");
 SCT_DEFINE_double(x_min, 0.1, "minimum x for two component multiplicity");
 SCT_DEFINE_double(x_max, 0.4, "maximum x for two component multiplicity");
-SCT_DEFINE_int(x_steps, 30, "number of steps in x range to sample");
+SCT_DEFINE_int(x_steps, 31, "number of steps in x range to sample");
 SCT_DEFINE_double(ppEfficiency, 0.98, "pp efficiency");
 SCT_DEFINE_double(AuAuEfficiency, 0.84, "0-5% central AuAu efficiency");
 SCT_DEFINE_int(centMult, 540, "average 0-5% central multiplicity");
@@ -82,41 +82,8 @@ SCT_DEFINE_string(preGlauberCorrFile, "",
 SCT_DEFINE_double(vzNorm, 0.0, "normalization point for vz corrections");
 SCT_DEFINE_double(lumiNorm, 0.0, "normalization point for zdcX corrections");
 
-template <typename T>
-bool CanCast(std::string s) {
-  std::istringstream iss(s);
-  T dummy;
-  iss >> std::skipws >> dummy;
-  return iss && iss.eof();
-}
-
-template <typename T>
-T CastTo(std::string s) {
-  std::istringstream iss(s);
-  T dummy;
-  iss >> std::skipws >> dummy;
-  return dummy;
-}
-
-template <typename T>
-std::vector<T> ParseStrToVec(std::string str) {
-  std::vector<T> ret;
-  std::string token;
-  while (str.find(" ") != std::string::npos) {
-    size_t pos = str.find(" ");
-    token = str.substr(0, pos);
-    if (CanCast<T>(token)) {
-      ret.push_back(CastTo<T>(token));
-    }
-    str.erase(0, pos + 1);
-  }
-  if (CanCast<T>(str)) ret.push_back(CastTo<T>(str));
-
-  return ret;
-}
-
 double LumiScaling(double zdcX, double zdc_norm_point,
-                   std::vector<double>& pars) {
+                   std::vector<double> &pars) {
   if (pars.size() != 2) {
     LOG(ERROR) << "expected 2 parameters for luminosity scaling, returning 1";
     return 1.0;
@@ -126,7 +93,7 @@ double LumiScaling(double zdcX, double zdc_norm_point,
   return zdc_norm / zdc_scaling;
 }
 
-double VzScaling(double vz, double vz_norm_point, std::vector<double>& pars) {
+double VzScaling(double vz, double vz_norm_point, std::vector<double> &pars) {
   if (pars.size() != 7) {
     LOG(ERROR) << "expected 7 parameters for luminosity scaling, returning 1";
     return 1.0;
@@ -137,12 +104,14 @@ double VzScaling(double vz, double vz_norm_point, std::vector<double>& pars) {
     vz_scaling += pars[i] * pow(vz, i);
     vz_norm += pars[i] * pow(vz_norm_point, i);
   }
-  if ((vz_norm / vz_scaling) <= 0) return 1.0;
+  if ((vz_norm / vz_scaling) <= 0)
+    return 1.0;
   return vz_norm / vz_scaling;
 }
 
 double GlauberScaling(double refmult, double cutoff, std::vector<double> pars) {
-  if (refmult > cutoff) return 1;
+  if (refmult > cutoff)
+    return 1;
   double denom = pars[0] + pars[1] / (pars[2] * refmult + pars[3]) +
                  pars[4] * (pars[2] * refmult + pars[3]);
   denom += pars[5] / pow(pars[2] * refmult + pars[3], 2) +
@@ -150,16 +119,15 @@ double GlauberScaling(double refmult, double cutoff, std::vector<double> pars) {
   return pars[0] / denom;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   // shut ROOT up :)
   gErrorIgnoreLevel = kWarning;
 
   // set help message
   std::string usage =
       "Performs a grid search over the multiplicity model parameter space: ";
-  usage +=
-      "[Npp, k, x, pp efficiency, central AuAu efficiency, trigger "
-      "efficiency], using a chi2 ";
+  usage += "[Npp, k, x, pp efficiency, central AuAu efficiency, trigger "
+           "efficiency], using a chi2 ";
   usage += "fit to a measured refmult distribution as the objective function.";
   sct::SetUsageMessage(usage);
 
@@ -171,8 +139,8 @@ int main(int argc, char* argv[]) {
   boost::filesystem::create_directories(dir);
 
   // load the input files data refmult histogram & glauber npart x ncoll
-  TFile* glauber_file = new TFile(FLAGS_glauberFile.c_str(), "READ");
-  TFile* data_file = new TFile(FLAGS_dataFile.c_str(), "READ");
+  TFile *glauber_file = new TFile(FLAGS_glauberFile.c_str(), "READ");
+  TFile *data_file = new TFile(FLAGS_dataFile.c_str(), "READ");
 
   if (!glauber_file->IsOpen()) {
     LOG(ERROR) << "Glauber input file could not be opened: "
@@ -186,8 +154,8 @@ int main(int argc, char* argv[]) {
   }
 
   // load data refmult histogram & glauber npart x ncoll
-  TH2D* npartncoll = (TH2D*)glauber_file->Get(FLAGS_glauberHistName.c_str());
-  TH1D* refmult = (TH1D*)data_file->Get(FLAGS_dataHistName.c_str());
+  TH2D *npartncoll = (TH2D *)glauber_file->Get(FLAGS_glauberHistName.c_str());
+  TH1D *refmult = (TH1D *)data_file->Get(FLAGS_dataHistName.c_str());
 
   if (npartncoll == nullptr) {
     LOG(ERROR) << "NPart x NColl histogram: " << FLAGS_glauberHistName
@@ -221,7 +189,7 @@ int main(int argc, char* argv[]) {
   double npp = 0.0;
   double k = 0.0;
 
-  for (auto& result : results) {
+  for (auto &result : results) {
     if (result.second->chi2 / result.second->ndf < best_chi2) {
       best_chi2 = result.second->chi2 / result.second->ndf;
       best_key = result.first;
@@ -248,8 +216,10 @@ int main(int argc, char* argv[]) {
   // and we save the results to disk
   std::string output_name = FLAGS_outDir + "/" + FLAGS_outFile + ".root";
   TFile out(output_name.c_str(), "RECREATE");
+  refit->data->SetName("data");
   refit->data->Write();
-  refit->simu->SetName(best_key.c_str());
+  refit->simu->SetName("glauber");
+  refit->simu->SetTitle(best_key.c_str());
   refit->simu->Write();
 
   // now calculate centrality definition for the best fit
@@ -283,7 +253,7 @@ int main(int argc, char* argv[]) {
       if (glauber_in.is_open()) {
         std::string tmp_string;
         while (std::getline(glauber_in, tmp_string)) {
-          auto result = ParseStrToVec<double>(tmp_string);
+          auto result = sct::ParseStrToVec<double>(tmp_string);
           if (result.size() == 2)
             lumi_pars = result;
           else if (result.size() == 7)
@@ -300,13 +270,14 @@ int main(int argc, char* argv[]) {
     TTreeReaderValue<double> vz(reader, FLAGS_vzBranchName.c_str());
     TTreeReaderValue<double> zdcx(reader, FLAGS_lumiBranchName.c_str());
     // create our histogram
-    TH1D* refmult_scaled = new TH1D("weighted_refmult", "", 800, 0, 800);
+    TH1D *refmult_scaled = new TH1D("weighted_refmult", "", 800, 0, 800);
     refmult_scaled->SetDirectory(0);
 
     while (reader.Next()) {
       double refmultcorr = *refmult;
 
-      if (fabs(*vz) > 30 || fabs(*zdcx) > 100000) continue;
+      if (fabs(*vz) > 30 || fabs(*zdcx) > 100000)
+        continue;
 
       if (lumi_pars.size() && vz_pars.size()) {
         double lumi_scaling = LumiScaling(*zdcx, FLAGS_lumiNorm, lumi_pars);
@@ -319,7 +290,7 @@ int main(int argc, char* argv[]) {
       refmult_scaled->Fill(refmultcorr, 1.0 / weight);
     }
 
-    TH1D* scaled_ratio = new TH1D(*refmult_scaled);
+    TH1D *scaled_ratio = new TH1D(*refmult_scaled);
     scaled_ratio->SetDirectory(0);
     scaled_ratio->SetName("corrected_ratio");
 
@@ -340,21 +311,24 @@ int main(int argc, char* argv[]) {
   // out.Close();
 
   std::ofstream cent_file;
-  cent_file.open(FLAGS_outDir + "/" + FLAGS_outFile + ".txt");
+  cent_file.open(FLAGS_outDir + "/" + FLAGS_outFile + ".txt",
+                 std::ios::out | std::ios::app);
 
-  cent_file << "nominal centrality definitions\n";
-  for (auto i : cent_bounds) cent_file << i << " ";
+  cent_file << "nominal cent: ";
+  for (auto i : cent_bounds)
+    cent_file << i << " ";
   cent_file << "\n";
-  cent_file << "+5 xsec% centrality definitions\n";
-  for (auto i : cent_bounds_p5) cent_file << i << " ";
+  cent_file << "+5% xsec cent: ";
+  for (auto i : cent_bounds_p5)
+    cent_file << i << " ";
   cent_file << "\n";
-  cent_file << "-5 xsec% centrality definitions\n";
-  for (auto i : cent_bounds_m5) cent_file << i << " ";
+  cent_file << "-5% xsec cent: ";
+  for (auto i : cent_bounds_m5)
+    cent_file << i << " ";
   cent_file << "\n";
-
-  cent_file << "\n\n"
-            << "glauber weighting parameters: \n";
-  for (auto par : weights.first) cent_file << par << " ";
+  cent_file << "weights: ";
+  for (auto par : weights.first)
+    cent_file << par << " ";
   cent_file << "\n";
 
   cent_file.close();

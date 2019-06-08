@@ -22,6 +22,7 @@
 
 #include "sct/lib/flags.h"
 #include "sct/lib/logging.h"
+#include "sct/lib/memory.h"
 #include "sct/lib/string/string_utils.h"
 #include "sct/utils/print_helper.h"
 
@@ -29,10 +30,12 @@
 #include <iostream>
 #include <string>
 
-#include <boost/filesystem.hpp>
+#include "boost/filesystem.hpp"
 
 #include "TF1.h"
 #include "TFile.h"
+#include "TFitResult.h"
+#include "TFitResultPtr.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TH3D.h"
@@ -84,19 +87,23 @@ bool AcceptEvent(double vz, double vr, double dVz, unsigned refmult,
                  double lumi);
 
 // used internally to bin and project TH3s along different axes
-std::pair<std::vector<TProfile *>, std::vector<std::string>>
+template <class T>
+using result_container =
+    std::pair<std::vector<std::shared_ptr<T>>, std::vector<std::string>>;
+
+result_container<TProfile>
 ProfileRefmultInBinsOfVz(TH3D *hist, std::string name_prefix, int nsplits = 4);
 
-std::pair<std::vector<TH1D *>, std::vector<std::string>>
+result_container<TH1D>
 ProjectRefMultInBinsOfVz(TH3D *hist, std::string name_prefix, int nsplits = 4);
 
-std::pair<std::vector<TH1D *>, std::vector<std::string>>
+result_container<TH1D>
 ProjectRefMultInBinsOfZDC(TH3D *hist, std::string name_prefix, int nsplits = 4);
 
 // used to print out QA plots at each step of the corrections
 void RefmultQA(TH3D *h, std::string name, sct::histogramOpts hOpts_hist,
                sct::canvasOpts cOpts_hist, sct::histogramOpts hOpts_prof,
-               sct::canvasOpts cOpts_prof, int bins = 4);
+               sct::canvasOpts cOpts_prof, int bins = 4, bool fit_flat = true);
 
 int main(int argc, char *argv[]) {
   // set help message and initialize logging and command line flags
@@ -127,19 +134,19 @@ int main(int argc, char *argv[]) {
   TTreeReaderValue<double> vr(reader, FLAGS_vrBranch.c_str());
   TTreeReaderValue<double> dVz(reader, FLAGS_dVzBranch.c_str());
 
-  // create output file
+  // make an output file to store the corrected refmult distribution
   std::string out_file_name = FLAGS_outDir + "/" + FLAGS_outFile;
   TFile *out_file = new TFile(out_file_name.c_str(), "RECREATE");
 
   // fit and histogram parameters
   // -----------------------------------------
   // user ranges for projections/fits
-  double avg_refmult_y_min = 100;
-  double avg_refmult_y_max = 200;
+  double avg_refmult_y_min = 120;
+  double avg_refmult_y_max = 220;
   int avg_refmult_rebinning_lumi = 4;
 
   double vz_tail_min = 450;
-  double vz_tail_max = 800;
+  double vz_tail_max = 650;
 
   double vz_pol_min = FLAGS_vzMin;
   double vz_pol_max = FLAGS_vzMax;
@@ -156,13 +163,16 @@ int main(int argc, char *argv[]) {
 
   // refmult tail distribution as a function of vz (error function) defaults
   std::string vz_function = "[0] + [0] * TMath::Erf([1]*(x-[2]))";
-  double vz_func_p0_default = 0.0001;
-  double vz_func_p1_default = -0.02;
-  double vz_func_p2_default = 600;
+  double vz_func_p0_default = 0.0003;
+  double vz_func_p1_default = -0.014;
+  double vz_func_p2_default = 520;
+  // double vz_func_p0_default = 0.0003;
+  // double vz_func_p1_default = -0.02;
+  // double vz_func_p2_default = 520;
 
   // erf param as a function of vz (pol6) defaults
   std::string vz_pol_function = "pol6(0)";
-  double vz_pol_func_p0_default = 600;
+  double vz_pol_func_p0_default = 550;
   double vz_pol_func_p1_default = 0.1;
   double vz_pol_func_p2_default = 0.1;
   double vz_pol_func_p3_default = 0.1;
@@ -176,8 +186,10 @@ int main(int argc, char *argv[]) {
   TH1::SetDefaultSumw2();
   TH2::SetDefaultSumw2();
   TH3::SetDefaultSumw2();
+
   // shut ROOT up :)
   gErrorIgnoreLevel = kWarning;
+
   // set drawing preferences for histograms and graphs
   gStyle->SetOptStat(false);
   gStyle->SetOptFit(true);
@@ -185,35 +197,6 @@ int main(int argc, char *argv[]) {
   gStyle->SetLegendBorderSize(0);
   gStyle->SetHatchesSpacing(1.0);
   gStyle->SetHatchesLineWidth(2);
-
-  // event loop
-  // first calculate average refmult as a function of luminosity
-  TH3D *uncorr_lumi =
-      new TH3D("uncorr_lumi", ";V_{z};luminosity [kHz];refmult", FLAGS_vzBins,
-               FLAGS_vzMin, FLAGS_vzMax, FLAGS_lumiBins, FLAGS_lumiMin,
-               FLAGS_lumiMax, (FLAGS_refmultMax - FLAGS_refmultMin),
-               FLAGS_refmultMin, FLAGS_refmultMax);
-
-  while (reader.Next()) {
-    double lumikhz = *lumi / 1000.0;
-
-    if (!AcceptEvent(*vz, *vr, *dVz, *refmult, lumikhz))
-      continue;
-
-    uncorr_lumi->Fill(*vz, lumikhz, *refmult);
-  }
-
-  LOG(INFO) << "Fitting average refmult as a function of luminosity";
-  TProfile *uncorr_lumi_1d = (TProfile *)((TH2D *)uncorr_lumi->Project3D("ZY"))
-                                 ->ProfileX("uncorr_profile");
-  uncorr_lumi_1d->Rebin(avg_refmult_rebinning_lumi);
-  // now fit with a first order polynomial for our luminosity correction
-  TF1 *luminosity_correction =
-      new TF1("luminosity_correction", lumi_function.c_str(), FLAGS_lumiMin,
-              FLAGS_lumiMax);
-  luminosity_correction->SetParameters(lumi_func_p0_default,
-                                       lumi_func_p1_default);
-  uncorr_lumi_1d->Fit(luminosity_correction);
 
   // create different option sets for printing
   sct::histogramOpts hOpts;
@@ -240,14 +223,52 @@ int main(int argc, char *argv[]) {
   cOptsLowerLegLogy.leg_right_bound = 0.5;
   cOptsLowerLegLogy.log_y = true;
 
+  // UNCORRECTED REFMULT - GENERATE LUMINOSITY CORRECTION
+  // --------------------------------------------------------------------------
+
+  // event loop
+  // first calculate average refmult as a function of luminosity
+  TH3D *uncorr_lumi =
+      new TH3D("uncorr_lumi", ";V_{z};luminosity [kHz];refmult", FLAGS_vzBins,
+               FLAGS_vzMin, FLAGS_vzMax, FLAGS_lumiBins, FLAGS_lumiMin,
+               FLAGS_lumiMax, (FLAGS_refmultMax - FLAGS_refmultMin),
+               FLAGS_refmultMin, FLAGS_refmultMax);
+
+  while (reader.Next()) {
+    double lumikhz = *lumi / 1000.0;
+
+    if (!AcceptEvent(*vz, *vr, *dVz, *refmult, lumikhz))
+      continue;
+
+    uncorr_lumi->Fill(*vz, lumikhz, *refmult);
+  }
+
+  LOG(INFO) << "Fitting average refmult as a function of luminosity";
+  TProfile *uncorr_lumi_1d = (TProfile *)((TH2D *)uncorr_lumi->Project3D("ZY"))
+                                 ->ProfileX("uncorr_profile");
+  uncorr_lumi_1d->Rebin(avg_refmult_rebinning_lumi);
+
+  // now fit with a first order polynomial for our luminosity correction
+  TF1 *luminosity_correction =
+      new TF1("luminosity_correction", lumi_function.c_str(), FLAGS_lumiMin,
+              FLAGS_lumiMax);
+  luminosity_correction->SetParameters(lumi_func_p0_default,
+                                       lumi_func_p1_default);
+  uncorr_lumi_1d->Fit(luminosity_correction);
+
   // print uncorrected average refmult
   uncorr_lumi_1d->GetYaxis()->SetRangeUser(avg_refmult_y_min,
                                            avg_refmult_y_max);
   sct::PrettyPrint1D(uncorr_lumi_1d, hOpts, cOptsNoLeg, "", FLAGS_outDir,
-                     "uncorr_avg_refmult_vs_lumi", "", "ZDC Rate [kHz]",
+                     "uncorrected_avg_refmult_vs_lumi", "", "ZDC Rate [kHz]",
                      "<refmult>", "");
-  RefmultQA(uncorr_lumi, "uncorr", hOpts, cOptsLowerLegLogy, hOpts, cOpts);
-  
+  RefmultQA(uncorr_lumi, "uncorrected", hOpts, cOptsLowerLegLogy, hOpts, cOpts,
+            4, false);
+
+  // LUMINOSITY CORRECTED - GENERATE VZ CORRECTION
+  // --------------------------------------------------------------------------
+  // loop over the data again, this time scale each entry by the luminosity
+  // correction
   LOG(INFO) << "generating luminosity corrected refmult distribution";
   reader.Restart();
   TH3D *corr_lumi =
@@ -276,14 +297,16 @@ int main(int argc, char *argv[]) {
                                ->ProfileX("corr_profile");
   corr_lumi_1d->Rebin(avg_refmult_rebinning_lumi);
   corr_lumi_1d->GetYaxis()->SetRangeUser(avg_refmult_y_min, avg_refmult_y_max);
-  TF1 *corr_ref_lumi_fit = new TF1("corr_ref_lumi_fit", lumi_function.c_str(),
-                                   FLAGS_lumiMin, FLAGS_lumiMax);
+  TF1 *corr_ref_lumi_fit =
+      new TF1("lumi_corrected_ref_lumi_fit", lumi_function.c_str(),
+              FLAGS_lumiMin, FLAGS_lumiMax);
   corr_lumi_1d->Fit(corr_ref_lumi_fit);
 
   sct::PrettyPrint1D(corr_lumi_1d, hOpts, cOptsNoLeg, "", FLAGS_outDir,
-                     "corr_avg_refmult_vs_lumi", "", "ZDC Rate [kHz]",
+                     "lumi_corrected_avg_refmult_vs_lumi", "", "ZDC Rate [kHz]",
                      "<refmult>", "");
-  RefmultQA(corr_lumi, "corr", hOpts, cOptsLowerLegLogy, hOpts, cOpts);
+  RefmultQA(corr_lumi, "lumi_corrected", hOpts, cOptsLowerLegLogy, hOpts,
+            cOpts);
 
   // now, do vz correction
   LOG(INFO) << "Performing Vz correction: extracting fit parameter h";
@@ -292,6 +315,12 @@ int main(int argc, char *argv[]) {
   TH1D *uncorr_vz_fit_h_param =
       new TH1D("uncorr_vz_fit_h_param", ";v_{Z};h", FLAGS_vzBins, FLAGS_vzMin,
                FLAGS_vzMax);
+
+  // we will print out each tail fit
+  boost::filesystem::path tail_fit_dir(FLAGS_outDir);
+  tail_fit_dir /= "lumi_corrected_tail_fit";
+  boost::filesystem::create_directories(tail_fit_dir);
+  std::string tail_fit_dir_path = tail_fit_dir.string();
 
   for (int i = 1; i <= FLAGS_vzBins; ++i) {
     vz_uncorr_binned_refmult.push_back(corr_lumi->ProjectionZ(
@@ -309,6 +338,18 @@ int main(int argc, char *argv[]) {
         i, vz_uncorr_binned_refmult_fit[i - 1]->GetParameter(2));
     uncorr_vz_fit_h_param->SetBinError(
         i, vz_uncorr_binned_refmult_fit[i - 1]->GetParError(2));
+
+    vz_uncorr_binned_refmult[i - 1]->GetXaxis()->SetRangeUser(vz_tail_min,
+                                                              vz_tail_max);
+    std::string hist_title = sct::MakeString(
+        std::setprecision(3), corr_lumi->GetXaxis()->GetBinLowEdge(i),
+        " < v_{z} < ", corr_lumi->GetXaxis()->GetBinUpEdge(i));
+    gStyle->SetOptTitle(true);
+    sct::PrettyPrint1D(vz_uncorr_binned_refmult[i - 1], hOpts, cOptsNoLeg, "",
+                       tail_fit_dir_path,
+                       sct::MakeString("lumi_corrected_tail_fit_h_", i),
+                       hist_title, "refMult", "fit paramter h", "");
+    gStyle->SetOptTitle(false);
   }
   LOG(INFO) << "Fitting h parameter distribution with sixth order polynomial";
   TF1 *vz_correction = new TF1("uncorr_vz_fit_param_fit",
@@ -317,10 +358,15 @@ int main(int argc, char *argv[]) {
                                vz_pol_func_p2_default, vz_pol_func_p3_default,
                                vz_pol_func_p4_default, vz_pol_func_p5_default,
                                vz_pol_func_p6_default);
+
   uncorr_vz_fit_h_param->Fit(vz_correction, "MEF");
   uncorr_vz_fit_h_param->GetYaxis()->SetRangeUser(h_param_y_min, h_param_y_max);
   sct::PrettyPrint1D(uncorr_vz_fit_h_param, hOpts, cOptsNoLeg, "", FLAGS_outDir,
-                     "uncorr_vz_fit_h", "", "v_{z} [cm]", "fit paramter h", "");
+                     "lumi_corrected_fit_h", "", "v_{z} [cm]", "fit paramter h",
+                     "");
+
+  // LUMINOSITY & VZ CORRECTED - GENERATE FULLY CORRECTED REFMULT
+  // --------------------------------------------------------------------------
 
   // create luminosity & vz corrected refmult
   LOG(INFO) << "generating luminosity and Vz corrected refmult distribution";
@@ -349,8 +395,8 @@ int main(int argc, char *argv[]) {
     corr_lumi_vz->Fill(*vz, lumikhz, corr_refmult);
   }
 
-  RefmultQA(corr_lumi_vz, "full_corr", hOpts, cOptsLowerLegLogy, hOpts, cOpts,
-            4);
+  RefmultQA(corr_lumi_vz, "lumi_vz_corrected", hOpts, cOptsLowerLegLogy, hOpts,
+            cOpts, 4);
 
   // check vz h distribution
   LOG(INFO) << "Checking Vz correction: extracting fit parameter h";
@@ -358,6 +404,12 @@ int main(int argc, char *argv[]) {
   std::vector<TF1 *> vz_corr_binned_refmult_fit;
   TH1D *corr_vz_fit_h_param = new TH1D("corr_vz_fit_h_param", ";v_{Z};h",
                                        FLAGS_vzBins, FLAGS_vzMin, FLAGS_vzMax);
+
+  // we will print out each corrected tail fit
+  boost::filesystem::path corrected_tail_fit_dir(FLAGS_outDir);
+  corrected_tail_fit_dir /= "lumi_vz_corrected_tail_fit";
+  boost::filesystem::create_directories(corrected_tail_fit_dir);
+  std::string corrected_tail_fit_dir_path = corrected_tail_fit_dir.string();
 
   for (int i = 1; i <= FLAGS_vzBins; ++i) {
     vz_corr_binned_refmult.push_back(corr_lumi_vz->ProjectionZ(
@@ -375,9 +427,28 @@ int main(int argc, char *argv[]) {
         i, vz_corr_binned_refmult_fit[i - 1]->GetParameter(2));
     corr_vz_fit_h_param->SetBinError(
         i, vz_corr_binned_refmult_fit[i - 1]->GetParError(2));
+
+    vz_corr_binned_refmult[i - 1]->GetXaxis()->SetRangeUser(vz_tail_min,
+                                                            vz_tail_max);
+    std::string hist_title = sct::MakeString(
+        std::setprecision(3), corr_lumi_vz->GetXaxis()->GetBinLowEdge(i),
+        " < v_{z} < ", corr_lumi_vz->GetXaxis()->GetBinUpEdge(i));
+    gStyle->SetOptTitle(true);
+    sct::PrettyPrint1D(vz_corr_binned_refmult[i - 1], hOpts, cOptsNoLeg, "",
+                       corrected_tail_fit_dir_path,
+                       sct::MakeString("lumi_vz_corrected_tail_fit_h_", i),
+                       hist_title, "refMult", "fit paramter h", "");
+    gStyle->SetOptTitle(false);
   }
+
+  // fit the corrected h parameter with a constant
+  TF1 *lumi_vz_corrected_h_fit =
+      new TF1("full_corr_h", "[0]", FLAGS_vzMin, FLAGS_vzMax);
+  lumi_vz_corrected_h_fit->SetParameter(0, vz_pol_func_p0_default);
+  corr_vz_fit_h_param->Fit(lumi_vz_corrected_h_fit);
   sct::PrettyPrint1D(corr_vz_fit_h_param, hOpts, cOptsNoLeg, "", FLAGS_outDir,
-                     "corr_vz_fit_h", "", "v_{z} [cm]", "fit paramter h", "");
+                     "lumi_vz_corrected_fit_h", "", "v_{z} [cm]",
+                     "fit paramter h", "");
 
   // overlay pre and post correction
   TH1D *uncorr_refmult = uncorr_lumi->ProjectionZ();
@@ -385,9 +456,9 @@ int main(int argc, char *argv[]) {
 
   full_corr_refmult->Scale(1.0 / full_corr_refmult->Integral());
   uncorr_refmult->Scale(1.0 / uncorr_refmult->Integral());
-  Overlay1D(uncorr_refmult, full_corr_refmult, "uncorrected refmult",
-            "corrected refmult", hOpts, cOptsLowerLegLogy, FLAGS_outDir,
-            "corrected_refmult", "", "refmult", "fraction");
+  PrintWithRatio(uncorr_refmult, full_corr_refmult, "uncorrected refmult",
+                 "corrected refmult", hOpts, cOptsLowerLegLogy, FLAGS_outDir,
+                 "corrected_refmult", "", "refmult", "fraction");
 
   full_corr_refmult->SetName("refmult");
   full_corr_refmult->Write();
@@ -395,17 +466,17 @@ int main(int argc, char *argv[]) {
 
   // write parameters to file
   std::ofstream param_file(FLAGS_outDir + "/" + "refmultcorr_params.txt");
-  param_file << "luminosity parameters: \n";
+  param_file << "lumi parameters: ";
   for (int i = 0; i < luminosity_correction->GetNpar(); ++i) {
     param_file << luminosity_correction->GetParameter(i);
     param_file << (i == luminosity_correction->GetNpar() - 1 ? "\n" : " ");
   }
-  param_file << "vz parameters: \n";
+  param_file << "vz parameters: ";
   for (int i = 0; i < vz_correction->GetNpar(); ++i) {
     param_file << vz_correction->GetParameter(i);
     param_file << (i == vz_correction->GetNpar() - 1 ? "\n" : " ");
   }
-  
+
   param_file.close();
 
   gflags::ShutDownCommandLineFlags();
@@ -427,9 +498,9 @@ bool AcceptEvent(double vz, double vr, double dVz, unsigned refmult,
   return true;
 }
 
-std::pair<std::vector<TProfile *>, std::vector<std::string>>
+result_container<TProfile>
 ProfileRefmultInBinsOfVz(TH3D *hist, std::string name_prefix, int nsplits) {
-  std::vector<TProfile *> lumi_1d_vz;
+  std::vector<std::shared_ptr<TProfile>> lumi_1d_vz;
   std::vector<std::string> lumi_1d_vz_string;
   for (int i = 0; i < nsplits; ++i) {
     int low_bin = i * FLAGS_vzBins / nsplits + 1;
@@ -437,9 +508,9 @@ ProfileRefmultInBinsOfVz(TH3D *hist, std::string name_prefix, int nsplits) {
     hist->GetXaxis()->SetRange(low_bin, high_bin);
 
     std::string name = name_prefix + "_lumi_avg_refmult_" + std::to_string(i);
-    lumi_1d_vz.push_back(
+    lumi_1d_vz.push_back(std::shared_ptr<TProfile>(
         (TProfile *)((TH2D *)hist->Project3D("ZY"))
-            ->ProfileX(sct::MakeString(name, "_profile_", i).c_str()));
+            ->ProfileX(sct::MakeString(name, "_profile_", i).c_str())));
     lumi_1d_vz[i]->SetName(name.c_str());
 
     // create string with vz range
@@ -452,18 +523,18 @@ ProfileRefmultInBinsOfVz(TH3D *hist, std::string name_prefix, int nsplits) {
   return {lumi_1d_vz, lumi_1d_vz_string};
 }
 
-std::pair<std::vector<TH1D *>, std::vector<std::string>>
+result_container<TH1D>
 ProjectRefMultInBinsOfVz(TH3D *hist, std::string name_prefix, int nsplits) {
-  std::vector<TH1D *> refmult_1d_vz;
+  std::vector<std::shared_ptr<TH1D>> refmult_1d_vz;
   std::vector<std::string> refmult_1d_vz_string;
   for (int i = 0; i < nsplits; ++i) {
     int low_bin = i * FLAGS_vzBins / nsplits + 1;
     int high_bin = (i + 1) * FLAGS_vzBins / nsplits;
 
     std::string name = name_prefix + "_refmult_vz_bin_" + std::to_string(i);
-    refmult_1d_vz.push_back(
+    refmult_1d_vz.push_back(std::shared_ptr<TH1D>(
         hist->ProjectionZ(sct::MakeString(name, "_projection_", i).c_str(),
-                          low_bin, high_bin, 0, -1));
+                          low_bin, high_bin, 0, -1)));
     refmult_1d_vz[i]->SetName(name.c_str());
 
     // create string with vz range
@@ -476,18 +547,18 @@ ProjectRefMultInBinsOfVz(TH3D *hist, std::string name_prefix, int nsplits) {
   return {refmult_1d_vz, refmult_1d_vz_string};
 }
 
-std::pair<std::vector<TH1D *>, std::vector<std::string>>
+result_container<TH1D>
 ProjectRefMultInBinsOfZDC(TH3D *hist, std::string name_prefix, int nsplits) {
-  std::vector<TH1D *> refmult_1d_lumi;
+  std::vector<std::shared_ptr<TH1D>> refmult_1d_lumi;
   std::vector<std::string> refmult_1d_lumi_string;
   for (int i = 0; i < nsplits; ++i) {
     int low_bin = i * FLAGS_lumiBins / nsplits + 1;
     int high_bin = (i + 1) * FLAGS_lumiBins / nsplits;
 
     std::string name = name_prefix + "_refmult_lumi_bin_" + std::to_string(i);
-    refmult_1d_lumi.push_back(
+    refmult_1d_lumi.push_back(std::shared_ptr<TH1D>(
         hist->ProjectionZ(sct::MakeString(name, "_projection_", i).c_str(), 0,
-                          -1, low_bin, high_bin));
+                          -1, low_bin, high_bin)));
     refmult_1d_lumi[i]->SetName(name.c_str());
 
     // create string with vz range
@@ -502,17 +573,19 @@ ProjectRefMultInBinsOfZDC(TH3D *hist, std::string name_prefix, int nsplits) {
 
 void RefmultQA(TH3D *h, std::string name, sct::histogramOpts hOpts_hist,
                sct::canvasOpts cOpts_hist, sct::histogramOpts hOpts_prof,
-               sct::canvasOpts cOpts_prof, int bins) {
+               sct::canvasOpts cOpts_prof, int bins, bool fit_flat) {
   // print the uncorrected average refmult in bins of vz & bins of zdc
-  std::pair<std::vector<TH1D *>, std::vector<std::string>> refmult_lumi_bins =
+
+  result_container<TH1D> refmult_lumi_bins =
       ProjectRefMultInBinsOfZDC(h, name, bins);
+
   for (auto h : refmult_lumi_bins.first)
     h->Scale(1.0 / h->Integral());
   Overlay1D(refmult_lumi_bins.first, refmult_lumi_bins.second, hOpts_hist,
             cOpts_hist, FLAGS_outDir, name + "_ref_lumi_bin", "", "refmult",
             "fraction", "");
 
-  std::pair<std::vector<TH1D *>, std::vector<std::string>> refmult_vz_bins =
+  result_container<TH1D> refmult_vz_bins =
       ProjectRefMultInBinsOfVz(h, name, bins);
   for (auto h : refmult_vz_bins.first)
     h->Scale(1.0 / h->Integral());
@@ -521,10 +594,36 @@ void RefmultQA(TH3D *h, std::string name, sct::histogramOpts hOpts_hist,
             "fraction", "");
 
   // print out average refmult as a function of luminosity in bins of vz
-  std::pair<std::vector<TProfile *>, std::vector<std::string>> lumi_1d_vz =
+  result_container<TProfile> lumi_1d_vz =
       ProfileRefmultInBinsOfVz(h, name, bins);
-  lumi_1d_vz.first[0]->GetYaxis()->SetRangeUser(100, 200);
+  for (int i = 0; i < lumi_1d_vz.first.size(); ++i) {
+    std::string fit_function = "";
+    TF1 *fit = nullptr;
+    if (fit_flat) {
+      fit = new TF1(
+          sct::MakeString(lumi_1d_vz.first[i]->GetName(), "_fit").c_str(),
+          "[0]", 0, 100);
+      fit->SetParameter(0, 160);
+    } else {
+      fit = new TF1(
+          sct::MakeString(lumi_1d_vz.first[i]->GetName(), "_fit").c_str(),
+          "[0]+[1]*x", 0, 100);
+      fit->SetParameter(0, 160);
+      fit->SetParameter(1, -0.01);
+    }
+
+    fit->SetLineColor(hOpts_prof.colors[i % hOpts_prof.colors.size()]);
+    TFitResultPtr res = lumi_1d_vz.first[i]->Fit(fit, "MES");
+    double chi2 = res.Get()->Chi2();
+    unsigned ndf = res.Get()->Ndf();
+    lumi_1d_vz.second[i] +=
+        sct::MakeString(" chi2 = ", std::setprecision(4), chi2, "/", ndf);
+  }
+  lumi_1d_vz.first[0]->GetYaxis()->SetRangeUser(120, 220);
+  gStyle->SetOptFit(false);
+  cOpts_prof.leg_left_bound = 0.4;
   Overlay1D(lumi_1d_vz.first, lumi_1d_vz.second, hOpts_prof, cOpts_prof,
             FLAGS_outDir, name + "_avg_ref_vs_lumi_vz", "", "ZDC Rate [kHz]",
             "<refmult>", "");
+  gStyle->SetOptFit(true);
 }

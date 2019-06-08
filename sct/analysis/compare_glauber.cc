@@ -16,7 +16,7 @@
 #include "sct/lib/string/string_utils.h"
 #include "sct/utils/print_helper.h"
 
-#include <boost/filesystem.hpp>
+#include "boost/filesystem.hpp"
 
 #include "TCanvas.h"
 #include "TF1.h"
