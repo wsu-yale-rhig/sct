@@ -19,8 +19,7 @@ RefMultCorrTemplate::RefMultCorrTemplate()
 
 RefMultCorrTemplate::~RefMultCorrTemplate() {}
 
-void RefMultCorrTemplate::setEvent(double refmult, double zdc,
-                                   double vz) {
+void RefMultCorrTemplate::setEvent(double refmult, double zdc, double vz) {
   if (checkEvent(refmult, zdc, vz)) {
     calculateCentrality(refmult, zdc, vz);
   }
@@ -32,6 +31,11 @@ void RefMultCorrTemplate::setEvent(double refmult, double zdc,
     centrality_16_ = -1;
     weight_ = 0;
   }
+}
+
+bool RefMultCorrTemplate::status() const {
+  return vz_par_.size() == 7 && zdc_par_.size() == 2 &&
+         cent_bin_16_.size() == 16 && weight_par_.size() == 7;
 }
 
 void RefMultCorrTemplate::setZDCParameters(double par0, double par1) {
