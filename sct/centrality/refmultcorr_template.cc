@@ -119,7 +119,7 @@ void RefMultCorrTemplate::calculateCentrality(double refmult, double zdc,
 
   if (zdc_par_.empty() || vz_par_.empty()) {
     std::cerr << "zdc and vz correction parameters must be set before "
-                 "RefMultCorrTemplate can be calculated"
+                 "RefMultCorr can be calculated"
               << std::endl;
     refmultcorr_ = 0.0;
     centrality_9_ = -1;
