@@ -6,6 +6,9 @@
 # build directory
 build
 
+#vscode directory
+.vscode
+
 # object files
 *.slo
 *.lo
