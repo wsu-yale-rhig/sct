@@ -152,7 +152,7 @@ int main(int argc, char *argv[]) {
   // create our centrality definition
   sct::RefMultCorrTemplate centrality;
   centrality.setZDCParameters(lumi_par);
-  centrality.setZDCNormalizationPoint(FLAGS_vzNorm);
+  centrality.setZDCNormalizationPoint(FLAGS_lumiNorm);
   centrality.setVzParameters(vz_par);
   centrality.setVzNormalizationPoint(FLAGS_vzNorm);
   centrality.setCentralityBounds16Bin(cent_bounds);
@@ -227,7 +227,7 @@ int main(int argc, char *argv[]) {
     if (!AcceptEvent(*vz, *vr, *dVz, *refmult, lumikhz))
       continue;
 
-    centrality.setEvent(*refmult, lumikhz, *vz);
+    centrality.setEvent(*refmult, *lumi, *vz);
     double refmultcorr = centrality.refMultCorr();
     double weight = centrality.weight();
     int cent = centrality.centrality16();
