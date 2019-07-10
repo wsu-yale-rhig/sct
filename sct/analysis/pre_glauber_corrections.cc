@@ -460,8 +460,11 @@ int main(int argc, char *argv[]) {
                  "corrected refmult", hOpts, cOptsLowerLegLogy, FLAGS_outDir,
                  "corrected_refmult", "", "refmult", "fraction");
 
+  // write uncorrected and corrected refmult to file
   full_corr_refmult->SetName("refmult");
   full_corr_refmult->Write();
+  uncorr_refmult->SetName("refmult_uncorrected");
+  uncorr_refmult->Write();
   out_file->Close();
 
   // write parameters to file
@@ -489,7 +492,7 @@ bool AcceptEvent(double vz, double vr, double dVz, unsigned refmult,
     return false;
   if (vr > FLAGS_vrMax)
     return false;
-  if (dVz > FLAGS_dVzMax)
+  if (fabs(dVz) > FLAGS_dVzMax)
     return false;
   if (refmult < FLAGS_refmultMin || refmult > FLAGS_refmultMax)
     return false;
