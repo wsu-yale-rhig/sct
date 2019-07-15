@@ -1,8 +1,8 @@
 #ifndef SCT_CENTRALITY_MULTIPLICITY_MODEL_H
 #define SCT_CENTRALITY_MULTIPLICITY_MODEL_H
 
-/*  Implements the two-component multilpicity model used in the
- *  glauber MC. multiplicity per collision is sampled using a
+/*  Implements the two-component multiplicity model used in the
+ *  glauber MC. Multiplicity per collision is sampled using a
  *  simple ((1 - x_) * npart / 2.0) + (x_ * ncoll) relationship,
  *  where x is described as the fraction coming from "hard processes",
  *  (1-x) the fraction coming from other processes. X, however, stays
