@@ -24,7 +24,8 @@ template <typename T> T Round(T t, int digits) {
 
 NBDFit::NBDFit(TH1D *data, TH2D *glauber)
     : multiplicity_model_(nullptr), refmult_data_(nullptr),
-      npart_ncoll_(nullptr), minmult_fit_(100), use_stglauber_chi2_(false) {
+      npart_ncoll_(nullptr), minmult_fit_(100), use_stglauber_chi2_(true),
+      use_stglauber_norm_(true) {
   if (data != nullptr)
     loadData(*data);
 
@@ -203,28 +204,10 @@ NBDFit::scan(unsigned nevents, unsigned npp_bins, double npp_min,
 }
 
 double NBDFit::norm(TH1D *h1, TH1D *h2) {
-  // get the normalization between two histograms in the region from
-  // minmult_fit_ to h1->GetXaxis()->GetXmax()
-  double min = minmult_fit_;
-  int minBin = h1->GetXaxis()->FindBin(min);
-  double max = h1->GetXaxis()->GetXmax();
-  int maxBin = h1->GetXaxis()->FindBin(max);
-
-  // calculate numerator and denominator
-  double numerator = 0;
-  double denominator = 0;
-  for (int i = minBin; i <= maxBin; ++i) {
-    double n1 = h1->GetBinContent(i);
-    double n1Error = h1->GetBinContent(i);
-    double n2 = h2->GetBinContent(i);
-
-    if (n1 == 0.0 || n1Error == 0.0)
-      continue;
-
-    numerator += n1 * n2 / pow(n1Error, 2.0);
-    denominator += n2 * n2 / pow(n1Error, 2.0);
-  }
-  return (denominator == 0.0 ? 1.0 : numerator / denominator);
+  if (use_stglauber_norm_)
+    return norm_stglauber(h1, h2);
+  else
+    return norm_integral(h1, h2);
 }
 
 std::pair<double, int> NBDFit::chi2(TH1 *h1, TH1 *h2) {
@@ -281,6 +264,45 @@ std::pair<double, int> NBDFit::chi2_stglauber(TH1 *h1, TH1 *h2) {
   }
 
   return std::pair<double, int>{chi2, ndf};
+}
+
+double NBDFit::norm_integral(TH1 *h1, TH1 *h2) {
+  // get the normalization between two histograms in the region from
+  // minmult_fit_ to h1->GetXaxis()->GetXmax()
+  double min = minmult_fit_;
+  int minBin = h1->GetXaxis()->FindBin(min);
+  double max = h1->GetXaxis()->GetXmax();
+  int maxBin = h1->GetXaxis()->FindBin(max);
+
+  // calculate numerator and denominator
+  double numerator = 0;
+  double denominator = 0;
+  for (int i = minBin; i <= maxBin; ++i) {
+    double n1 = h1->GetBinContent(i);
+    double n1Error = h1->GetBinContent(i);
+    double n2 = h2->GetBinContent(i);
+
+    if (n1 == 0.0 || n1Error == 0.0)
+      continue;
+
+    numerator += n1 * n2 / pow(n1Error, 2.0);
+    denominator += n2 * n2 / pow(n1Error, 2.0);
+  }
+  return (denominator == 0.0 ? 1.0 : numerator / denominator);
+}
+
+double NBDFit::norm_stglauber(TH1 *h1, TH1 *h2) {
+  // get the normalization between two histograms in the region from
+  // minmult_fit_ to h1->GetXaxis()->GetXmax()
+  double min = minmult_fit_;
+  int minBin = h1->GetXaxis()->FindBin(min);
+  double max = h1->GetXaxis()->GetXmax();
+  int maxBin = h1->GetXaxis()->FindBin(max);
+
+  double h1_int = h1->Integral(minBin, maxBin);
+  double h2_int = h2->Integral(minBin, maxBin);
+
+  return (h2_int == 0.0 ? 1.0 : h1_int / h2_int);
 }
 
 } // namespace sct

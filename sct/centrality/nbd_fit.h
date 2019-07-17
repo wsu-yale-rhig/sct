@@ -28,31 +28,32 @@ class NegativeBinomial;
 struct FitResult {
   double chi2;
   int ndf;
-  TH1D* data;
+  TH1D *data;
   unique_ptr<TH1D> simu;
 
   FitResult() : chi2(0.0), ndf(0), data(nullptr), simu(nullptr){};
 };
 
 class NBDFit {
- public:
+public:
   // If no data file or glauber file is specified during construction, must
   // use loadData() and loadGlauber() before calling fit() or scan().
-  NBDFit(TH1D* data = nullptr, TH2D* glauber = nullptr);
+  NBDFit(TH1D *data = nullptr, TH2D *glauber = nullptr);
 
   virtual ~NBDFit();
 
   // To load in individually the data or glauber histograms, clears any
   // older histogram that was already loaded.
-  void loadData(const TH1D& data);
-  void loadGlauber(const TH2D& glauber);
+  void loadData(const TH1D &data);
+  void loadGlauber(const TH2D &glauber);
 
   // Can perform centrality definition calculation
   void makeCentDefs(bool flag = true);
 
   // When using fit(...) must set the NBD parameters beforehand
-  void setParameters(double npp, double k, double x, double pp_eff, double aa_eff,
-                     double cent_mult, double trigger_bias, bool const_efficiency);
+  void setParameters(double npp, double k, double x, double pp_eff,
+                     double aa_eff, double cent_mult, double trigger_bias,
+                     bool const_efficiency);
 
   // From the given NPart x NColl distribution, samples nevents times,
   // and generates a refmult distribution (with name name) from a negative
@@ -66,11 +67,12 @@ class NBDFit {
   // K, X values passed by the user and will return all results
   // If saveAllHist == true, then every simulated refmult distribution
   // is saved - otherwise, only the best fit is saved
-  sct_map<string, unique_ptr<FitResult>> scan(
-      unsigned nevents, unsigned npp_bins, double npp_min, double npp_max,
-      unsigned k_bins, double k_min, double k_max, unsigned x_bins,
-      double x_min, double x_max, double pp_eff, double aa_eff, double cent_mult,
-      double trigger_bias, bool const_efficiency, bool save_all_hist = false);
+  sct_map<string, unique_ptr<FitResult>>
+  scan(unsigned nevents, unsigned npp_bins, double npp_min, double npp_max,
+       unsigned k_bins, double k_min, double k_max, unsigned x_bins,
+       double x_min, double x_max, double pp_eff, double aa_eff,
+       double cent_mult, double trigger_bias, bool const_efficiency,
+       bool save_all_hist = false);
 
   // to restrict the fits to multiplicity > minmult_fit_, which will have an
   // effect on the chi2, since the low multiplicity regime is where the data
@@ -80,20 +82,34 @@ class NBDFit {
 
   // get normalization between two histograms in range
   // (minMultFit < x < h1->GetXaxis()->GetXmax());
-  double norm(TH1D* h1, TH1D* h2);
+  double norm(TH1D *h1, TH1D *h2);
 
   // get chi2 difference between h1 & h2
-  std::pair<double, int> chi2(TH1* h1, TH1* h2);
+  std::pair<double, int> chi2(TH1 *h1, TH1 *h2);
 
   // use homebrewed chi2 copied from StGlauber library, instead of ROOTs
-  // NOTE: StGlauber Chi2 is not symmetric and only uses errors from h1
-  // in the denominator
+  // NOTE: StGlauber Chi2 is not symmetric - it assumes the glauber is a
+  // function instead of a randomly filled histogram, and only considers errors
+  // from the data
   void useStGlauberChi2(bool flag = true) { use_stglauber_chi2_ = flag; }
+  void useROOTChi2(bool flag = true) { use_stglauber_chi2_ = !flag; }
   inline bool usingStGlauberChi2() { return use_stglauber_chi2_; }
 
- private:
-  std::pair<double, int> chi2_root(TH1* h1, TH1* h2);
-  std::pair<double, int> chi2_stglauber(TH1* h1, TH1* h2);
+  // selects between normalization routines for the histograms before chi2 test
+  // 1) StGlauber method - normalizes by the sum of the product of the bin
+  //                       contents weighted by  1/error^2, (see implementation)
+  // 2) integral method - constrains the integral of both histograms to be fixed
+  // both are fit in the region [minmult_fit_, maxBin]
+  void useStGlauberNorm(bool flag = true) { use_stglauber_norm_ = flag; }
+  void useIntegralNorm(bool flag = true) { use_stglauber_norm_ = !flag; }
+  inline bool usingStGlauberNorm() { return use_stglauber_norm_; }
+
+private:
+  std::pair<double, int> chi2_root(TH1 *h1, TH1 *h2);
+  std::pair<double, int> chi2_stglauber(TH1 *h1, TH1 *h2);
+
+  double norm_integral(TH1 *h1, TH1 *h2);
+  double norm_stglauber(TH1 *h1, TH1 *h2);
 
   // multiplicity model
   unique_ptr<MultiplicityModel> multiplicity_model_;
@@ -108,7 +124,11 @@ class NBDFit {
 
   // flag for using StGlauber chi2 or ROOT's own chi-square minimization
   bool use_stglauber_chi2_;
-};
-}  // namespace sct
 
-#endif  // SCT_CENTRALITY_NBD_FIT_H
+  // flag for using StGlauber normalization for histograms, or using a simple
+  // integral normalization above minmult_fit_
+  bool use_stglauber_norm_;
+};
+} // namespace sct
+
+#endif // SCT_CENTRALITY_NBD_FIT_H
