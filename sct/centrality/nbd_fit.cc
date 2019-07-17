@@ -266,7 +266,7 @@ std::pair<double, int> NBDFit::chi2_stglauber(TH1 *h1, TH1 *h2) {
   return std::pair<double, int>{chi2, ndf};
 }
 
-double NBDFit::norm_integral(TH1 *h1, TH1 *h2) {
+double NBDFit::norm_stglauber(TH1 *h1, TH1 *h2) {
   // get the normalization between two histograms in the region from
   // minmult_fit_ to h1->GetXaxis()->GetXmax()
   double min = minmult_fit_;
@@ -291,7 +291,7 @@ double NBDFit::norm_integral(TH1 *h1, TH1 *h2) {
   return (denominator == 0.0 ? 1.0 : numerator / denominator);
 }
 
-double NBDFit::norm_stglauber(TH1 *h1, TH1 *h2) {
+double NBDFit::norm_integral(TH1 *h1, TH1 *h2) {
   // get the normalization between two histograms in the region from
   // minmult_fit_ to h1->GetXaxis()->GetXmax()
   double min = minmult_fit_;
