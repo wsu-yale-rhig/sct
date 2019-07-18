@@ -107,7 +107,7 @@ unique_ptr<FitResult> NBDFit::fit(unsigned nevents, string name) {
     if (npart < 2 || ncoll < 1)
       continue;
 
-    unsigned mult = multiplicity_model_->multiplicity(static_cast<int>(npart),
+    unsigned mult = multiplicity_model_->multiplicity(npart,
                                                       static_cast<int>(ncoll));
     refmult_sim_->Fill(mult);
   }

@@ -57,8 +57,8 @@ double MultiplicityModel::multiplicity(double npart, double ncoll) const {
   double eff = evalEfficiency(ideal_mult);
 
   unsigned mult = 0;
-  for (int i = 0; i < ideal_mult; ++i) {
-    if (Random::instance().uniform() < eff) mult++;
+  for (int i = 0; i < 2*ideal_mult; ++i) {
+    if (Random::instance().uniform2() <= eff) mult++;
   }
 
   if (trigger_bias_ == 1.0) return mult;
