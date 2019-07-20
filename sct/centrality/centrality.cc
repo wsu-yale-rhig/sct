@@ -211,10 +211,10 @@ std::pair<std::vector<double>, unique_ptr<TH1D>> Centrality::weights(
       "[0] + [1]/([2]*x + [3]) + [4]*([2]*x + [3]) + [5]/([2]*x + [3])^2 + "
       "[6]*([2]*x + [3])^2";
   unique_ptr<TF1> ratio_fit =
-      make_unique<TF1>("ratio_fit", fxn_def.c_str(), 0, fit_boundary);
-
+      make_unique<TF1>("ratio_fit", fxn_def.c_str(), 10, fit_boundary);
+  
   // define some reasonable defaults to help the fit
-  ratio_fit->SetParameters(1.5, -20, 1, 6, 1e-3, 600, 5e-6);
+  ratio_fit->SetParameters(1.5, -20, 0.5, 6, 1e-3, 450, 5e-6);
 
   // and fit
   ratio->Fit(ratio_fit.get(), "EMR");
