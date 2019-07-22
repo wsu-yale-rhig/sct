@@ -10,23 +10,24 @@ namespace sct {
 
 // helper function to try and avoid rounding errors, when doing
 // the fractional calculations in the centrality definitions
-template <typename T>
-T Round(T t, int digits) {
-  if (t == 0.0)  // otherwise it will return 'nan' due to the log10() of zero
+template <typename T> T Round(T t, int digits) {
+  if (t == 0.0) // otherwise it will return 'nan' due to the log10() of zero
     return 0.0;
 
   double factor = pow(10.0, digits - ceil(log10(fabs(t))));
   return round(t * factor) / factor;
 }
 
-Centrality::Centrality(TH1D* data, TH1D* simu) {
-  if (data != nullptr) setDataRefmult(data);
-  if (simu != nullptr) setSimuRefmult(simu);
+Centrality::Centrality(TH1D *data, TH1D *simu) {
+  if (data != nullptr)
+    setDataRefmult(data);
+  if (simu != nullptr)
+    setSimuRefmult(simu);
 }
 
 Centrality::~Centrality() {}
 
-void Centrality::setDataRefmult(TH1D* histogram) {
+void Centrality::setDataRefmult(TH1D *histogram) {
   data_ = make_unique<TH1D>(*histogram);
   data_->SetName(MakeString("centrality_internal_data_refmult_",
                             Random::instance().counter())
@@ -34,7 +35,7 @@ void Centrality::setDataRefmult(TH1D* histogram) {
   data_->SetDirectory(0);
 }
 
-void Centrality::setSimuRefmult(TH1D* histogram) {
+void Centrality::setSimuRefmult(TH1D *histogram) {
   simu_ = make_unique<TH1D>(*histogram);
   simu_->SetName(MakeString("centrality_internal_simu_refmult_",
                             Random::instance().counter())
@@ -65,15 +66,15 @@ std::vector<unsigned> Centrality::centralityBins(XSecMod mod) {
     LOG(ERROR) << "Centrality calculation failed";
     string mod_string;
     switch (mod) {
-      case XSecMod::None:
-        mod_string = "None";
-        break;
-      case XSecMod::Plus5:
-        mod_string = "+5%";
-        break;
-      case XSecMod::Minus5:
-        mod_string = "-5%";
-        break;
+    case XSecMod::None:
+      mod_string = "None";
+      break;
+    case XSecMod::Plus5:
+      mod_string = "+5%";
+      break;
+    case XSecMod::Minus5:
+      mod_string = "-5%";
+      break;
     }
     LOG(ERROR) << "xsec mod: " << mod_string;
     LOG(ERROR) << "bounds forward: " << bounds_forward;
@@ -84,7 +85,7 @@ std::vector<unsigned> Centrality::centralityBins(XSecMod mod) {
   return bounds_forward;
 }
 
-std::vector<unsigned> Centrality::integrate(TH1D* h, Integral direction,
+std::vector<unsigned> Centrality::integrate(TH1D *h, Integral direction,
                                             XSecMod mod) {
   // returns a std::vector of multiplicity boundaries
   std::vector<unsigned> boundaries;
@@ -92,15 +93,15 @@ std::vector<unsigned> Centrality::integrate(TH1D* h, Integral direction,
   // first get xsec modification
   double xsec_percent = 1.0;
   switch (mod) {
-    case XSecMod::Plus5:
-      xsec_percent = 1.05;
-      break;
-    case XSecMod::Minus5:
-      xsec_percent = 0.95;
-      break;
-    case XSecMod::None:
-      xsec_percent = 1.0;
-      break;
+  case XSecMod::Plus5:
+    xsec_percent = 1.05;
+    break;
+  case XSecMod::Minus5:
+    xsec_percent = 0.95;
+    break;
+  case XSecMod::None:
+    xsec_percent = 1.0;
+    break;
   }
 
   // copy our centrality bounds from sct/lib/enumeration.h
@@ -115,15 +116,14 @@ std::vector<unsigned> Centrality::integrate(TH1D* h, Integral direction,
   // backward, and weighted by the xsec modification
   std::vector<double> cent_cuts;
   switch (direction) {
-    case Integral::Forward:
-      for (int i = 0; i < n_cent_bins; ++i)
-        cent_cuts.push_back(cent_max[i] / 100.0 * xsec_percent);
-      break;
-    case Integral::Backward:
-      for (int i = 0; i < n_cent_bins; ++i)
-        cent_cuts.push_back(cent_max[n_cent_bins - 1 - i] / 100.0 *
-                            xsec_percent);
-      break;
+  case Integral::Forward:
+    for (int i = 0; i < n_cent_bins; ++i)
+      cent_cuts.push_back(cent_max[i] / 100.0 * xsec_percent);
+    break;
+  case Integral::Backward:
+    for (int i = 0; i < n_cent_bins; ++i)
+      cent_cuts.push_back(cent_max[n_cent_bins - 1 - i] / 100.0 * xsec_percent);
+    break;
   }
   std::reverse(cent_cuts.begin(), cent_cuts.end());
 
@@ -139,16 +139,16 @@ std::vector<unsigned> Centrality::integrate(TH1D* h, Integral direction,
     // integrate forward or backwards, and the multiplicity
     unsigned bin_low, bin_high, mult;
     switch (direction) {
-      case Integral::Forward:
-        bin_low = 1;
-        bin_high = i;
-        mult = bin_high - 1;
-        break;
-      case Integral::Backward:
-        bin_low = nbins_hist + 1 - i;
-        bin_high = nbins_hist;
-        mult = bin_low - 1;
-        break;
+    case Integral::Forward:
+      bin_low = 1;
+      bin_high = i;
+      mult = bin_high - 1;
+      break;
+    case Integral::Backward:
+      bin_low = nbins_hist + 1 - i;
+      bin_high = nbins_hist;
+      mult = bin_low - 1;
+      break;
     }
 
     // get the integral
@@ -163,20 +163,20 @@ std::vector<unsigned> Centrality::integrate(TH1D* h, Integral direction,
 
     // now loop to find if it sits on a bin edge
     switch (direction) {
-      case Integral::Forward:
-        for (int bin = cent_bin; bin < n_cent_bins; ++bin) {
-          if (1.0 - fraction < cent_cuts[bin]) {
-            boundaries[cent_bin++] = mult;
-          }
+    case Integral::Forward:
+      for (int bin = cent_bin; bin < n_cent_bins; ++bin) {
+        if (1.0 - fraction < cent_cuts[bin]) {
+          boundaries[cent_bin++] = mult;
         }
-        break;
-      case Integral::Backward:
-        for (int bin = cent_bin; bin < n_cent_bins; ++bin) {
-          if (fraction >= cent_cuts[bin]) {
-            boundaries[cent_bin++] = mult;
-          }
+      }
+      break;
+    case Integral::Backward:
+      for (int bin = cent_bin; bin < n_cent_bins; ++bin) {
+        if (fraction >= cent_cuts[bin]) {
+          boundaries[cent_bin++] = mult;
         }
-        break;
+      }
+      break;
     }
   }
 
@@ -187,8 +187,8 @@ std::vector<unsigned> Centrality::integrate(TH1D* h, Integral direction,
   return boundaries;
 }
 
-std::pair<std::vector<double>, unique_ptr<TH1D>> Centrality::weights(
-    unsigned fit_boundary) {
+std::pair<std::vector<double>, unique_ptr<TH1D>>
+Centrality::weights(unsigned fit_boundary_low, unsigned fit_boundary_high) {
   // make sure both histograms exist
   if (data_.get() == nullptr) {
     LOG(ERROR)
@@ -210,9 +210,9 @@ std::pair<std::vector<double>, unique_ptr<TH1D>> Centrality::weights(
   string fxn_def =
       "[0] + [1]/([2]*x + [3]) + [4]*([2]*x + [3]) + [5]/([2]*x + [3])^2 + "
       "[6]*([2]*x + [3])^2";
-  unique_ptr<TF1> ratio_fit =
-      make_unique<TF1>("ratio_fit", fxn_def.c_str(), 10, fit_boundary);
-  
+  unique_ptr<TF1> ratio_fit = make_unique<TF1>(
+      "ratio_fit", fxn_def.c_str(), fit_boundary_low, fit_boundary_high);
+
   // define some reasonable defaults to help the fit
   ratio_fit->SetParameters(1.5, -20, 0.5, 6, 1e-3, 450, 5e-6);
 
@@ -225,4 +225,4 @@ std::pair<std::vector<double>, unique_ptr<TH1D>> Centrality::weights(
   return {weights, std::move(ratio)};
 }
 
-}  // namespace sct
+} // namespace sct

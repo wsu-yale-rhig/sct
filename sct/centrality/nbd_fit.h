@@ -72,7 +72,7 @@ public:
        unsigned k_bins, double k_min, double k_max, unsigned x_bins,
        double x_min, double x_max, double pp_eff, double aa_eff,
        double cent_mult, double trigger_bias, bool const_efficiency,
-       bool save_all_hist = false);
+       bool save_all_hist = false, bool verbose = false);
 
   // to restrict the fits to multiplicity > minmult_fit_, which will have an
   // effect on the chi2, since the low multiplicity regime is where the data

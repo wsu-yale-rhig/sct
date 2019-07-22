@@ -107,8 +107,8 @@ unique_ptr<FitResult> NBDFit::fit(unsigned nevents, string name) {
     if (npart < 2 || ncoll < 1)
       continue;
 
-    unsigned mult = multiplicity_model_->multiplicity(npart,
-                                                      static_cast<int>(ncoll));
+    unsigned mult =
+        multiplicity_model_->multiplicity(npart, static_cast<int>(ncoll));
     refmult_sim_->Fill(mult);
   }
 
@@ -136,7 +136,7 @@ NBDFit::scan(unsigned nevents, unsigned npp_bins, double npp_min,
              double npp_max, unsigned k_bins, double k_min, double k_max,
              unsigned x_bins, double x_min, double x_max, double pp_eff,
              double aa_eff, double cent_mult, double trigger_bias,
-             bool const_efficiency, bool save_all_hist) {
+             bool const_efficiency, bool save_all_hist, bool verbose) {
   // Perform the fit routine over a grid of NBD values (Npp, K, X)
   // and return a dictionary of results
   sct_map<string, unique_ptr<FitResult>> result_map;
@@ -148,6 +148,14 @@ NBDFit::scan(unsigned nevents, unsigned npp_bins, double npp_min,
   double dNpp = (npp_max - npp_min) / (npp_bins > 1 ? npp_bins - 1 : 1);
   double dK = (k_max - k_min) / (k_bins > 1 ? k_bins - 1 : 1);
   double dX = (x_max - x_min) / (x_bins > 1 ? x_bins - 1 : 1);
+
+  LOG(INFO) << "Starting parameter scan:";
+  LOG(INFO) << "Npp [bins, min, max, step]: [" << npp_bins << ", " << npp_min
+            << ", " << npp_max << ", " << dNpp << "]";
+  LOG(INFO) << "K [bins, min, max, step]: [" << k_bins << ", " << k_min << ", "
+            << k_max << ", " << dK << "]";
+  LOG(INFO) << "x [bins, min, max, step]: [" << x_bins << ", " << x_min << ", "
+            << x_max << ", " << dX << "]";
 
   // for book-keeping
   double best_chi2 = 0.0;
@@ -187,7 +195,7 @@ NBDFit::scan(unsigned nevents, unsigned npp_bins, double npp_min,
         // calculate current entry
         unsigned current_bin =
             bin_x + bin_k * x_bins + bin_npp * x_bins * k_bins;
-        if (current_bin % 10 == 0) {
+        if (current_bin % 10 == 0 || verbose) {
           LOG(INFO) << "Scan " << std::setprecision(2) << std::fixed
                     << (double)current_bin / nBins * 100.0
                     << "% complete: current entry: ";
