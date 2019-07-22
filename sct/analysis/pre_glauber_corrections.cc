@@ -61,25 +61,26 @@ SCT_DEFINE_int(refmultMax, 800, "maximum refmult");
 SCT_DEFINE_string(luminosityBranch, "lumi",
                   "name of branch containing luminosity information (zdc rate, "
                   "bbc rate, etc)");
-SCT_DEFINE_double(lumiMin, 0, "minimum luminosity (kHz)");
-SCT_DEFINE_double(lumiMax, 100, "maximum luminosity (kHz)");
+SCT_DEFINE_double(lumiMin, 0, "minimum luminosity [kHz]");
+SCT_DEFINE_double(lumiMax, 100, "maximum luminosity [kHz]");
 SCT_DEFINE_double(lumiBins, 60,
                   "number of bins to use for luminosity correction");
-SCT_DEFINE_double(lumiNorm, 0.0,
-                  "normalization point - lumi correction = f(zdcNorm)/f(zdc)");
+SCT_DEFINE_double(
+    lumiNorm, 0.0,
+    "normalization point - lumi correction = f(zdcNorm)/f(zdc) [kHz]");
 
 SCT_DEFINE_string(vzBranch, "vz", "name of vertex z branch");
 SCT_DEFINE_double(vzMin, -30.0, "minimum Vz [cm]");
 SCT_DEFINE_double(vzMax, 30.0, "maximum Vz [cm]");
 SCT_DEFINE_double(vzBins, 20, "number of bins to use for Vz correction");
 SCT_DEFINE_double(vzNorm, 0.0,
-                  "normalization point - vz correction = f(vzNorm)/f(vz)");
+                  "normalization point - vz correction = f(vzNorm)/f(vz) [cm]");
 
 SCT_DEFINE_string(vrBranch, "vr", "name of vertex r branch");
-SCT_DEFINE_double(vrMax, 3.0, "maximum Vr");
+SCT_DEFINE_double(vrMax, 3.0, "maximum Vr [cm]");
 
 SCT_DEFINE_string(dVzBranch, "vzvpdvz", "name of vz - vpd vz branch");
-SCT_DEFINE_double(dVzMax, 3.0, "maximum dVz");
+SCT_DEFINE_double(dVzMax, 3.0, "maximum dVz [cm]");
 
 // applies event cuts as defined in program flags for each stage of the
 // corrections

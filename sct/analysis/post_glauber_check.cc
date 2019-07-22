@@ -33,10 +33,11 @@
 
 // program settings
 SCT_DEFINE_string(outDir, "tmp", "directory to save output to");
+SCT_DEFINE_string(outFile, "post_qa", "output file name (no extension)");
 SCT_DEFINE_string(correctionFile, "refmultcorr_params.txt",
                   "results from pre_glauber_corrections");
-SCT_DEFINE_string(glauberCentDefFile, "fit_results.txt",
-                  "results from fit_glauber_to_data");
+SCT_DEFINE_string(glauberCentDefFile, "centrality_results.txt",
+                  "results from calculate_centrality");
 SCT_DEFINE_string(dataFile, "refmult.root",
                   "path to root file containing refmult tree");
 SCT_DEFINE_string(treeName, "refMultTree", "refmult tree name");
@@ -51,9 +52,10 @@ SCT_DEFINE_string(luminosityBranch, "lumi",
                   "bbc rate, etc)");
 SCT_DEFINE_double(lumiMin, 0, "minimum luminosity (kHz)");
 SCT_DEFINE_double(lumiMax, 100, "maximum luminosity (kHz)");
-SCT_DEFINE_double(lumiBins, 20, "number of bins to use for lumi correction");
-SCT_DEFINE_double(lumiNorm, 0.0,
-                  "normalization point - lumi correction = f(zdcNorm)/f(zdc)");
+SCT_DEFINE_double(lumiBins, 5, "number of bins to use for lumi correction");
+SCT_DEFINE_double(
+    lumiNorm, 0.0,
+    "normalization point - lumi correction = f(zdcNorm)/f(zdc) [kHz]");
 
 SCT_DEFINE_string(vzBranch, "vz", "name of vertex z branch");
 SCT_DEFINE_double(vzMin, -30.0, "minimum Vz [cm]");
@@ -149,10 +151,11 @@ int main(int argc, char *argv[]) {
     LOG(ERROR) << "incorrect number of vz parameters: expect 7, got "
                << glauber_weights.size();
 
+  LOG(INFO) << "loading centrality definition into StRefMultCorr";
   // create our centrality definition
   sct::RefMultCorrTemplate centrality;
   centrality.setZDCParameters(lumi_par);
-  centrality.setZDCNormalizationPoint(FLAGS_lumiNorm);
+  centrality.setZDCNormalizationPoint(FLAGS_lumiNorm * 1000);
   centrality.setVzParameters(vz_par);
   centrality.setVzNormalizationPoint(FLAGS_vzNorm);
   centrality.setCentralityBounds16Bin(cent_bounds);
@@ -166,6 +169,10 @@ int main(int argc, char *argv[]) {
   TH1::SetDefaultSumw2();
   TH2::SetDefaultSumw2();
   TH3::SetDefaultSumw2();
+
+  // create output file
+  std::string output_name = FLAGS_outDir + "/" + FLAGS_outFile + ".root";
+  TFile out(output_name.c_str(), "RECREATE");
 
   // shut ROOT up :)
   gErrorIgnoreLevel = kWarning;
@@ -221,11 +228,29 @@ int main(int argc, char *argv[]) {
                FLAGS_lumiMin, FLAGS_lumiMax, FLAGS_vzBins, FLAGS_vzMin,
                FLAGS_vzMax, 16, -0.5, 15.5);
 
+  // and qa histograms
+  TH1D *hVz = new TH1D("vz", ";v_{z}", 100, FLAGS_vzMin - 10, FLAGS_vzMax + 10);
+  hVz->SetDirectory(0);
+  TH1D *hdVz =
+      new TH1D("dvz", ";dv_{z}", 100, -FLAGS_dVzMax - 5, FLAGS_dVzMax + 5);
+  hdVz->SetDirectory(0);
+  TH1D *hVr = new TH1D("vr", ";v_{r}", 100, -FLAGS_vrMax - 1, FLAGS_vrMax + 1);
+  hVr->SetDirectory(0);
+  TH1D *hzdcx = new TH1D("zdcx", ";ZDCx [kHz]", 100, FLAGS_lumiMin - 10,
+                         FLAGS_lumiMax + 10);
+  hzdcx->SetDirectory(0);
+
+  LOG(INFO) << "beginning event loop";
   while (reader.Next()) {
     double lumikhz = *lumi / 1000.0;
 
     if (!AcceptEvent(*vz, *vr, *dVz, *refmult, lumikhz))
       continue;
+
+    hVz->Fill(*vz);
+    hdVz->Fill(*dVz);
+    hVr->Fill(*vr);
+    hzdcx->Fill(lumikhz);
 
     centrality.setEvent(*refmult, *lumi, *vz);
     double refmultcorr = centrality.refMultCorr();
@@ -286,8 +311,8 @@ int main(int argc, char *argv[]) {
   TH1D *events_weighted = events_per_bin_weighted->ProjectionZ();
   events->Scale(1.0 / events->Integral() * 8 / 10);
   events_weighted->Scale(1.0 / events_weighted->Integral() * 8 / 10);
-  events->GetYaxis()->SetRangeUser(0.02, 0.08);
-  events_weighted->GetYaxis()->SetRangeUser(0.02, 0.08);
+  events->GetYaxis()->SetRangeUser(0.00, 0.1);
+  events_weighted->GetYaxis()->SetRangeUser(0.00, 0.1);
   sct::Overlay1D(events, events_weighted, "unweighted", "weighted", hOpts,
                  cOptsLowerLeg, FLAGS_outDir, "centrality_bin_event_fraction",
                  "", "centrality bin [5%]", "fraction of events", "");
@@ -298,8 +323,11 @@ int main(int argc, char *argv[]) {
   for (int i = 1; i <= events_per_bin_weighted->GetXaxis()->GetNbins(); ++i) {
     std::string name = sct::MakeString(events_per_bin_weighted->GetName(), i);
     TH1D *tmp = events_per_bin_weighted->ProjectionZ(name.c_str(), i, i, 1, -1);
+    if (tmp->Integral() <= 0)
+      continue;
+
     tmp->Scale(1.0 / tmp->Integral() * 8 / 10);
-    tmp->GetYaxis()->SetRangeUser(0.02, 0.08);
+    tmp->GetYaxis()->SetRangeUser(0.00, 0.10);
     std::string leg_name =
         sct::MakeString(std::setprecision(3),
                         events_per_bin_weighted->GetXaxis()->GetBinLowEdge(i),
@@ -307,11 +335,20 @@ int main(int argc, char *argv[]) {
                         events_per_bin_weighted->GetXaxis()->GetBinUpEdge(i));
     zdcx_event_fraction.push_back(tmp);
     zdcx_event_fraction_name.push_back(leg_name);
-
-    sct::Overlay1D(zdcx_event_fraction, zdcx_event_fraction_name, hOpts,
-                 cOptsLowerLeg, FLAGS_outDir, "centrality_bin_event_fraction_zdcx",
-                 "", "centrality bin [5%]", "fraction of events", "");
   }
+
+  sct::Overlay1D(zdcx_event_fraction, zdcx_event_fraction_name, hOpts,
+                 cOptsLowerLeg, FLAGS_outDir,
+                 "centrality_bin_event_fraction_zdcx", "",
+                 "centrality bin [5%]", "fraction of events", "");
+
+  LOG(INFO) << "finished: shutting down";
+  out.cd();
+
+  hVz->Write();
+  hdVz->Write();
+  hVr->Write();
+  hzdcx->Write();
 
   gflags::ShutDownCommandLineFlags();
   return 0;
@@ -337,7 +374,7 @@ bool AcceptEvent(double vz, double vr, double dVz, unsigned refmult,
     return false;
   if (vr > FLAGS_vrMax)
     return false;
-  if (dVz > FLAGS_dVzMax)
+  if (fabs(dVz) > FLAGS_dVzMax)
     return false;
   if (refmult < FLAGS_refmultMin || refmult > FLAGS_refmultMax)
     return false;
