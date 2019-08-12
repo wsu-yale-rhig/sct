@@ -66,7 +66,7 @@ void RunGlauber(sct::GlauberSpecies species, sct::CollisionEnergy energy,
   generator.run(nEvents);
   sct::GlauberTree* result = generator.results();
 
-  int binx = sct::NucleusInfo::instance().massNumber(species) * 2;
+  int binx = sct::NucleusInfo::instance().massNumber(species) * 2 + 1;
   int biny = sct::NucleusInfo::instance().massNumber(species) * 8;
 
   TH2D* ncollnpart = new TH2D(sct::MakeString("npartncoll_", modstring).c_str(),
