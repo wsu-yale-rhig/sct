@@ -34,7 +34,7 @@ list(REMOVE_ITEM SCT_SRCS ${SCT_TEST_MAIN})
 endif(SCT_TEST_MAIN)
 
 ## install headers
-install(FILES ${SCT_HDRS} DESTINATION include/sct/lib)
+install(FILES ${SCT_HDRS} DESTINATION include/sct/test)
 
 ## add subdirectories
 ## none
