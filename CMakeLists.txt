@@ -11,6 +11,12 @@ set(CMAKE_BUILD_TYPE RELEASE)
 option(BUILD_SHARED_LIBS "Build libsct.so" ON)
 option(BUILD_BINARIES "Build executables" OFF)
 option(BUILD_TEST "Build test suite binaries" OFF)
+option(COMPARE_STGLAUBER "Build comparison routines with StFastGlauber. Requires GTest" OFF)
+
+if (COMPARE_STGLAUBER AND NOT BUILD_TEST)
+message(STATUS "Can not run StGlauber comparisons without GTest: disabling")
+set(COMPARE_STGLAUBER OFF)
+endif (COMPARE_STGLAUBER AND NOT BUILD_TEST)
 
 # compiler & system checks
 include(cmake/SysCheck.cmake)

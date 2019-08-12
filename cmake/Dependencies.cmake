@@ -11,6 +11,7 @@ if(BUILD_TEST)
   set(BUILD_GTEST ON CACHE BOOL "build core gtest")
   set(INSTALL_GTEST OFF CACHE BOOL "do not install gtest to install directory")
   # gmock currently not used
+  set(BUILD_GMOCK OFF CACHE BOOL "do not build gmock")
   add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/googletest)
   sct_include_directories(
     ${PROJECT_SOURCE_DIR}/third_party/googletest/googletest/include)
@@ -37,6 +38,12 @@ if(BUILD_BINARIES)
   include_directories(${Boost_INCLUDE_DIRS})
   list(APPEND SCT_DEPENDENCY_LIBS ${Boost_LIBRARIES})
 endif()
+
+if(COMPARE_STGLAUBER)
+  add_subdirectory(third_party/stglauber)
+  list(APPEND SCT_DEPENDENCY_LIBS ${STGLAUBER_LIBS})
+  SCT_include_directories(${STGLAUBER_INCLUDE_DIRS})
+endif(COMPARE_STGLAUBER)
 
 # ROOT
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
