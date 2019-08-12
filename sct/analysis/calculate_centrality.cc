@@ -312,7 +312,7 @@ int main(int argc, char *argv[]) {
   LOG(INFO) << "writing centrality definition to file";
   std::ofstream cent_file;
   cent_file.open(FLAGS_outDir + "/" + FLAGS_outFile + ".txt",
-                 std::ios::out | std::ios::app);
+                 std::ios::out);
 
   cent_file << "nominal cent: ";
   for (auto i : cent_bounds)
