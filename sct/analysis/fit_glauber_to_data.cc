@@ -169,11 +169,15 @@ int main(int argc, char *argv[]) {
   // and we save the results to disk
   std::string output_name = FLAGS_outDir + "/" + FLAGS_outFile + ".root";
   TFile out(output_name.c_str(), "RECREATE");
-  refit->data->SetName("data");
+  refit->data->SetName("refmult");
   refit->data->Write();
   refit->simu->SetNameTitle("glauber", best_key.c_str());
   refit->simu->SetTitle(best_key.c_str());
   refit->simu->Write();
+
+  TH1D* ratio = (TH1D*) refit->simu->Clone("ratio");
+  ratio->Divide(refit->data);
+  ratio->Write();
 
   // write all histograms to disk if they were saved
   if (FLAGS_saveAll) {
