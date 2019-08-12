@@ -144,7 +144,7 @@ int main(int argc, char *argv[]) {
   // user ranges for projections/fits
   double avg_refmult_y_min = 120;
   double avg_refmult_y_max = 220;
-  int avg_refmult_rebinning_lumi = 4;
+  int avg_refmult_rebinning_lumi = 2;
 
   double vz_tail_min = 450;
   double vz_tail_max = 650;
@@ -152,7 +152,7 @@ int main(int argc, char *argv[]) {
   double vz_pol_min = FLAGS_vzMin;
   double vz_pol_max = FLAGS_vzMax;
 
-  double h_param_y_min = 500;
+  double h_param_y_min = 450;
   double h_param_y_max = 600;
 
   // Fit function definitions and default parameter values
