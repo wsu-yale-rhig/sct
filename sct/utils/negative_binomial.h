@@ -15,8 +15,6 @@ class NegativeBinomial {
 
   virtual ~NegativeBinomial();
 
-  // returns two component multiplicity (1-x)* npart/2 + (x) * ncoll
-  double twoComponentMultiplicity(double npart, double ncoll) const;
   // returns convolution with NBD
   double multiplicity(double npart, double ncoll) const;
 

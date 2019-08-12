@@ -41,6 +41,5 @@ void NegativeBinomial::initNBD() {
   for (int i = 0; i < nBins; ++i) {
     nbd_->SetBinContent(i + 1, evaluateNBD(i));
   }
-  nbd_->Scale(1.0 / nbd_->Integral());
 }
 }  // namespace sct
