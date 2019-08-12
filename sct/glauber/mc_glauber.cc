@@ -233,8 +233,8 @@ void MCGlauber::writeHeader() {
   tree_->setNEventsThrown(events_generated_);
 
   // calculate total cross section
-  double x_min = events_accepted_ * pow(b_max_, 2) * pi * 10 / events_generated_;
-  double x_max = events_accepted_ * pow(b_min_, 2) * pi * 10 / events_generated_;
+  double x_min = events_accepted_ * pow(b_min_, 2) * pi * 10 / events_generated_;
+  double x_max = events_accepted_ * pow(b_max_, 2) * pi * 10 / events_generated_;
   double x_total = x_max - x_min;
   double xErr =
       (x_max - x_min) * sqrt(1.0 / events_accepted_ + 1.0 / events_generated_);
