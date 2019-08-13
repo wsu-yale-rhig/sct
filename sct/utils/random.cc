@@ -15,8 +15,7 @@ Random::Random()
   unit_linear_ =
       std::piecewise_linear_distribution<>(x.begin(), x.end(), w.begin());
 
-  std::random_device rd;
-  generator_.seed(rd());
+  generator_.seed(54854);
 }
 
 Random::~Random() {}
