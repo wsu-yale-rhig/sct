@@ -135,8 +135,8 @@ class GlauberTree {
   double PPArea(GlauberWeight id);
 
   // header
-  inline void setNameNucleusA(const string& val) { nameA_ = val; }
-  inline void setNameNucleusB(const string& val) { nameB_ = val; }
+  inline void setNameNucleusA(const string& val) { *nameA_ = val; }
+  inline void setNameNucleusB(const string& val) { *nameB_ = val; }
   inline void setMassNumberA(unsigned val) { massNumberA_ = val; }
   inline void setMassNumberB(unsigned val) { massNumberB_ = val; }
   inline void setRadiusA(double val) { radiusA_ = val; }
@@ -161,8 +161,8 @@ class GlauberTree {
   inline void setNEventsAccepted(unsigned val) { eventsAccepted_ = val; }
   inline void setNEventsThrown(unsigned val) { eventsThrown_ = val; }
 
-  inline string nameNucleusA() const { return nameA_; }
-  inline string nameNucleusB() const { return nameB_; }
+  inline string nameNucleusA() const { return *nameA_; }
+  inline string nameNucleusB() const { return *nameB_; }
   inline unsigned massNumberA() const { return massNumberA_; }
   inline unsigned massNumberB() const { return massNumberB_; }
   inline double radiusA() const { return radiusA_; }
@@ -215,8 +215,8 @@ class GlauberTree {
   double pp3_[nGlauberWeights];
   double pp4_[nGlauberWeights];
 
-  string nameA_;
-  string nameB_;
+  string* nameA_;
+  string* nameB_;
   unsigned massNumberA_;
   unsigned massNumberB_;
   double radiusA_;

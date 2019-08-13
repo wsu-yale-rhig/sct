@@ -5,20 +5,21 @@
 
 namespace sct {
 
-GlauberTree::GlauberTree(TreeMode mode, const string& filename)
-    : file_(), header_(nullptr), event_(nullptr) {
+GlauberTree::GlauberTree(TreeMode mode, const string &filename)
+    : file_(), header_(nullptr), event_(nullptr), nameA_(new string()),
+      nameB_(new string()) {
   switch (mode) {
-    case TreeMode::Write:
-      createBranches();
-      return;
-    case TreeMode::Read:
-      if (!filename.empty()) {
-        VLOG(1) << "Tree set to read mode - opening " << filename;
-        open(filename);
-      }
-      return;
-    default:
-      LOG(ERROR) << "library error: TreeMode not recognized in GlauberTree";
+  case TreeMode::Write:
+    createBranches();
+    return;
+  case TreeMode::Read:
+    if (!filename.empty()) {
+      VLOG(1) << "Tree set to read mode - opening " << filename;
+      open(filename);
+    }
+    return;
+  default:
+    LOG(ERROR) << "library error: TreeMode not recognized in GlauberTree";
   }
 }
 
@@ -55,7 +56,7 @@ void GlauberTree::clearEvent() {
   }
 }
 
-bool GlauberTree::open(const string& filename) {
+bool GlauberTree::open(const string &filename) {
   VLOG(1) << "sct::GlauberTree opening file to read";
   file_ = make_shared<TFile>(filename.c_str(), "READ");
   if (!file_ || !file_->IsOpen()) {
@@ -63,8 +64,8 @@ bool GlauberTree::open(const string& filename) {
                << " does path exist?";
     return false;
   }
-  event_ = (TTree*)file_->Get("event");
-  header_ = (TTree*)file_->Get("header");
+  event_ = (TTree *)file_->Get("event");
+  header_ = (TTree *)file_->Get("header");
   if (event_ == nullptr) {
     LOG(ERROR) << "event tree not found in root file: was the"
                << " file written by a sct GlauberTree?";
@@ -93,8 +94,8 @@ bool GlauberTree::read(shared_ptr<TFile> file) {
 
   // load trees
   file_ = file;
-  event_ = (TTree*)file_->Get("event");
-  header_ = (TTree*)file_->Get("header");
+  event_ = (TTree *)file_->Get("event");
+  header_ = (TTree *)file_->Get("header");
   if (event_ == nullptr) {
     LOG(ERROR) << "event tree not found in root file: was the"
                << " file written by a sct GlauberTree?";
@@ -110,8 +111,10 @@ bool GlauberTree::read(shared_ptr<TFile> file) {
 }
 
 void GlauberTree::write() {
-  if (header_ != nullptr) header_->Write();
-  if (event_ != nullptr) event_->Write();
+  if (header_ != nullptr)
+    header_->Write();
+  if (event_ != nullptr)
+    event_->Write();
 }
 
 double GlauberTree::RPArea(GlauberWeight id) {
@@ -162,7 +165,7 @@ void GlauberTree::loadBranches() {
   header_->SetBranchAddress("radiusA", &radiusA_);
   header_->SetBranchAddress("radiusB", &radiusB_);
   header_->SetBranchAddress("skindepthA", &skinDepthA_);
-  header_->SetBranchAddress("skinDepthB", &skinDepthB_);
+  header_->SetBranchAddress("skindepthB", &skinDepthB_);
   header_->SetBranchAddress("beta2A", &beta2A_);
   header_->SetBranchAddress("beta2B", &beta2B_);
   header_->SetBranchAddress("beta4A", &beta4A_);
@@ -193,7 +196,7 @@ void GlauberTree::createBranches() {
   event_->Branch("npart", &nPart_);
   event_->Branch("ncoll", &nColl_);
   event_->Branch("nspec", &nSpec_);
-  event_->Branch("nspec", &multiplicity_);
+  event_->Branch("multiplicity", &multiplicity_);
   event_->Branch("theta", theta_, "theta[2]/D");
   event_->Branch("phi", phi_, "phi[2]/D");
   event_->Branch("sumx", sumX_, "sumx[3]/D");
@@ -239,17 +242,20 @@ void GlauberTree::createBranches() {
 }
 
 unsigned GlauberTree::getEntries() const {
-  if (event_ != nullptr) return event_->GetEntries();
+  if (event_ != nullptr)
+    return event_->GetEntries();
   return 0;
 }
 
 bool GlauberTree::getEntry(unsigned int idx) {
-  if (event_ != nullptr) return event_->GetEntry(idx);
+  if (event_ != nullptr)
+    return event_->GetEntry(idx);
   return false;
 }
 
 bool GlauberTree::getHeaderEntry(unsigned int idx) {
-  if (header_ != nullptr) return header_->GetEntry(idx);
+  if (header_ != nullptr)
+    return header_->GetEntry(idx);
   return false;
 }
 
@@ -271,4 +277,4 @@ void GlauberTree::fillHeader() {
   }
 }
 
-}  // namespace sct
+} // namespace sct
