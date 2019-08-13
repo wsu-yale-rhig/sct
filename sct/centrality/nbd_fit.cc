@@ -287,7 +287,7 @@ double NBDFit::norm_stglauber(TH1 *h1, TH1 *h2) {
   double denominator = 0;
   for (int i = minBin; i <= maxBin; ++i) {
     double n1 = h1->GetBinContent(i);
-    double n1Error = h1->GetBinContent(i);
+    double n1Error = h1->GetBinError(i);
     double n2 = h2->GetBinContent(i);
 
     if (n1 == 0.0 || n1Error == 0.0)
