@@ -132,8 +132,9 @@ int main(int argc, char *argv[]) {
   LOG(INFO) << "Integral for data: " << refit->data->Integral();
   LOG(INFO) << "Integral for glauber: " << refit->simu->Integral();
   LOG(INFO) << "Integral for data in norm range: "
-            << refit->data->Integral(refit->data->GetXaxis()->FindBin(FLAGS_minMult),
-                                 refit->data->GetNbinsX());
+            << refit->data->Integral(
+                   refit->data->GetXaxis()->FindBin(FLAGS_minMult),
+                   refit->data->GetNbinsX());
   LOG(INFO) << "Integral for glauber in norm range: "
             << refit->simu->Integral(
                    refit->simu->GetXaxis()->FindBin(FLAGS_minMult),
@@ -162,18 +163,6 @@ int main(int argc, char *argv[]) {
     glauber_refmult->Fill(mult);
   }
 
-  // Show that the fit is similar between the fitter and the multiplicity model
-  auto simu_compare = fitter.chi2(refit->simu.get(), glauber_refmult);
-  LOG(INFO) << "comparison of fitter and by-hand multiplicity model chi2/ndf: "
-            << simu_compare.first / simu_compare.second;
-
-  auto data_compare = fitter.chi2(refmult, glauber_refmult);
-  LOG(INFO) << "comparison of data and by-hand multiplicity model chi2/ndf: "
-            << data_compare.first / data_compare.second;
-
-  TH1D *glauber_ref_scaled =
-      (TH1D *)glauber_refmult->Clone("glauber_ref_scaled");
-
   // Now compare normalization
   LOG(INFO) << "Integral for data: " << refmult->Integral();
   LOG(INFO) << "Integral for glauber: " << glauber_refmult->Integral();
@@ -189,6 +178,18 @@ int main(int argc, char *argv[]) {
   LOG(INFO) << "relative normalization: " << norm;
   glauber_refmult->Scale(norm);
 
+  TH1D *glauber_ref_scaled =
+      (TH1D *)glauber_refmult->Clone("glauber_ref_scaled");
+
+  // Show that the fit is similar between the fitter and the multiplicity model
+  auto simu_compare = fitter.chi2(refit->simu.get(), glauber_ref_scaled);
+  LOG(INFO) << "comparison of fitter and by-hand multiplicity model chi2/ndf: "
+            << simu_compare.first / simu_compare.second;
+
+  auto data_compare = fitter.chi2(refmult, glauber_ref_scaled);
+  LOG(INFO) << "comparison of data and by-hand multiplicity model chi2/ndf: "
+            << data_compare.first / data_compare.second;
+
   LOG(INFO) << "Post normalization comparison: ";
   LOG(INFO) << "Integral for data: " << refmult->Integral();
   LOG(INFO) << "Integral for glauber: " << glauber_refmult->Integral();
@@ -199,7 +200,7 @@ int main(int argc, char *argv[]) {
             << glauber_refmult->Integral(
                    glauber_refmult->GetXaxis()->FindBin(FLAGS_minMult),
                    glauber_refmult->GetNbinsX());
-  
+
   // save results to file
   std::string out_name = FLAGS_outDir + "/" + FLAGS_outFile + ".root";
   TFile out_file(out_name.c_str(), "RECREATE");
@@ -218,6 +219,6 @@ int main(int argc, char *argv[]) {
 
   out_file.Close();
 
-      gflags::ShutDownCommandLineFlags();
+  gflags::ShutDownCommandLineFlags();
   return 0;
 }
