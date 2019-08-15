@@ -70,6 +70,7 @@ SCT_DEFINE_bool(useStGlauberNorm, true,
 SCT_DEFINE_double(trigBias, 1.0, "trigger bias");
 SCT_DEFINE_int(minMult, 100,
                "minimum multiplicity for chi2 comparisons in fit");
+SCT_DEFINE_int(seed, 252452, "seed for sct RNG");
 
 int main(int argc, char *argv[]) {
   // shut ROOT up :)
@@ -125,6 +126,7 @@ int main(int argc, char *argv[]) {
   fitter.minimumMultiplicityCut(FLAGS_minMult);
   fitter.useStGlauberChi2(FLAGS_useStGlauberChi2);
   fitter.useStGlauberNorm(FLAGS_useStGlauberNorm);
+  sct::Random::instance().seed(FLAGS_seed);
 
   // scan
   auto results = fitter.scan(
