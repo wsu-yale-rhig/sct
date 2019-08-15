@@ -17,6 +17,10 @@ add_subdirectory(centrality)
 add_subdirectory(systematics)
 add_subdirectory(test)
 
+if(COMPARE_STGLAUBER)
+  add_subdirectory(stglauber)
+endif(COMPARE_STGLAUBER)
+
 # handle any files that have to be configured
 configure_file(${PROJECT_SOURCE_DIR}/sct/lib/macros.h.in
                ${PROJECT_BINARY_DIR}/sct/lib/macros.h)

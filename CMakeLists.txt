@@ -13,8 +13,8 @@ option(BUILD_BINARIES "Build executables" OFF)
 option(BUILD_TEST "Build test suite binaries" OFF)
 option(COMPARE_STGLAUBER "Build comparison routines with StFastGlauber. Requires GTest" OFF)
 
-if (COMPARE_STGLAUBER AND NOT BUILD_TEST)
-message(STATUS "Can not run StGlauber comparisons without GTest: disabling")
+if (COMPARE_STGLAUBER AND NOT BUILD_TEST AND NOT BUILD_BINARIES)
+message(STATUS "Can not run StGlauber comparisons without GTest and Boost: must enable binaries and tests")
 set(COMPARE_STGLAUBER OFF)
 endif (COMPARE_STGLAUBER AND NOT BUILD_TEST)
 
