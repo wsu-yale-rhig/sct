@@ -123,6 +123,21 @@ unique_ptr<FitResult> NBDFit::fit(unsigned nevents, string name) {
   // create output FitResults
   unique_ptr<FitResult> result = make_unique<FitResult>();
 
+  LOG(INFO) << sct::MakeString(std::setprecision(3), std::fixed,
+                               "[Npp: ", multiplicity_model_->npp(),
+                               ", k: ", multiplicity_model_->k(),
+                               ", x: ", multiplicity_model_->x(), "] ")
+            << sct::MakeString(std::setprecision(3), std::fixed,
+                               "chi2/ndf=", chi2_res.first, "/",
+                               chi2_res.second, "=",
+                               chi2_res.first / chi2_res.second);
+  LOG(INFO) << sct::MakeString(
+      std::setprecision(3), std::fixed,
+      "[AuAu eff: ", multiplicity_model_->centralEfficiency(),
+      ", pp eff: ", multiplicity_model_->ppEfficiency(),
+      ", central mult: ", multiplicity_model_->centralMultiplicity(),
+      ", trig eff: ", multiplicity_model_->triggerBias(), "]");
+
   // fill in the fit results
   result->chi2 = chi2_res.first;
   result->ndf = chi2_res.second;
@@ -156,6 +171,11 @@ NBDFit::scan(unsigned nevents, unsigned npp_bins, double npp_min,
             << k_max << ", " << dK << "]";
   LOG(INFO) << "x [bins, min, max, step]: [" << x_bins << ", " << x_min << ", "
             << x_max << ", " << dX << "]";
+  LOG(INFO) << "AuAu efficiency: " << aa_eff;
+  LOG(INFO) << "pp efficiency: " << pp_eff;
+  LOG(INFO) << "central multiplicity: " << cent_mult;
+  LOG(INFO) << "trigger bias: " << trigger_bias;
+  LOG(INFO) << "constant efficiency: " << const_efficiency;
 
   // for book-keeping
   double best_chi2 = 0.0;
@@ -197,10 +217,7 @@ NBDFit::scan(unsigned nevents, unsigned npp_bins, double npp_min,
             bin_x + bin_k * x_bins + bin_npp * x_bins * k_bins;
         if (current_bin % 10 == 0 || verbose) {
           LOG(INFO) << "Scan " << std::setprecision(2) << std::fixed
-                    << (double)current_bin / nBins * 100.0
-                    << "% complete: current entry: ";
-          LOG(INFO) << "Npp: " << npp << " k: " << k << " x: " << x;
-          LOG(INFO) << "chi2/ndf: " << result->chi2 / result->ndf;
+                    << (double)current_bin / nBins * 100.0 << "% complete";
         }
 
         // add the result from this (npp, k, x) set to the dictionary
