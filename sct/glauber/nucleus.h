@@ -31,7 +31,8 @@ public:
   // to avoid ambiguity
   Nucleus();
 
-  // generic constructor
+  // generic constructor - assumes a Woods-Saxon PDF. This can be changed
+  // by direct access to the nuclear PDF via nuclearPDF()
   Nucleus(unsigned mass_number, // number of nucleons
           double radius,        // radius of the nucleus (in fm)
           double skin_depth,    // skin depth of the nucleus (in fm)
@@ -105,7 +106,7 @@ public:
     return (TH3D *)smeared_position_.get();
   }
 
-  inline TF1 *woodsSaxon() const { return woods_saxon_.get(); }
+  inline TF1 *nuclearPDF() const { return nuclear_pdf_.get(); }
 
 private:
   // generates one random nucleon and rotates it wrt the nucleus orientation, if
@@ -113,7 +114,7 @@ private:
   void addNucleon(double b);
 
   // (re)creates the Woods-Saxon density profile if parameters are changed
-  void initWoodsSaxon();
+  void initNuclearPDF();
 
   // (re)creates QA histograms
   void initHistograms();
@@ -145,7 +146,7 @@ private:
   double nucleus_phi_;   // angles in the collision frame for a specific event
   double b_;             // impact parameter for a specific event
 
-  unique_ptr<TF1> woods_saxon_; // density profile for nucleons
+  unique_ptr<TF1> nuclear_pdf_; // density profile for nucleons
   unique_ptr<TF3>
       smearing_profile_; // Used to smear nucleon position if requested
 

@@ -1,6 +1,6 @@
 #include "sct/glauber/nucleus.h"
-#include "sct/lib/logging.h"
 #include "sct/lib/assert.h"
+#include "sct/lib/logging.h"
 #include "sct/lib/math.h"
 #include "sct/lib/string/string_utils.h"
 #include "sct/utils/functions.h"
@@ -28,7 +28,7 @@ Nucleus::Nucleus(unsigned mass_number, double radius, double skin_depth,
   // reserve space for the correct number of nucleons
   nucleons_.reserve(mass_number);
 
-  initWoodsSaxon();
+  initNuclearPDF();
   initHistograms();
 }
 
@@ -45,7 +45,7 @@ Nucleus::Nucleus(const Nucleus &rhs)
   for (int i = 0; i < rhs.size(); ++i)
     nucleons_.push_back(rhs[i]);
 
-  initWoodsSaxon();
+  initNuclearPDF();
   initHistograms();
 }
 
@@ -78,7 +78,7 @@ void Nucleus::setParameters(unsigned mass_number, double radius,
   beta2_ = beta2;
   beta4_ = beta4;
 
-  initWoodsSaxon();
+  initNuclearPDF();
   initHistograms();
 }
 
@@ -221,33 +221,33 @@ void Nucleus::addNucleon(double b) {
   }
 }
 
-void Nucleus::initWoodsSaxon() {
-  woods_saxon_.reset(nullptr);
+void Nucleus::initNuclearPDF() {
+  nuclear_pdf_.reset(nullptr);
 
   // either 1D or 2D depending on the deformation parameters
   if (beta2_ == 0.0 && beta4_ == 0.0) {
-    woods_saxon_ = make_unique<TF1>(
-        MakeString("woods_saxon_", Random::instance().counter()).c_str(),
+    nuclear_pdf_ = make_unique<TF1>(
+        MakeString("nuclear_pdf_", Random::instance().counter()).c_str(),
         WoodsSaxonSpherical, 0, 20, 2);
-    woods_saxon_->SetParName(0, "Radius");
-    woods_saxon_->SetParameter(0, radius_);
-    woods_saxon_->SetParName(1, "Skin depth");
-    woods_saxon_->SetParameter(1, skin_depth_);
-    woods_saxon_->SetNpx(400);
+    nuclear_pdf_->SetParName(0, "Radius");
+    nuclear_pdf_->SetParameter(0, radius_);
+    nuclear_pdf_->SetParName(1, "Skin depth");
+    nuclear_pdf_->SetParameter(1, skin_depth_);
+    nuclear_pdf_->SetNpx(400);
   } else {
-    woods_saxon_ = make_unique<TF2>(
-        MakeString("woods_saxon_", Random::instance().counter()).c_str(),
+    nuclear_pdf_ = make_unique<TF2>(
+        MakeString("nuclear_pdf_", Random::instance().counter()).c_str(),
         WoodsSaxonDeformed, 0, 20, -1.0, 1.0, 4);
-    woods_saxon_->SetParName(0, "Radius");
-    woods_saxon_->SetParameter(0, radius_);
-    woods_saxon_->SetParName(1, "Skin depth");
-    woods_saxon_->SetParameter(1, skin_depth_);
-    woods_saxon_->SetParName(2, "#beta_{2}");
-    woods_saxon_->SetParameter(2, beta2_);
-    woods_saxon_->SetParName(3, "#beta_{4}");
-    woods_saxon_->SetParameter(3, beta4_);
-    woods_saxon_->SetNpx(400);
-    ((TF2 *)woods_saxon_.get())->SetNpy(400);
+    nuclear_pdf_->SetParName(0, "Radius");
+    nuclear_pdf_->SetParameter(0, radius_);
+    nuclear_pdf_->SetParName(1, "Skin depth");
+    nuclear_pdf_->SetParameter(1, skin_depth_);
+    nuclear_pdf_->SetParName(2, "#beta_{2}");
+    nuclear_pdf_->SetParameter(2, beta2_);
+    nuclear_pdf_->SetParName(3, "#beta_{4}");
+    nuclear_pdf_->SetParameter(3, beta4_);
+    nuclear_pdf_->SetNpx(400);
+    ((TF2 *)nuclear_pdf_.get())->SetNpy(400);
   }
 }
 
@@ -279,13 +279,13 @@ TVector3 Nucleus::generateNucleonPosition() {
   double r, theta, phi;
   // if the nucleus is not deformed, we are using a 1D woods-saxon
   if (beta2_ == 0.0 && beta4_ == 0.0) {
-    r = woods_saxon_->GetRandom();
+    r = nuclear_pdf_->GetRandom();
     theta = acos(Random::instance().centeredUniform());
   }
   // otherwise we use a 2D woods-saxon
   else {
     double cos_theta;
-    ((TF2 *)woods_saxon_.get())->GetRandom2(r, cos_theta);
+    ((TF2 *)nuclear_pdf_.get())->GetRandom2(r, cos_theta);
     theta = acos(cos_theta);
   }
 
@@ -314,12 +314,12 @@ TVector3 Nucleus::smear() {
 }
 
 const Nucleon &Nucleus::operator[](unsigned idx) const {
-  SCT_ASSERT(idx > nucleons_.size(), "Out of bounds access");
+  SCT_ASSERT(idx < nucleons_.size(), "Out of bounds access");
   return nucleons_[idx];
 }
 
 Nucleon &Nucleus::operator[](unsigned idx) {
-  SCT_ASSERT(idx > nucleons_.size(), "Out of bounds access");
+  SCT_ASSERT(idx < nucleons_.size(), "Out of bounds access");
   return nucleons_[idx];
 }
 
