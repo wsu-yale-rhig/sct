@@ -1,5 +1,6 @@
 #include "sct/glauber/nucleus.h"
 #include "sct/lib/logging.h"
+#include "sct/lib/assert.h"
 #include "sct/lib/math.h"
 #include "sct/lib/string/string_utils.h"
 #include "sct/utils/functions.h"
@@ -313,14 +314,12 @@ TVector3 Nucleus::smear() {
 }
 
 const Nucleon &Nucleus::operator[](unsigned idx) const {
-  if (idx > nucleons_.size())
-    throw "Out of bounds access";
+  SCT_ASSERT(idx > nucleons_.size(), "Out of bounds access");
   return nucleons_[idx];
 }
 
 Nucleon &Nucleus::operator[](unsigned idx) {
-  if (idx > nucleons_.size())
-    throw "Out of bounds access";
+  SCT_ASSERT(idx > nucleons_.size(), "Out of bounds access");
   return nucleons_[idx];
 }
 
