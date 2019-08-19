@@ -100,7 +100,7 @@ bool Nucleus::generate(double b) {
   }
 
   // since repulsion can lead to effectively an infinite loop
-  // (if 4/3 * pi * radius^3 <<< 4/3 * pi * repulsionDistance^3 * mass_number_)
+  // (if 4/3 * pi * radius^3 ~ 4/3 * pi * repulsionDistance^3 * mass_number_)
   // we will fail out after 10 * mass_number_ of entries
   int tries = 0;
   while (nucleons_.size() < mass_number_) {
