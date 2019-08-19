@@ -129,7 +129,6 @@ void Nucleus::setNucleonSmearing(NucleonSmearing smear, double sigmaNN) {
 
   smear_ = smear;
   sigmaNN_ = sigmaNN;
-  smearing_profile_.reset(nullptr);
 
   switch (smear) {
   case NucleonSmearing::HardCore: {
@@ -252,10 +251,6 @@ void Nucleus::initWoodsSaxon() {
 }
 
 void Nucleus::initHistograms() {
-  generated_rcos_theta_.reset(nullptr);
-  generated_position_.reset(nullptr);
-  generated_smear_.reset(nullptr);
-  smeared_position_.reset(nullptr);
 
   // initialize QA histograms
   generated_rcos_theta_ = make_unique<TH2D>(
