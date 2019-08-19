@@ -331,8 +331,6 @@ void MCGlauber::init(unsigned mass_number_A, double radius_A,
                      double skin_depth_A, double beta2_A, double beta4_A,
                      unsigned mass_number_B, double radius_B,
                      double skin_depth_B, double beta2_B, double beta4_B) {
-  nucleusA_.release();
-  nucleusB_.release();
   nucleusA_ = make_unique<Nucleus>(mass_number_A, radius_A, skin_depth_A,
                                    beta2_A, beta4_A);
   nucleusB_ = make_unique<Nucleus>(mass_number_B, radius_B, skin_depth_B,

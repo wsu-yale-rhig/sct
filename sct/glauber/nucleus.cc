@@ -121,7 +121,7 @@ void Nucleus::setNucleonSmearing(NucleonSmearing smear, double sigmaNN) {
   if (sigmaNN < 0) {
     LOG(ERROR) << "Nucleon smearing requested with negative inelastic"
                << " cross section, setting to zero";
-    smearing_profile_.release();
+    smearing_profile_.reset(nullptr);
     smear_ = NucleonSmearing::None;
     sigmaNN_ = 0;
     return;
@@ -129,7 +129,7 @@ void Nucleus::setNucleonSmearing(NucleonSmearing smear, double sigmaNN) {
 
   smear_ = smear;
   sigmaNN_ = sigmaNN;
-  smearing_profile_.release();
+  smearing_profile_.reset(nullptr);
 
   switch (smear) {
   case NucleonSmearing::HardCore: {
@@ -150,7 +150,7 @@ void Nucleus::setNucleonSmearing(NucleonSmearing smear, double sigmaNN) {
     break;
   }
   default:
-    smearing_profile_ = nullptr;
+    smearing_profile_.reset(nullptr);
     break;
   }
 }
@@ -222,7 +222,7 @@ void Nucleus::addNucleon(double b) {
 }
 
 void Nucleus::initWoodsSaxon() {
-  woods_saxon_.release();
+  woods_saxon_.reset(nullptr);
 
   // either 1D or 2D depending on the deformation parameters
   if (beta2_ == 0.0 && beta4_ == 0.0) {
@@ -252,10 +252,10 @@ void Nucleus::initWoodsSaxon() {
 }
 
 void Nucleus::initHistograms() {
-  generated_rcos_theta_.release();
-  generated_position_.release();
-  generated_smear_.release();
-  smeared_position_.release();
+  generated_rcos_theta_.reset(nullptr);
+  generated_position_.reset(nullptr);
+  generated_smear_.reset(nullptr);
+  smeared_position_.reset(nullptr);
 
   // initialize QA histograms
   generated_rcos_theta_ = make_unique<TH2D>(

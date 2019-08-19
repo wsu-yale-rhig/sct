@@ -31,7 +31,7 @@ void NegativeBinomial::setParameters(double npp, double k) {
 }
 
 void NegativeBinomial::initNBD() {
-  nbd_.release();
+  nbd_.reset(nullptr);
 
   int nBins = 100;
   nbd_ =
