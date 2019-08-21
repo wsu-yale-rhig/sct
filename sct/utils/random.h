@@ -10,6 +10,7 @@
 
 #include <atomic>
 #include <random>
+#include <mutex>
 
 namespace sct {
 // singleton Random implementation built on the standard library random
@@ -53,6 +54,8 @@ class Random {
   std::piecewise_linear_distribution<> unit_linear_;
 
   std::atomic<unsigned> counter_;
+
+  std::mutex rng_mutex_;
 
   Random();
   Random(const Random&);
