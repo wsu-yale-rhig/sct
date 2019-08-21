@@ -1,10 +1,16 @@
 #ifndef SCT_UTIL_FUNCTIONS_H
 #define SCT_UTIL_FUNCTIONS_H
 
-// Implementation of a few functions that are used in the MC glauber
-// generator.
+// Implementation of a few functions that are used in the MC glauber generator.
+// This includes the functional forms of the Nucleon PDFS
 
 namespace sct {
+
+// given a position x, is that point less than a distance d away from the origin
+// - if so, returns 1/d
+//  x[0] = x
+//  par[0] = d
+double StepFunction1D(double *x, double *par);
 
 // given a position (dx, dy, dz), is that point in a sphere
 // of area sqrt(xsec/pi)^3*4/3*pi, and if so, return 1/V
@@ -40,6 +46,15 @@ double WoodsSaxonSpherical(double *x, double *par);
 // par[3] = 4th order deformation parameter (beta4)
 double WoodsSaxonDeformed(double *x, double *par);
 
-}  // namespace sct
+// Hulthen form for deuteron PDF (L. Hulth ́en andM.Sagawara, Handbuch der Physik
+// 39 1 (1957)), as implemented in the PHOBOS Glauber arXiv:1408.2549 [nucl-ex]
+// x[0] = r
+// par[0] = a
+// par[1] = b
+// functional form ((e^(-a*r') - e^(-b*r')) / r')^2 where r' is the distance
+// between the neutron and proton: r' = 2*r
+double HulthenPDF(double *x, double *par);
 
-#endif  // SCT_UTIL_FUNCTIONS_H
+} // namespace sct
+
+#endif // SCT_UTIL_FUNCTIONS_H

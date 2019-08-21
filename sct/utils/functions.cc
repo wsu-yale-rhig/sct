@@ -5,6 +5,13 @@
 
 namespace sct {
 
+double StepFunction1D(double *x, double *par) {
+  double x_ = x[0];
+  double d = par[0];
+
+  return fabs(x_) - d >= 0 ? 0.0 : 1.0 / d;
+}
+
 double StepFunction(double *x, double *par) {
   double x_ = x[0];
   double y_ = x[1];
@@ -63,4 +70,19 @@ double WoodsSaxonDeformed(double *x, double *par) {
 
   return std::pow(r, 2) / (1.0 + std::exp((r - R) / a));
 }
-}  // namespace sct
+
+double HulthenPDF(double *x, double *par) {
+  double r = x[0];
+  double a = par[0];
+  double b = par[1];
+
+  double r_prime = 2.0 * r;
+
+  double term_a = std::exp(-a * r_prime);
+  double term_b = std::exp(-b * r_prime);
+
+  double term_a_b = (term_a - term_b) / r_prime;
+
+  return std::pow(term_a_b, 2.0);
+}
+} // namespace sct
