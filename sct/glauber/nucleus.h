@@ -113,8 +113,8 @@ private:
   // applicable
   void addNucleon(double b);
 
-  // (re)creates the Woods-Saxon density profile if parameters are changed
-  void initNuclearPDF();
+  // (re)creates the Nucleon density profile if parameters are changed
+  void initNucleonPDF();
 
   // (re)creates QA histograms
   void initHistograms();
@@ -146,7 +146,7 @@ private:
   double nucleus_phi_;   // angles in the collision frame for a specific event
   double b_;             // impact parameter for a specific event
 
-  unique_ptr<TF1> nuclear_pdf_; // density profile for nucleons
+  unique_ptr<TF1> nucleon_pdf_; // density profile for nucleons
   unique_ptr<TF3>
       smearing_profile_; // Used to smear nucleon position if requested
 
