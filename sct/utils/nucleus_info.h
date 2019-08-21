@@ -4,12 +4,16 @@
 /* Table of nucleus parameters -
  * mass number
  * charge number
+ * parameters for Woods-Saxon
  * charge radius
  * skin depth
  * charge radius absolute error (2*sigma)
  * skin depth absolute error (2*sigma)
  * beta2 (second order deformation parameter)
  * beta4 (fourth order deformation parameter)
+ * parameters for Hulthen form of deuteron wavefunction
+ * a
+ * b
  *
  * SOURCES:
  * PHOBOS MC Glauber:
@@ -23,6 +27,8 @@
  * Data Tables 59 185 (1995).
  * https://www.sciencedirect.com/science/article/pii/S0092640X85710029
  * *NEW TABLE* https://arxiv.org/pdf/1508.06294.pdf need to check it out
+ * Hulthen form for deuteron taken from PHOBOS glauber:
+ * https://arxiv.org/abs/1408.2549
  */
 
 #include "sct/lib/enumerations.h"
@@ -30,8 +36,8 @@
 
 namespace sct {
 class NucleusInfo {
- public:
-  static NucleusInfo& instance();
+public:
+  static NucleusInfo &instance();
   virtual ~NucleusInfo();
 
   unsigned massNumber(GlauberSpecies sp) { return mass_number_[sp]; }
@@ -42,9 +48,11 @@ class NucleusInfo {
   double skinDepthError(GlauberSpecies sp) { return skin_depth_error_[sp]; }
   double beta2(GlauberSpecies sp) { return beta2_[sp]; }
   double beta4(GlauberSpecies sp) { return beta4_[sp]; }
+  double hulthenA(GlauberSpecies sp) { return hulthen_a_[sp]; }
+  double hulthenB(GlauberSpecies sp) { return hulthen_b_[sp]; }
   string name(GlauberSpecies sp) { return name_[sp]; }
 
- private:
+private:
   sct_map<GlauberSpecies, unsigned, EnumClassHash> mass_number_;
   sct_map<GlauberSpecies, unsigned, EnumClassHash> charge_number_;
   sct_map<GlauberSpecies, double, EnumClassHash> radius_;
@@ -53,11 +61,13 @@ class NucleusInfo {
   sct_map<GlauberSpecies, double, EnumClassHash> skin_depth_error_;
   sct_map<GlauberSpecies, double, EnumClassHash> beta2_;
   sct_map<GlauberSpecies, double, EnumClassHash> beta4_;
+  sct_map<GlauberSpecies, double, EnumClassHash> hulthen_a_;
+  sct_map<GlauberSpecies, double, EnumClassHash> hulthen_b_;
   sct_map<GlauberSpecies, string, EnumClassHash> name_;
 
   NucleusInfo();
-  NucleusInfo(const NucleusInfo&);
+  NucleusInfo(const NucleusInfo &);
 };
-}  // namespace sct
+} // namespace sct
 
-#endif  // SCT_UTILS_NUCLEUS_INFO_H
+#endif // SCT_UTILS_NUCLEUS_INFO_H

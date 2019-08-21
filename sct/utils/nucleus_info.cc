@@ -2,7 +2,7 @@
 
 namespace sct {
 
-NucleusInfo& NucleusInfo::instance() {
+NucleusInfo &NucleusInfo::instance() {
   static NucleusInfo instance_;
   return instance_;
 }
@@ -17,6 +17,8 @@ NucleusInfo::NucleusInfo() {
   skin_depth_error_.insert({GlauberSpecies::Au197, 0.054});
   beta2_.insert({GlauberSpecies::Au197, -0.131});
   beta4_.insert({GlauberSpecies::Au197, -0.031});
+  hulthen_a_.insert({GlauberSpecies::Au197, 0.0});
+  hulthen_b_.insert({GlauberSpecies::Au197, 0.0});
   name_.insert({GlauberSpecies::Au197, "Au197"});
 
   // initialize Sm154
@@ -29,6 +31,8 @@ NucleusInfo::NucleusInfo() {
   skin_depth_error_.insert({GlauberSpecies::Sm154, 0.030});
   beta2_.insert({GlauberSpecies::Sm154, 0.270});
   beta4_.insert({GlauberSpecies::Sm154, 0.113});
+  hulthen_a_.insert({GlauberSpecies::Sm154, 0.0});
+  hulthen_b_.insert({GlauberSpecies::Sm154, 0.0});
   name_.insert({GlauberSpecies::Sm154, "Sm154"});
 
   // initialize U238
@@ -46,6 +50,8 @@ NucleusInfo::NucleusInfo() {
   skin_depth_error_.insert({GlauberSpecies::U238, 0.098});
   beta2_.insert({GlauberSpecies::U238, 0.215});
   beta4_.insert({GlauberSpecies::U238, 0.093});
+  hulthen_a_.insert({GlauberSpecies::U238, 0.0});
+  hulthen_b_.insert({GlauberSpecies::U238, 0.0});
   name_.insert({GlauberSpecies::U238, "U238"});
 
   // initialize Pb208
@@ -58,6 +64,8 @@ NucleusInfo::NucleusInfo() {
   skin_depth_error_.insert({GlauberSpecies::Pb208, 0.020});
   beta2_.insert({GlauberSpecies::Pb208, 0.000});
   beta4_.insert({GlauberSpecies::Pb208, 0.000});
+  hulthen_a_.insert({GlauberSpecies::Pb208, 0.0});
+  hulthen_b_.insert({GlauberSpecies::Pb208, 0.0});
   name_.insert({GlauberSpecies::Pb208, "Pb208"});
 
   // initialize Cu63
@@ -69,9 +77,41 @@ NucleusInfo::NucleusInfo() {
   skin_depth_error_.insert({GlauberSpecies::Cu63, 0.010});
   beta2_.insert({GlauberSpecies::Cu63, 0.162});
   beta4_.insert({GlauberSpecies::Cu63, -0.006});
+  hulthen_a_.insert({GlauberSpecies::Cu63, 0.0});
+  hulthen_b_.insert({GlauberSpecies::Cu63, 0.0});
   name_.insert({GlauberSpecies::Cu63, "Cu63"});
+
+  // initialize proton
+  // radius is set to a small non-zero number to simulate a delta function
+  // distribution
+  mass_number_.insert({GlauberSpecies::p1, 1});
+  charge_number_.insert({GlauberSpecies::p1, 1});
+  radius_.insert({GlauberSpecies::p1, 1e-5});
+  skin_depth_.insert({GlauberSpecies::p1, 0.0});
+  radius_error_.insert({GlauberSpecies::p1, 0.0});
+  skin_depth_error_.insert({GlauberSpecies::p1, 0.0});
+  beta2_.insert({GlauberSpecies::p1, 0.0});
+  beta4_.insert({GlauberSpecies::p1, 0.0});
+  hulthen_a_.insert({GlauberSpecies::p1, 0.0});
+  hulthen_b_.insert({GlauberSpecies::p1, 0.0});
+  name_.insert({GlauberSpecies::p1, "p1"});
+
+  // initialize proton
+  // deuteron does not use the normal parameters - instead, it uses the Hulthen
+  // form, which can be found in sct/utils/functions.h
+  mass_number_.insert({GlauberSpecies::d2, 2});
+  charge_number_.insert({GlauberSpecies::d2, 1});
+  radius_.insert({GlauberSpecies::d2, 0.0});
+  skin_depth_.insert({GlauberSpecies::d2, 0.0});
+  radius_error_.insert({GlauberSpecies::d2, 0.0});
+  skin_depth_error_.insert({GlauberSpecies::d2, 0.0});
+  beta2_.insert({GlauberSpecies::d2, 0.0});
+  beta4_.insert({GlauberSpecies::d2, 0.0});
+  hulthen_a_.insert({GlauberSpecies::d2, 0.228});
+  hulthen_b_.insert({GlauberSpecies::d2, 1.177});
+  name_.insert({GlauberSpecies::d2, "d2"});
 }
 
 NucleusInfo::~NucleusInfo() {}
 
-}  // namespace sct
+} // namespace sct
