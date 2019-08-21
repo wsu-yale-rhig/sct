@@ -106,7 +106,7 @@ public:
     return (TH3D *)smeared_position_.get();
   }
 
-  inline TF1 *nuclearPDF() const { return nuclear_pdf_.get(); }
+  inline TF1 *nuclearPDF() const { return nucleon_pdf_.get(); }
 
 private:
   // generates one random nucleon and rotates it wrt the nucleus orientation, if
