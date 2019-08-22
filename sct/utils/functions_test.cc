@@ -1,11 +1,11 @@
-#include "gtest/gtest.h"
-
 #include "sct/lib/logging.h"
 #include "sct/lib/math.h"
 #include "sct/lib/memory.h"
 #include "sct/utils/functions.h"
 
 #include <vector>
+
+#include "gtest/gtest.h"
 
 #include "TF1.h"
 #include "TF3.h"

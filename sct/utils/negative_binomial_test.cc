@@ -1,11 +1,11 @@
 #include "sct/utils/negative_binomial.h"
-#include "gtest/gtest.h"
 #include "sct/lib/logging.h"
 
 #include <memory>
 #include <random>
 
-#include "TCanvas.h"
+#include "gtest/gtest.h"
+
 #include "TF1.h"
 #include "TH1D.h"
 

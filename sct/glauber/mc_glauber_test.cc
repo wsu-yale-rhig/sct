@@ -6,7 +6,6 @@
 
 #include "gtest/gtest.h"
 
-#include "TCanvas.h"
 #include "TH2.h"
 #include "TProfile.h"
 
