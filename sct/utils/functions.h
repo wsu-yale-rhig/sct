@@ -4,12 +4,24 @@
 // Implementation of a few functions that are used in the MC glauber generator.
 // This includes the functional forms of the Nucleon PDFS
 
+#include "sct/lib/map.h"
+#include "sct/lib/string/string.h"
+
 namespace sct {
+
+// we specify default values for all function parameters - these defaults are
+// not physically meaningful, they are selected so that the function is in a
+// valid state. These defaults, along with the relevant indices, are stored in a
+// dictionary
+typedef std::pair<int, double> param_def;
+typedef sct_map<string, param_def> param_dict;
 
 // given a position x, is that point less than a distance d away from the origin
 // - if so, returns 1/d
 //  x[0] = x
 //  par[0] = d
+const unsigned StepFunction1D_npar = 1;
+const param_dict StepFunction1D_params{{"d", {0, 1.0}}};
 double StepFunction1D(double *x, double *par);
 
 // given a position (dx, dy, dz), is that point in a sphere
@@ -18,6 +30,8 @@ double StepFunction1D(double *x, double *par);
 // x[1] = dy
 // x[2] = dz
 // par[0] = sigma
+const unsigned StepFunction_npar = 1;
+const param_dict StepFunction_params{{"sigma", {0, 1.0}}};
 double StepFunction(double *x, double *par);
 
 // evaluate a 1D gaussian in r = sqrt(x^2 + y^2 + z^2)
@@ -25,6 +39,8 @@ double StepFunction(double *x, double *par);
 // x[1] = y
 // x[2] = z
 // par[0] = sigma
+const unsigned Gaussian_npar = 1;
+const param_dict Gaussian_params{{"sigma", {0, 1.0}}};
 double Gaussian(double *x, double *par);
 
 // woods-saxon distribution for a spherical nuclei
@@ -32,6 +48,9 @@ double Gaussian(double *x, double *par);
 // x[0] = radial distance
 // par[0] = nuclear radius
 // par[1] = surface thickness
+const unsigned WoodsSaxonSpherical_npar = 2;
+const param_dict WoodsSaxonSpherical_params{{"radius", {0, 5.0}},
+                                            {"skin_depth", {1, 0.5}}};
 double WoodsSaxonSpherical(double *x, double *par);
 
 // 2D (r, cos(theta)) woods-saxon distribution for deformed nuclei
@@ -44,6 +63,11 @@ double WoodsSaxonSpherical(double *x, double *par);
 // par[1] = surface thickness (a)
 // par[2] = 2nd order deformation parameter (beta2)
 // par[3] = 4th order deformation parameter (beta4)
+const unsigned WoodsSaxonDeformed_npar = 4;
+const param_dict WoodsSaxonDeformed_params{{"radius", {0, 5.0}},
+                                           {"skin_depth", {1, 0.5}},
+                                           {"beta2", {2, 0.1}},
+                                           {"beta4", {3, 0.1}}};
 double WoodsSaxonDeformed(double *x, double *par);
 
 // Hulthen form for deuteron PDF (L. Hulth ́en andM.Sagawara, Handbuch der Physik
@@ -53,6 +77,9 @@ double WoodsSaxonDeformed(double *x, double *par);
 // par[1] = b
 // functional form ((e^(-a*r') - e^(-b*r')) / r')^2 where r' is the distance
 // between the neutron and proton: r' = 2*r
+const unsigned HulthenPDF_npar = 2;
+const param_dict HulthenPDF_params{{"a", {0, 0.228}},
+                                   {"b", {1, 1.177}}};
 double HulthenPDF(double *x, double *par);
 
 } // namespace sct
