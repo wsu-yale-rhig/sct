@@ -86,7 +86,7 @@ NucleusInfo::NucleusInfo() {
   // distribution
   mass_number_.insert({GlauberSpecies::p1, 1});
   charge_number_.insert({GlauberSpecies::p1, 1});
-  radius_.insert({GlauberSpecies::p1, 1e-5});
+  radius_.insert({GlauberSpecies::p1, 1e-3});
   skin_depth_.insert({GlauberSpecies::p1, 0.0});
   radius_error_.insert({GlauberSpecies::p1, 0.0});
   skin_depth_error_.insert({GlauberSpecies::p1, 0.0});

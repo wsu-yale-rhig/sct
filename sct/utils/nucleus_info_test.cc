@@ -88,7 +88,7 @@ TEST(NucleusInfo, p1) {
 
   EXPECT_EQ(info.massNumber(sct::GlauberSpecies::p1), 1);
   EXPECT_EQ(info.chargeNumber(sct::GlauberSpecies::p1), 1);
-  EXPECT_NEAR(info.radius(sct::GlauberSpecies::p1), 1e-5, 1e-5);
+  EXPECT_NEAR(info.radius(sct::GlauberSpecies::p1), 1e-3, 1e-5);
   EXPECT_NEAR(info.skinDepth(sct::GlauberSpecies::p1), 0, 1e-5);
   EXPECT_NEAR(info.radiusError(sct::GlauberSpecies::p1), 0, 1e-5);
   EXPECT_NEAR(info.skinDepthError(sct::GlauberSpecies::p1), 0, 1e-5);
