@@ -7,11 +7,25 @@
  *  Default constructor gives an invalid state to avoid ambiguity - must
  *  set the parameters by hand.
  *
- *  To generate a new nucleus from the Woods-Saxon density profile, call
+ *  To generate a new nucleus from the specified density profile, call
  *  Generate(b), where b is the impact parameter (constant offset along the
  *  x axis for all generated nucleons)
+ *
+ * The NucleonPDF (probability density function) of nuceons in the nucleus is
+ * either a 1D function in radius or 2D function in radius and theta. The
+ * NucleusPDF class can generate multiple functional forms, including
+ * Woods-Saxon (1D and 2D), a Hulthen wavefunction used for deuteron, and a
+ * narrow step function for single protons. Because each form requires different
+ * parameters, the parameters are requested in a dictionary. The details can be
+ * found in the nucleon_pdf.h header. If using default settings, the user does
+ * not need to worry about specifying parameter values, and can use
+ * Nucleus::setParameters(GlauberSpecies...), which will lookup the proper PDF
+ * and default values for its parameters for that species.
+ *
  */
+
 #include "sct/glauber/nucleon.h"
+#include "sct/glauber/nucleon_pdf.h"
 #include "sct/lib/enumerations.h"
 #include "sct/lib/memory.h"
 
@@ -31,13 +45,19 @@ public:
   // to avoid ambiguity
   Nucleus();
 
-  // generic constructor - assumes a Woods-Saxon PDF. This can be changed
-  // by direct access to the nuclear PDF via nuclearPDF()
-  Nucleus(unsigned mass_number, // number of nucleons
-          double radius,        // radius of the nucleus (in fm)
-          double skin_depth,    // skin depth of the nucleus (in fm)
-          double beta2,         // 2nd order deformation parameter
-          double beta4);        // 4th order deformation parameter
+  // Construction of a default nucleus using the parameters stored in
+  // sct::NucleusInfo. The nucleon PDF is chosen based on species -
+  // protons select a delta function (with a small smearing), deuterons use a
+  // Hulthen form, and species with larger N assume a Woods-Saxon (1D if
+  // deformed = false, 2D in R, theta if deformed = true)
+  Nucleus(GlauberSpecies species, GlauberMod mod = GlauberMod::Nominal,
+          bool deformed = false);
+
+  // generic constructor - the parameter list must match the parameters required
+  // for the specific NucleonPDF::PDF. You can find the required parameters in
+  // nucleon_pdf.h
+  Nucleus(unsigned mass_number, parameter_list params,
+          NucleonPDF::PDF pdf = NucleonPDF::PDF::WoodsSaxon1D);
 
   Nucleus(const Nucleus &rhs);
 
@@ -47,9 +67,16 @@ public:
   void clear();
 
   // allows the user to (re)set the parameters after construction, if resetting,
-  // will delete any currently generated event
-  void setParameters(unsigned mass_number, double radius, double skin_depth,
-                     double beta2, double beta4);
+  // will delete any currently generated event and clear histograms
+  bool setParameters(GlauberSpecies species,
+                     GlauberMod mod = GlauberMod::Nominal,
+                     bool deformed = false);
+  bool setParameters(unsigned mass_number, parameter_list params,
+                     NucleonPDF::PDF pdf = NucleonPDF::PDF::WoodsSaxon1D);
+
+  // allows direct access to the nuclearPDF to set the functional form or modify
+  // parameters
+  inline NucleonPDF &nuclearPDF() { return nucleon_pdf_; }
 
   // creates a new set of nucleons according to the nucleus parameters,
   // where b is the impact parameter of the generated event. If b = 0,
@@ -58,9 +85,9 @@ public:
   bool generate(double b = 0.0);
 
   // turn on nucleon smearing away from the Woods-Saxon profile, using either
-  // a hard core (flat probability with radius sigmaNN)  or gaussian profile
+  // a hard core (flat probability with area smear_area)  or gaussian profile
   // (with sigma of 0.79/sqrt(3), and max of sigmaNN * 5)
-  void setNucleonSmearing(NucleonSmearing smear, double sigmaNN);
+  void setNucleonSmearing(NucleonSmearing smear, double smear_area);
 
   // sets a minimum distance between generated nucleons
   void setRepulsionDistance(double fm);
@@ -84,12 +111,7 @@ public:
   // access to parameters
   inline unsigned massNumber() const { return mass_number_; }
   inline unsigned size() const { return nucleons_.size(); }
-  inline double radius() const { return radius_; }
-  inline double skinDepth() const { return skin_depth_; }
-  inline double beta2() const { return beta2_; }
-  inline double beta4() const { return beta4_; }
   inline NucleonSmearing nucleonSmearing() const { return smear_; }
-  inline double nnCrossSection() const { return sigmaNN_; }
   inline double repulsionDistance() const { return repulsion_distance_; }
   inline double nucleusTheta() const { return nucleus_theta_; }
   inline double nucleusPhi() const { return nucleus_phi_; }
@@ -106,15 +128,15 @@ public:
     return (TH3D *)smeared_position_.get();
   }
 
-  inline TF1 *nuclearPDF() const { return nucleon_pdf_.get(); }
+  // rotates a nucleon by nucleusTheta & nucleusPhi, and translates the nucleon
+  // along the x axis by b - this takes a nucleon generated in the frame
+  // centered on the nucleus, and translates it into the collision CM frame
+  void rotateAndOffset(Nucleon &n);
 
 private:
   // generates one random nucleon and rotates it wrt the nucleus orientation, if
   // applicable
   void addNucleon(double b);
-
-  // (re)creates the Nucleon density profile if parameters are changed
-  void initNucleonPDF();
 
   // (re)creates QA histograms
   void initHistograms();
@@ -124,18 +146,21 @@ private:
   TVector3 generateNucleonPosition();
   TVector3 smear();
 
+  // special function to generate a deuteron nucleus - places the nucleons
+  // exactly opposite to each other
+  bool generateDeuteron();
+
+  // generator for any non-deuteron nucleus
+  bool generateNucleus();
+
   std::vector<Nucleon> nucleons_; // container for nucleons
 
   string name_; // string identifier
 
   unsigned mass_number_; // nuclear mass number
-  double radius_;        // radius of nucleus
-  double skin_depth_;    // skin depth of nucleus
-  double beta2_;         // 2nd order deformation parameter
-  double beta4_;         // 4th order deformation parameter
 
-  NucleonSmearing smear_;     // flag for nucleon position smearing
-  double sigmaNN_;            // nucleon-nucleon inellastic cross section
+  NucleonSmearing smear_; // flag for nucleon position smearing
+
   double repulsion_distance_; // force nucleons to be minimum
                               // repulsionDistance_ away from each other
 
@@ -144,9 +169,11 @@ private:
                             // beta4 are non-zero)
   double nucleus_theta_; // for deformed nuclei, specifies the polar & azimuthal
   double nucleus_phi_;   // angles in the collision frame for a specific event
-  double b_;             // impact parameter for a specific event
 
-  unique_ptr<TF1> nucleon_pdf_; // density profile for nucleons
+  double b_; // impact parameter for a specific event
+
+  NucleonPDF nucleon_pdf_; // density profile for nucleons
+
   unique_ptr<TF3>
       smearing_profile_; // Used to smear nucleon position if requested
 

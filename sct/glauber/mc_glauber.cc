@@ -1,4 +1,5 @@
 #include "sct/glauber/mc_glauber.h"
+#include "sct/lib/assert.h"
 #include "sct/lib/logging.h"
 #include "sct/lib/math.h"
 #include "sct/lib/string/string_utils.h"
@@ -10,103 +11,61 @@ namespace sct {
 MCGlauber::MCGlauber(GlauberSpecies species_A, GlauberSpecies species_B,
                      CollisionEnergy energy, GlauberMod mod, bool deformation_A,
                      bool deformation_B)
-    : events_generated_(0),
-      events_accepted_(0),
-      b_min_(0),
-      b_max_(20),
-      energy_(static_cast<double>(energy)),
-      modification_(mod) {
-  // get nominal settings for nuclear parameters
-  unsigned mass_number_A = NucleusInfo::instance().massNumber(species_A);
-  unsigned mass_number_B = NucleusInfo::instance().massNumber(species_B);
-  double radius_A = NucleusInfo::instance().radius(species_A);
-  double radius_B = NucleusInfo::instance().radius(species_B);
-  double skin_depth_A = NucleusInfo::instance().skinDepth(species_A);
-  double skin_depth_B = NucleusInfo::instance().skinDepth(species_B);
-  double beta2_A = 0.0;
-  double beta2_B = 0.0;
-  double beta4_A = 0.0;
-  double beta4_B = 0.0;
-  if (deformation_A) {
-    beta2_A = NucleusInfo::instance().beta2(species_A);
-    beta4_A = NucleusInfo::instance().beta4(species_A);
-  }
-  if (deformation_B) {
-    beta2_B = NucleusInfo::instance().beta2(species_B);
-    beta4_B = NucleusInfo::instance().beta4(species_B);
-  }
+    : events_generated_(0), events_accepted_(0), b_min_(0), b_max_(20),
+      energy_(static_cast<double>(energy)), modification_(mod) {
+
   double xsec = lookupXSec(energy);
 
   // apply any requested systematic variation of the parameters
   switch (mod) {
-    case GlauberMod::Large:
-      radius_A += NucleusInfo::instance().radiusError(species_A);
-      radius_B += NucleusInfo::instance().radiusError(species_B);
-      skin_depth_A -= NucleusInfo::instance().skinDepthError(species_A);
-      skin_depth_B -= NucleusInfo::instance().skinDepthError(species_B);
-      break;
-    case GlauberMod::Small:
-      radius_A -= NucleusInfo::instance().radiusError(species_A);
-      radius_B -= NucleusInfo::instance().radiusError(species_B);
-      skin_depth_A += NucleusInfo::instance().skinDepthError(species_A);
-      skin_depth_B += NucleusInfo::instance().skinDepthError(species_B);
-      break;
-    case GlauberMod::LargeXSec:
-      xsec += 0.1;
-      break;
-    case GlauberMod::SmallXSec:
-      xsec -= 0.1;
-      break;
-    default:
-      break;
+  case GlauberMod::LargeXSec:
+    xsec += 0.1;
+    break;
+  case GlauberMod::SmallXSec:
+    xsec -= 0.1;
+    break;
+  default:
+    break;
   }
 
-  // initialize nuclei and output tree
-  init(mass_number_A, radius_A, skin_depth_A, beta2_A, beta4_A, mass_number_B,
-       radius_B, skin_depth_B, beta2_B, beta4_B);
+  init(species_A, species_B, mod, deformation_A, deformation_B);
 
   initOutput();
   initQA();
 
-  // initialize collision
   collision_.setNNCrossSection(xsec);
   nucleusA_->setName(NucleusInfo::instance().name(species_A));
   nucleusB_->setName(NucleusInfo::instance().name(species_B));
 }
 
-MCGlauber::MCGlauber(unsigned mass_number, double radius, double skin_depth,
-                     double beta2, double beta4, double inelastic_xsec,
+MCGlauber::MCGlauber(unsigned mass_number, NucleonPDF::PDF pdf,
+                     parameter_list params, double inelastic_xsec,
                      double energy)
-    : events_generated_(0),
-      events_accepted_(0),
-      b_min_(0),
-      b_max_(20),
-      energy_(energy),
-      modification_(GlauberMod::Nominal) {
-  init(mass_number, radius, skin_depth, beta2, beta4, mass_number, radius,
-       skin_depth, beta2, beta4);
+    : events_generated_(0), events_accepted_(0), b_min_(0), b_max_(20),
+      energy_(energy), modification_(GlauberMod::Nominal) {
+
+  init(mass_number, pdf, params, mass_number, pdf, params);
+
   initOutput();
   initQA();
+
   collision_.setNNCrossSection(inelastic_xsec);
   nucleusA_->setName(MakeString(mass_number));
   nucleusB_->setName(MakeString(mass_number));
 }
 
-MCGlauber::MCGlauber(unsigned mass_number_A, double radius_A,
-                     double skin_depth_A, double beta2_A, double beta4_A,
-                     unsigned mass_number_B, double radius_B, double skin_depth_B,
-                     double beta2_B, double beta4_B, double inelastic_xsec,
-                     double energy)
-    : events_generated_(0),
-      events_accepted_(0),
-      b_min_(0),
-      b_max_(20),
-      energy_(energy),
-      modification_(GlauberMod::Nominal) {
-  init(mass_number_A, radius_A, skin_depth_A, beta2_A, beta4_A, mass_number_B,
-       radius_B, skin_depth_B, beta2_B, beta4_B);
+MCGlauber::MCGlauber(unsigned mass_number_A, NucleonPDF::PDF pdf_A,
+                     parameter_list params_A, unsigned mass_number_B,
+                     NucleonPDF::PDF pdf_B, parameter_list params_B,
+                     double inelastic_xsec, double energy)
+    : events_generated_(0), events_accepted_(0), b_min_(0), b_max_(20),
+      energy_(energy), modification_(GlauberMod::Nominal) {
+
   initOutput();
   initQA();
+
+  init(mass_number_A, pdf_A, params_A, mass_number_B, pdf_B, params_B);
+
   collision_.setNNCrossSection(inelastic_xsec);
   nucleusA_->setName(MakeString(mass_number_A));
   nucleusB_->setName(MakeString(mass_number_B));
@@ -151,8 +110,9 @@ void MCGlauber::setCollisionProfile(CollisionProfile profile) {
 }
 
 void MCGlauber::setMultiplicityModel(double npp, double k, double x,
-                                     double pp_eff, double aa_eff, double aa_cent,
-                                     double trig_eff, bool const_eff) {
+                                     double pp_eff, double aa_eff,
+                                     double aa_cent, double trig_eff,
+                                     bool const_eff) {
   collision_.setMultiplicityModel(npp, k, x, pp_eff, aa_eff, aa_cent, trig_eff,
                                   const_eff);
 }
@@ -176,17 +136,29 @@ void MCGlauber::initQA() {
 }
 
 void MCGlauber::clear() {
-  if (nucleusA_.get() != nullptr) nucleusA_->clear();
-  if (nucleusB_.get() != nullptr) nucleusB_->clear();
+  if (nucleusA_.get() != nullptr)
+    nucleusA_->clear();
+  if (nucleusB_.get() != nullptr)
+    nucleusB_->clear();
 }
 
 // run the glauber MC for N events
 void MCGlauber::run(unsigned N) {
   initOutput();
-
+  
+  int errors = 0;
+  int max_errors = 10;
   while (events_accepted_ < N) {
+    EventStatus status = generate();
+  
+    if (status == EventStatus::Error) {
+      SCT_ASSERT(++errors < max_errors,
+                 "Repeated errors generating nuclei - aborting");
+      continue;
+    }
+
     events_generated_++;
-    if (generate()) {
+    if (status == EventStatus::Hit) {
       events_accepted_++;
       accepted_ip_->Fill(tree_->B());
       if (events_accepted_ % 100 == 0) {
@@ -201,21 +173,12 @@ void MCGlauber::run(unsigned N) {
   writeHeader();
 }
 
-// write the tree to file
 void MCGlauber::writeHeader() {
   // fill header
   tree_->setNameNucleusA(nucleusA_->name());
   tree_->setNameNucleusB(nucleusB_->name());
   tree_->setMassNumberA(nucleusA_->massNumber());
   tree_->setMassNumberB(nucleusB_->massNumber());
-  tree_->setRadiusA(nucleusA_->radius());
-  tree_->setRadiusB(nucleusB_->radius());
-  tree_->setSkinDepthA(nucleusA_->skinDepth());
-  tree_->setSkinDepthB(nucleusB_->skinDepth());
-  tree_->setBeta2A(nucleusA_->beta2());
-  tree_->setBeta2B(nucleusB_->beta2());
-  tree_->setBeta4A(nucleusA_->beta4());
-  tree_->setBeta4B(nucleusB_->beta4());
   tree_->setSigmaNN(collision_.NNCrossSection());
   tree_->setSqrtSNN(energy_);
   tree_->setRepulsionD(nucleusA_->repulsionDistance());
@@ -232,9 +195,58 @@ void MCGlauber::writeHeader() {
   tree_->setNEventsAccepted(events_accepted_);
   tree_->setNEventsThrown(events_generated_);
 
+  // these parameters are all possible parameters depending on the form of the
+  // NucleonPDF
+  parameter_list param_a = nucleusA_->nuclearPDF().parameters();
+  parameter_list param_b = nucleusB_->nuclearPDF().parameters();
+
+  for (auto &par : param_a) {
+    string par_name = par.first;
+    double par_val = par.second;
+    if (par_name == "radius") {
+      tree_->setRadiusA(par_val);
+    } else if (par_name == "skin_depth") {
+      tree_->setSkinDepthA(par_val);
+    } else if (par_name == "beta2") {
+      tree_->setBeta2A(par_val);
+    } else if (par_name == "beta4") {
+      tree_->setBeta4A(par_val);
+    } else if (par_name == "a") {
+      tree_->setHulthenAA(par_val);
+    } else if (par_name == "b") {
+      tree_->setHulthenBA(par_val);
+    } else {
+      LOG(ERROR) << "MCGlauber/GlauberTree not aware of PDF parameter: "
+                 << par_name << ", it will not be written to file";
+    }
+  }
+
+  for (auto &par : param_b) {
+    string par_name = par.first;
+    double par_val = par.second;
+    if (par_name == "radius") {
+      tree_->setRadiusB(par_val);
+    } else if (par_name == "skin_depth") {
+      tree_->setSkinDepthB(par_val);
+    } else if (par_name == "beta2") {
+      tree_->setBeta2B(par_val);
+    } else if (par_name == "beta4") {
+      tree_->setBeta4B(par_val);
+    } else if (par_name == "a") {
+      tree_->setHulthenAB(par_val);
+    } else if (par_name == "b") {
+      tree_->setHulthenBB(par_val);
+    } else {
+      LOG(ERROR) << "MCGlauber/GlauberTree not aware of PDF parameter: "
+                 << par_name << ", it will not be written to file";
+    }
+  }
+
   // calculate total cross section
-  double x_min = events_accepted_ * pow(b_min_, 2) * pi * 10 / events_generated_;
-  double x_max = events_accepted_ * pow(b_max_, 2) * pi * 10 / events_generated_;
+  double x_min =
+      events_accepted_ * pow(b_min_, 2) * pi * 10 / events_generated_;
+  double x_max =
+      events_accepted_ * pow(b_max_, 2) * pi * 10 / events_generated_;
   double x_total = x_max - x_min;
   double xErr =
       (x_max - x_min) * sqrt(1.0 / events_accepted_ + 1.0 / events_generated_);
@@ -245,19 +257,24 @@ void MCGlauber::writeHeader() {
   tree_->fillHeader();
 }
 
-bool MCGlauber::generate() {
+EventStatus MCGlauber::generate() {
   tree_->clearEvent();
   clear();
+
   // generate impact parameter
   double b = b_min_ + Random::instance().linear() * (b_max_ - b_min_);
   generated_ip_->Fill(b);
-
+  
   // generate two new nuclei
-  nucleusA_->generate(b / 2.0);
-  nucleusB_->generate(-b / 2.0);
+  bool status_1 = nucleusA_->generate(b / 2.0);
+  bool status_2 = nucleusB_->generate(-b / 2.0);
+
+  if (!status_1 || !status_2)
+    return EventStatus::Error;
 
   // collide the nuclei: if there are no collisions, we are done
-  if (!collision_.collide(*nucleusA_.get(), *nucleusB_.get())) return false;
+  if (!collision_.collide(*nucleusA_.get(), *nucleusB_.get()))
+    return EventStatus::Miss;
 
   // fill the event record in the tree
   tree_->setB(b);
@@ -269,7 +286,7 @@ bool MCGlauber::generate() {
   tree_->setTheta(1, nucleusB_->nucleusTheta());
   tree_->setTheta(1, nucleusB_->nucleusPhi());
 
-  for (auto& weight : glauberWeightSet) {
+  for (auto &weight : glauberWeightSet) {
     int index = static_cast<int>(weight);
     tree_->setSumX(weight, collision_.averageX()[index]);
     tree_->setSumY(weight, collision_.averageY()[index]);
@@ -286,55 +303,58 @@ bool MCGlauber::generate() {
   }
 
   tree_->fill();
-  return true;
+  return EventStatus::Hit;
 }
 
 double MCGlauber::lookupXSec(CollisionEnergy energy) {
   switch (energy) {
-    case CollisionEnergy::E2760:
-      return 6.4;
-      break;
-    case CollisionEnergy::E200:
-      return 4.2;
-      break;
-    case CollisionEnergy::E62:
-      return 3.6;
-      break;
-    case CollisionEnergy::E39:
-      return 3.4;
-      break;
-    case CollisionEnergy::E27:
-      return 3.3;
-      break;
-    case CollisionEnergy::E19:
-      return 3.2;
-      break;
-    case CollisionEnergy::E14:
-      return 3.15;
-      break;
-    case CollisionEnergy::E11:
-      return 3.12;
-      break;
-    case CollisionEnergy::E7:
-      return 3.08;
-      break;
-    default:
-      LOG(ERROR)
-          << "No inelastic nucleon-nucleon cross section for collision energy";
-      LOG(ERROR) << "Either implement in lookupXSec(CollisionEnergy) or set "
-                    "xsec by hand";
-      return 0.0;
+  case CollisionEnergy::E2760:
+    return 6.4;
+    break;
+  case CollisionEnergy::E200:
+    return 4.2;
+    break;
+  case CollisionEnergy::E62:
+    return 3.6;
+    break;
+  case CollisionEnergy::E39:
+    return 3.4;
+    break;
+  case CollisionEnergy::E27:
+    return 3.3;
+    break;
+  case CollisionEnergy::E19:
+    return 3.2;
+    break;
+  case CollisionEnergy::E14:
+    return 3.15;
+    break;
+  case CollisionEnergy::E11:
+    return 3.12;
+    break;
+  case CollisionEnergy::E7:
+    return 3.08;
+    break;
+  default:
+    LOG(ERROR)
+        << "No inelastic nucleon-nucleon cross section for collision energy";
+    LOG(ERROR) << "Either implement in lookupXSec(CollisionEnergy) or set "
+                  "xsec by hand";
+    return 0.0;
   }
 }
 
-void MCGlauber::init(unsigned mass_number_A, double radius_A,
-                     double skin_depth_A, double beta2_A, double beta4_A,
-                     unsigned mass_number_B, double radius_B,
-                     double skin_depth_B, double beta2_B, double beta4_B) {
-  nucleusA_ = make_unique<Nucleus>(mass_number_A, radius_A, skin_depth_A,
-                                   beta2_A, beta4_A);
-  nucleusB_ = make_unique<Nucleus>(mass_number_B, radius_B, skin_depth_B,
-                                   beta2_B, beta4_B);
+void MCGlauber::init(GlauberSpecies species_A, GlauberSpecies species_B,
+                     GlauberMod mod, bool deformed_a, bool deformed_b) {
+  nucleusA_ = make_unique<Nucleus>(species_A, mod, deformed_a);
+  nucleusB_ = make_unique<Nucleus>(species_B, mod, deformed_b);
 }
 
-}  // namespace sct
+void MCGlauber::init(unsigned mass_number_A, NucleonPDF::PDF pdf_A,
+                     parameter_list params_A, unsigned mass_number_B,
+                     NucleonPDF::PDF pdf_B, parameter_list params_B) {
+  nucleusA_ = make_unique<Nucleus>(mass_number_A, params_A, pdf_A);
+  nucleusB_ = make_unique<Nucleus>(mass_number_B, params_B, pdf_B);
+}
+
+} // namespace sct

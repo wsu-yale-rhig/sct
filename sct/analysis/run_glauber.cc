@@ -83,10 +83,10 @@ void RunGlauber(sct::GlauberSpecies species, sct::CollisionEnergy energy,
   TFile file(outName.c_str(), "RECREATE");
 
   // get woods-saxon distributions
-  TH2D* WSA = generator.woodsSaxonA();
+  TH2D* WSA = generator.nuclearPDFA();
   WSA->SetName("rcosthetaA");
   WSA->Write();
-  TH2D* WSB = generator.woodsSaxonB();
+  TH2D* WSB = generator.nuclearPDFB();
   WSB->SetName("rcosthetaB");
   WSB->Write();
   TH1D* genIP = generator.generatedImpactParameter();

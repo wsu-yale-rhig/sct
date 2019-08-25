@@ -46,7 +46,7 @@ bool NucleonPDF::init(GlauberSpecies species, GlauberMod mod, bool deformed) {
   switch (species) {
   case GlauberSpecies::p1:
     pdf_form_ = PDF::StepFunction1D;
-    params = {{"d", radius}};
+    params = {{"radius", radius}};
     initStepFunction(params);
     break;
   case GlauberSpecies::d2:
@@ -72,7 +72,7 @@ bool NucleonPDF::init(GlauberSpecies species, GlauberMod mod, bool deformed) {
   return true;
 }
 
-bool NucleonPDF::init(PDF pdf, parameter_list &parameters) {
+bool NucleonPDF::init(PDF pdf, parameter_list parameters) {
   clear();
 
   if (pdf == PDF::Undetermined) {
@@ -101,6 +101,7 @@ bool NucleonPDF::init(PDF pdf, parameter_list &parameters) {
 }
 
 bool NucleonPDF::sample(double &r, double &theta, double &phi) {
+  
   if (pdf_2d_.get() != nullptr) {
     return sample_2d(r, theta, phi);
   } else if (pdf_1d_.get() != nullptr) {
@@ -125,17 +126,17 @@ bool NucleonPDF::initWS1D(parameter_list &params) {
   pdf_1d_ = make_unique<TF1>(
       sct::MakeString("woodsaxon_", Random::instance().counter()).c_str(),
       WoodsSaxonSpherical, 0.0, 20.0, WoodsSaxonSpherical_npar);
-  pdf_1d_->SetNpx(500);
+  pdf_1d_->SetNpx(400);
   initParameters(params, WoodsSaxonSpherical_params, pdf_1d_.get());
   return true;
 }
 bool NucleonPDF::initWS2D(parameter_list &params) {
   pdf_2d_ = make_unique<TF2>(
       sct::MakeString("woodsaxon_", Random::instance().counter()).c_str(),
-      WoodsSaxonDeformed, 0.0, 20.0, WoodsSaxonDeformed_npar);
+      WoodsSaxonDeformed, 0.0, 20.0, -1.0, 1.0, WoodsSaxonDeformed_npar);
   
-  pdf_2d_->SetNpx(500);
-  pdf_2d_->SetNpy(500);
+  pdf_2d_->SetNpx(400);
+  pdf_2d_->SetNpy(400);
   
   initParameters(params, WoodsSaxonDeformed_params, (TF1 *)pdf_2d_.get());
   

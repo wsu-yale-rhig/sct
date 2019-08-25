@@ -2,32 +2,44 @@
 
 #include "benchmark/benchmark.h"
 
-static void BM_NucleusCreation(benchmark::State& state) {
+static void BM_NucleusCreation(benchmark::State &state) {
   for (auto _ : state) {
     sct::Nucleus nucleus;
   }
 }
 
-static void BM_NucleusGeneration(benchmark::State& state) {
+static void BM_NucleusGeneration(benchmark::State &state) {
   sct::Nucleus nucleus;
-  nucleus.setParameters(state.range(0), 6.0, 0.5, 0.0, 0.0);
+  sct::parameter_list params;
+  params["radius"] = 6.0;
+  params["skin_depth"] = 0.5;
+  nucleus.setParameters(state.range(0), params,
+                        sct::NucleonPDF::PDF::WoodsSaxon1D);
   for (auto _ : state) {
     nucleus.generate();
   }
 }
 
-static void BM_NucleonRepulsion(benchmark::State& state) {
+static void BM_NucleonRepulsion(benchmark::State &state) {
   sct::Nucleus nucleus;
-  nucleus.setParameters(500, 6.0, 0.5, 0.0, 0.0);
+  sct::parameter_list params;
+  params["radius"] = 6.0;
+  params["skin_depth"] = 0.5;
+  nucleus.setParameters(500, params,
+                        sct::NucleonPDF::PDF::WoodsSaxon1D);
   for (auto _ : state) {
     nucleus.setRepulsionDistance((double)state.range(0) / 1000.0);
     nucleus.generate();
   }
 }
 
-static void BM_NucleusGenerationRepulsion(benchmark::State& state) {
+static void BM_NucleusGenerationRepulsion(benchmark::State &state) {
   sct::Nucleus nucleus;
-  nucleus.setParameters(state.range(0), 6.0, 0.5, 0.0, 0.0);
+  sct::parameter_list params;
+  params["radius"] = 6.0;
+  params["skin_depth"] = 0.5;
+  nucleus.setParameters(state.range(0), params,
+                        sct::NucleonPDF::PDF::WoodsSaxon1D);
   nucleus.setRepulsionDistance((double)state.range(1) / 1000.0);
   for (auto _ : state) {
     nucleus.generate();

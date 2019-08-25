@@ -20,10 +20,16 @@
 #include "TH1D.h"
 
 namespace sct {
+
+// the return status of a single generated event - Error for a failure to
+// generate an event, Miss for an event with zero binary collisions, Hit
+// otherwise
+enum class EventStatus { Error, Miss, Hit };
+
 class MCGlauber {
 public:
   // Constructor that provides access to default settings
-  // for specific nuclei (Au, Pb, Sm, Cu, U)
+  // for specific nuclei (Au, Pb, Sm, Cu, U, p, d)
   // default construction is for AuAu at 200 GeV, spherical
   // with no modification to the glauber parameters
   MCGlauber(GlauberSpecies species_A = GlauberSpecies::Au197,
@@ -33,27 +39,23 @@ public:
             bool deformation_B = false);
 
   // generic symmetric collision constructor
-  MCGlauber(unsigned mass_number, // mass number of nucleus (number of nucleons)
-            double radius,        // radius of nucleus
-            double skin_depth,    // skin depth of nucleus
-            double beta2,         // second order deformation parameter
-            double beta4,         // 4th order deformation parameter
-            double inelastic_xsec, // inelastic NN cross section
-            double energy);        // energy (sqrt(sNN))
+  MCGlauber(
+      unsigned mass_number,  // mass number of nucleus (number of nucleons)
+      NucleonPDF::PDF pdf,   // the PDF to use for the nucleon distribution.
+                             // Available options are defined in nucleon_pdf.h
+      parameter_list params, // relevant parameters for the
+      double inelastic_xsec, // inelastic NN cross section
+      double energy);        // energy (sqrt(sNN))
 
   // generic asymmetric collision cross section
-  MCGlauber(unsigned mass_number_A, // mass number nucleus A
-            double radius_A,        // radius nucleus A
-            double skin_depth_A,    // skin depth nucleus A
-            double beta2_A, // second order deformation parameter nucleus A
-            double beta4_A, // fourth order deformation parameter nucleus A
-            unsigned mass_number_B, // mass number nucleus B
-            double radius_B,        // radius nucleus B
-            double skin_depth_B,    // skin depth nucleus B
-            double beta2_B, // second order deformation parameter nucleus B
-            double beta4_B, // second order deformation parameter nucleus B
-            double inelastic_xsec, // inelastic NN cross section
-            double energy);        // energy (sqrt(sNN))
+  MCGlauber(unsigned mass_number_A,  // mass number nucleus A
+            NucleonPDF::PDF pdf_A,   // PDF for nucleus A
+            parameter_list params_A, // relevant parameters for the PDF for A
+            unsigned mass_number_B,  // mass number nucleus B
+            NucleonPDF::PDF pdf_B,   // the PDF for nucleus B
+            parameter_list params_B, // relevant parameters for the PDF for B
+            double inelastic_xsec,   // inelastic NN cross section
+            double energy);          // energy (sqrt(sNN))
 
   virtual ~MCGlauber();
 
@@ -102,8 +104,10 @@ public:
   // lookup table for known NN cross sections (as a function of energy)
   double lookupXSec(CollisionEnergy energy);
 
-  // generates a single event: returns true if nColl > 0
-  bool generate();
+  // generates a single event: returns Error if nuclei could not be generated,
+  // Miss if there is no binary collision, and Hit if at least one binary
+  // collision occured
+  EventStatus generate();
 
   // write the summary into header tree (called automatically by run())
   void writeHeader();
@@ -112,8 +116,8 @@ public:
   GlauberTree *results() const { return tree_.get(); }
 
   // gives access to generated parameters
-  TH2D *woodsSaxonA() { return nucleusA_->generatedRCosTheta(); }
-  TH2D *woodsSaxonB() { return nucleusB_->generatedRCosTheta(); }
+  TH2D *nuclearPDFA() { return nucleusA_->generatedRCosTheta(); }
+  TH2D *nuclearPDFB() { return nucleusB_->generatedRCosTheta(); }
   TH1D *generatedImpactParameter() { return generated_ip_.get(); }
   TH1D *acceptedImpactParameter() { return accepted_ip_.get(); }
 
@@ -121,10 +125,11 @@ public:
   void clear();
 
 private:
-  void init(unsigned mass_number_A, double radius_A, double skin_depth_A,
-            double beta2_A, double beta4_A, unsigned mass_number_B,
-            double radius_B, double skin_depth_b, double beta2_B,
-            double beta4_B);
+  void init(GlauberSpecies species_A, GlauberSpecies species_B, GlauberMod mod,
+            bool deformed_a, bool deformed_b);
+  void init(unsigned mass_number_A, NucleonPDF::PDF pdf_A,
+            parameter_list params_A, unsigned mass_number_B,
+            NucleonPDF::PDF pdf_B, parameter_list params_B);
 
   void initOutput();
   void initQA();

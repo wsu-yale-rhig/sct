@@ -5,21 +5,17 @@
 
 namespace sct {
 class Nucleon {
- public:
+public:
   Nucleon();
-  Nucleon(const Nucleon& rhs);
+  Nucleon(const Nucleon &rhs);
   virtual ~Nucleon();
 
   // resets to default
   void clear();
 
-  // sets r, theta, phi, and rotates wrt the orientation
-  // of the nucleus (given by nucleus_theta, nucleus_phi),
-  // and modifies position along X given the impact parameter
-  // rotation is done along theta axis first if theta_first is set
-  // to true
-  void set(TVector3 position, double b = 0, double nucleus_theta = 0.0,
-           double nucleus_phi = 0.0, bool theta_first = true);
+  // sets r, theta, phi of the nucleon. In the case of the glauber model,
+  // this is in the reference frame of the center-of-mass of the collision.
+  void set(TVector3 position);
 
   inline TVector3 position() const { return position_; }
   inline double phi() const { return position_.Phi(); }
@@ -64,10 +60,10 @@ class Nucleon {
   }
 
   // three dimensional delta R
-  double deltaR(const Nucleon& rhs) const;
+  double deltaR(const Nucleon &rhs) const;
 
   // two dimensional delta R (in XY)
-  double deltaXY(const Nucleon& rhs) const;
+  double deltaXY(const Nucleon &rhs) const;
 
   inline bool participant() const { return n_coll_ ? true : false; }
   inline unsigned nColl() const { return n_coll_; }
@@ -76,11 +72,11 @@ class Nucleon {
   inline void incrementNColl() { ++n_coll_; }
   inline void setMultiplicity(double mult) { multiplicity_ = mult; }
 
- private:
+private:
   TVector3 position_;
   unsigned n_coll_;
   unsigned multiplicity_;
 };
-}  // namespace sct
+} // namespace sct
 
-#endif  // SCT_GLAUBER_NUCLEON_H
+#endif // SCT_GLAUBER_NUCLEON_H

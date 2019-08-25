@@ -107,7 +107,7 @@ TEST(nucleonpdf, proton_default) {
   auto params = pdf.parameters();
 
   sct::parameter_list expected{
-      {"d",
+      {"radius",
        sct::NucleusInfo::instance().radius(sct::GlauberSpecies::p1)}};
 
   EXPECT_FALSE(pdf.deformed());

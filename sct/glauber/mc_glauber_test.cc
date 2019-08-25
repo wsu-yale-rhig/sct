@@ -76,8 +76,19 @@ TEST(MCGlauber, nonDefaultHeader) {
   double bMin = 0.5;
   double bMax = 10.0;
 
-  sct::MCGlauber generator(massNumberA, radiusA, skinDepthA, beta2A, beta4A,
-                           massNumberB, radiusB, skinDepthB, beta2B, beta4B,
+  sct::parameter_list paramsA;
+  paramsA["radius"] = radiusA;
+  paramsA["skin_depth"] = skinDepthA;
+  paramsA["beta2"] = beta2A;
+  paramsA["beta4"] = beta4A;
+  sct::parameter_list paramsB;
+  paramsB["radius"] = radiusB;
+  paramsB["skin_depth"] = skinDepthB;
+  paramsB["beta2"] = beta2B;
+  paramsB["beta4"] = beta4B;
+
+  sct::MCGlauber generator(massNumberA, sct::NucleonPDF::PDF::WoodsSaxon2D, paramsA,
+                           massNumberB, sct::NucleonPDF::PDF::WoodsSaxon2D, paramsB,
                            inelasticXsec, energy);
   generator.setSmearing(sct::NucleonSmearing::HardCore);
   generator.setCollisionProfile(sct::CollisionProfile::Gaussian);
@@ -122,7 +133,13 @@ TEST(MCGlauber, nonDefaultSymmetricHeader) {
   double bMin = 0.5;
   double bMax = 10.0;
 
-  sct::MCGlauber generator(massNumber, radius, skinDepth, beta2, beta4,
+  sct::parameter_list params;
+  params["radius"] = radius;
+  params["skin_depth"] = skinDepth;
+  params["beta2"] = beta2;
+  params["beta4"] = beta4;
+
+  sct::MCGlauber generator(massNumber, sct::NucleonPDF::PDF::WoodsSaxon2D, params,
                            inelasticXsec, energy);
   generator.setSmearing(sct::NucleonSmearing::Gaussian);
   generator.setCollisionProfile(sct::CollisionProfile::HardCore);

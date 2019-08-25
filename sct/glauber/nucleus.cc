@@ -4,6 +4,7 @@
 #include "sct/lib/math.h"
 #include "sct/lib/string/string_utils.h"
 #include "sct/utils/functions.h"
+#include "sct/utils/nucleus_info.h"
 #include "sct/utils/random.h"
 
 #include "TF2.h"
@@ -11,31 +12,33 @@
 namespace sct {
 
 Nucleus::Nucleus()
-    : name_(""), mass_number_(0), radius_(0), skin_depth_(0), beta2_(0),
-      beta4_(0), smear_(NucleonSmearing::None), sigmaNN_(0.0),
+    : name_(""), mass_number_(0), smear_(NucleonSmearing::None),
       repulsion_distance_(0.0), random_orientation_(true), nucleus_theta_(0.0),
       nucleus_phi_(0.0), b_(0.0), generated_rcos_theta_(nullptr),
       generated_position_(nullptr), generated_smear_(nullptr),
       smeared_position_(nullptr) {}
 
-Nucleus::Nucleus(unsigned mass_number, double radius, double skin_depth,
-                 double beta2, double beta4)
-    : name_(""), mass_number_(mass_number), radius_(radius),
-      skin_depth_(skin_depth), beta2_(beta2), beta4_(beta4),
-      smear_(NucleonSmearing::None), sigmaNN_(0.0), repulsion_distance_(0.0),
-      random_orientation_(true), nucleus_theta_(0.0), nucleus_phi_(0.0),
-      b_(0.0) {
-  // reserve space for the correct number of nucleons
-  nucleons_.reserve(mass_number);
+Nucleus::Nucleus(GlauberSpecies species, GlauberMod mod, bool deformed)
+    : name_(""), mass_number_(0), smear_(NucleonSmearing::None),
+      repulsion_distance_(0.0), random_orientation_(true), nucleus_theta_(0.0),
+      nucleus_phi_(0.0), b_(0.0), generated_rcos_theta_(nullptr),
+      generated_position_(nullptr), generated_smear_(nullptr),
+      smeared_position_(nullptr) {
+  name_ = NucleusInfo::instance().name(species);
+  setParameters(species, mod, deformed);
+}
 
-  initNucleonPDF();
-  initHistograms();
+Nucleus::Nucleus(unsigned mass_number, parameter_list params,
+                 NucleonPDF::PDF pdf)
+    : name_(""), mass_number_(mass_number), smear_(NucleonSmearing::None),
+      repulsion_distance_(0.0), random_orientation_(true), nucleus_theta_(0.0),
+      nucleus_phi_(0.0), b_(0.0) {
+  setParameters(mass_number, params, pdf);
 }
 
 Nucleus::Nucleus(const Nucleus &rhs)
-    : name_(rhs.name()), mass_number_(rhs.massNumber()), radius_(rhs.radius()),
-      beta2_(rhs.beta2()), beta4_(rhs.beta4()), smear_(rhs.nucleonSmearing()),
-      sigmaNN_(rhs.nnCrossSection()),
+    : name_(rhs.name()), mass_number_(rhs.massNumber()),
+      smear_(rhs.nucleonSmearing()),
       repulsion_distance_(rhs.repulsionDistance()),
       random_orientation_(rhs.randomOrientation()),
       nucleus_theta_(rhs.nucleusTheta()), nucleus_phi_(rhs.nucleusPhi()),
@@ -45,7 +48,7 @@ Nucleus::Nucleus(const Nucleus &rhs)
   for (int i = 0; i < rhs.size(); ++i)
     nucleons_.push_back(rhs[i]);
 
-  initNucleonPDF();
+  nucleon_pdf_.init(rhs.nucleon_pdf_.PDFForm(), rhs.nucleon_pdf_.parameters());
   initHistograms();
 }
 
@@ -58,28 +61,33 @@ void Nucleus::clear() {
   b_ = 0.0;
 }
 
-void Nucleus::setParameters(unsigned mass_number, double radius,
-                            double skin_depth, double beta2, double beta4) {
+bool Nucleus::setParameters(GlauberSpecies species, GlauberMod mod,
+                            bool deformed) {
+  // reserve space for correct number of nucleons
+  nucleons_.reserve(NucleusInfo::instance().massNumber(species));
+  mass_number_ = NucleusInfo::instance().massNumber(species);
+
+  initHistograms();
+
+  // initialize the pdf
+  return nucleon_pdf_.init(species, mod, deformed);
+}
+
+bool Nucleus::setParameters(unsigned mass_number, parameter_list params,
+                            NucleonPDF::PDF pdf) {
   if (mass_number == 0) {
     LOG(ERROR) << "mass number can not be zero, nucleus in invalid state";
-    return;
-  }
-  if (radius == 0) {
-    LOG(ERROR) << "mass number can not be zero, nucleus in invalid state";
-    return;
+    return false;
   }
 
   clear();
   nucleons_.reserve(mass_number);
-
   mass_number_ = mass_number;
-  radius_ = radius;
-  skin_depth_ = skin_depth;
-  beta2_ = beta2;
-  beta4_ = beta4;
 
-  initNucleonPDF();
   initHistograms();
+
+  // reset the nuclear PDF
+  return nucleon_pdf_.init(pdf, params);
 }
 
 bool Nucleus::generate(double b) {
@@ -91,7 +99,7 @@ bool Nucleus::generate(double b) {
 
   // get an orientation for the nucleus (theta & phi), if it is deformed,
   // else, keep at zero
-  if ((beta2_ != 0.0 || beta4_ != 0.0) && random_orientation_) {
+  if (nucleon_pdf_.deformed() && random_orientation_) {
     nucleus_theta_ = acos(Random::instance().centeredUniform());
     nucleus_phi_ = Random::instance().zeroToPi() * 2.0 - pi;
   } else {
@@ -99,50 +107,42 @@ bool Nucleus::generate(double b) {
     nucleus_phi_ = 0.0;
   }
 
+  // special case for deuteron - we need to place the nuclei opposite to each
+  // other, so we do not randomly sample each nucleon. Instead, we sample a
+  // single nucleon and place the other opposite
+  if (mass_number_ == 0 && nucleon_pdf_.PDFForm() == NucleonPDF::PDF::Hulthen)
+    return generateDeuteron();
+
   // since repulsion can lead to effectively an infinite loop
   // (if 4/3 * pi * radius^3 ~ 4/3 * pi * repulsionDistance^3 * mass_number_)
   // we will fail out after 10 * mass_number_ of entries
-  int tries = 0;
-  while (nucleons_.size() < mass_number_) {
-    if (tries > mass_number_ * 10) {
-      LOG(ERROR) << "Repeated failure to create nucleus of radius: " << radius_;
-      LOG(ERROR) << "with " << mass_number_
-                 << " nucleons, with a nucleon repulsion "
-                 << "distance of " << repulsion_distance_;
-      return false;
-    }
 
-    addNucleon(b);
-    ++tries;
-  }
-  return true;
+  return generateNucleus();
 }
 
-void Nucleus::setNucleonSmearing(NucleonSmearing smear, double sigmaNN) {
-  if (sigmaNN < 0) {
+void Nucleus::setNucleonSmearing(NucleonSmearing smear, double smear_area) {
+  if (smear_area < 0) {
     LOG(ERROR) << "Nucleon smearing requested with negative inelastic"
                << " cross section, setting to zero";
     smearing_profile_.reset(nullptr);
     smear_ = NucleonSmearing::None;
-    sigmaNN_ = 0;
     return;
   }
 
   smear_ = smear;
-  sigmaNN_ = sigmaNN;
 
   switch (smear) {
   case NucleonSmearing::HardCore: {
-    double rMax = sqrt(sigmaNN_ / pi);
+    double rMax = sqrt(smear_area / pi);
     smearing_profile_ = make_unique<TF3>(
         MakeString("hardCoreSmear_", Random::instance().counter()).c_str(),
         StepFunction, -rMax, rMax, -rMax, rMax, -rMax, rMax, 1);
-    smearing_profile_->SetParameter(0, sigmaNN_);
+    smearing_profile_->SetParameter(0, smear_area);
     break;
   }
   case NucleonSmearing::Gaussian: {
-    double rMax = sigmaNN_ * 5.0;
     double sigma = 0.79 / sqrt(3.0);
+    double rMax = sigma * 5.0;
     smearing_profile_ = make_unique<TF3>(
         MakeString("gaussianSmear_", Random::instance().counter()).c_str(),
         Gaussian, -rMax, rMax, -rMax, rMax, -rMax, rMax, 1);
@@ -165,12 +165,27 @@ void Nucleus::setRepulsionDistance(double fm) {
   }
 }
 
+void Nucleus::rotateAndOffset(Nucleon &n) {
+  TVector3 pos = n.position();
+
+  // rotate in the frame of the nucleus
+  pos.RotateY(nucleusTheta());
+  pos.RotateZ(nucleusPhi());
+
+  // translate by impact parameter along the x axis - moves the nucleon into the
+  // collision CM frame
+  pos.SetX(pos.X() + b_);
+
+  n.set(pos);
+}
+
 void Nucleus::addNucleon(double b) {
   // attempt to add one nucleon to the nucleus
   Nucleon nucleon;
 
   // now try to add the nucleon to the nucleus - "try" because if there
-  // is a repulsion it can fail, so try 5 times, and fail out if it doesn't fit
+  // is a repulsion it can fail, so try 5 times, and fail out if it doesn't
+  // "fit"
   int tries = 0;
 
   while (tries < 5) {
@@ -178,18 +193,31 @@ void Nucleus::addNucleon(double b) {
 
     // generate a random position
     TVector3 position = generateNucleonPosition();
+
     // smear, if nucleon position smearing is turned on
     TVector3 smearing = smear();
 
-    // get x, y, z
+    // the nominal position is the addition of raw position + smearing
     TVector3 smeared_position = position + smearing;
 
     // create the nucleon
-    nucleon.set(smeared_position, b, nucleus_theta_, nucleus_phi_, true);
+    nucleon.set(smeared_position);
 
-    // if no repulsion, we don't need to check against other nucleon
-    // positions, just add and break out
-    if (repulsion_distance_ <= 0.0 || nucleons_.size() == 0) {
+    // rotate by the nucleus orientation and then offset by the impact parameter
+    rotateAndOffset(nucleon);
+
+    // if a minimum repulsion distance is set, we have to check each existing
+    // nucleon for overlap - else, we can skip that relatively inefficient step
+    bool collision = false;
+    if (repulsion_distance_ > 0.0) {
+      for (auto nucleon2 : nucleons_) {
+        if (nucleon.deltaR(nucleon2) <= repulsion_distance_)
+          collision = true;
+      }
+    }
+
+    if (collision == false) {
+      // if there was no overlap, add the nucleon
       nucleons_.push_back(nucleon);
 
       // record QA data
@@ -198,56 +226,7 @@ void Nucleus::addNucleon(double b) {
       smeared_position_->Fill(smeared_position.X(), smeared_position.Y(),
                               smeared_position.Z());
       break;
-    } else {
-      // otherwise, we have to check every generated nucleon to see
-      // if it overlaps
-      bool collision = false;
-      for (auto nucleon2 : nucleons_) {
-        if (nucleon.deltaR(nucleon2) <= repulsion_distance_)
-          collision = true;
-      }
-      if (collision == false) {
-        // if there was no overlap, add the nucleon
-        nucleons_.push_back(nucleon);
-
-        // record QA data
-        generated_position_->Fill(position.X(), position.Y(), position.Z());
-        generated_smear_->Fill(smearing.X(), smearing.Y(), smearing.Z());
-        smeared_position_->Fill(smeared_position.X(), smeared_position.Y(),
-                                smeared_position.Z());
-        break;
-      }
     }
-  }
-}
-
-void Nucleus::initNucleonPDF() {
-  nucleon_pdf_.reset(nullptr);
-
-  // either 1D or 2D depending on the deformation parameters
-  if (beta2_ == 0.0 && beta4_ == 0.0) {
-    nucleon_pdf_ = make_unique<TF1>(
-        MakeString("nucleon_pdf_", Random::instance().counter()).c_str(),
-        WoodsSaxonSpherical, 0, 20, 2);
-    nucleon_pdf_->SetParName(0, "Radius");
-    nucleon_pdf_->SetParameter(0, radius_);
-    nucleon_pdf_->SetParName(1, "Skin depth");
-    nucleon_pdf_->SetParameter(1, skin_depth_);
-    nucleon_pdf_->SetNpx(400);
-  } else {
-    nucleon_pdf_ = make_unique<TF2>(
-        MakeString("nucleon_pdf_", Random::instance().counter()).c_str(),
-        WoodsSaxonDeformed, 0, 20, -1.0, 1.0, 4);
-    nucleon_pdf_->SetParName(0, "Radius");
-    nucleon_pdf_->SetParameter(0, radius_);
-    nucleon_pdf_->SetParName(1, "Skin depth");
-    nucleon_pdf_->SetParameter(1, skin_depth_);
-    nucleon_pdf_->SetParName(2, "#beta_{2}");
-    nucleon_pdf_->SetParameter(2, beta2_);
-    nucleon_pdf_->SetParName(3, "#beta_{4}");
-    nucleon_pdf_->SetParameter(3, beta4_);
-    nucleon_pdf_->SetNpx(400);
-    ((TF2 *)nucleon_pdf_.get())->SetNpy(400);
   }
 }
 
@@ -256,44 +235,29 @@ void Nucleus::initHistograms() {
   // initialize QA histograms
   generated_rcos_theta_ = make_unique<TH2D>(
       MakeString("r_cos_theta_", Random::instance().counter()).c_str(),
-      ";R;cos(#theta)", 400, 0, 3 * radius_, 100, -1.0, 1.0);
+      ";R;cos(#theta)", 400, 0, 20, 100, -1.0, 1.0);
   generated_rcos_theta_->SetDirectory(0);
   generated_position_ = make_unique<TH3D>(
       MakeString("nucleonpos_", Random::instance().counter()).c_str(),
-      ";dx;dy;dz", 100, -3.0 * radius_, 3.0 * radius_, 100, -3.0 * radius_,
-      3.0 * radius_, 100, -3.0 * radius_, 3.0 * radius_);
+      ";dx;dy;dz", 100, -20.0, 20.0, 100, -20.0, 20.0, 100, -20.0, 20.0);
   generated_position_->SetDirectory(0);
   generated_smear_ = make_unique<TH3D>(
       MakeString("nucleonsmear_", Random::instance().counter()).c_str(),
-      ";dx;dy;dz", 100, -3.0 * radius_, 3.0 * radius_, 100, -3.0 * radius_,
-      3.0 * radius_, 100, -3.0 * radius_, 3.0 * radius_);
+      ";dx;dy;dz", 100, -20.0, 20.0, 100, -20.0, 20.0, 100, -20.0, 20.0);
   generated_smear_->SetDirectory(0);
   smeared_position_ = make_unique<TH3D>(
       MakeString("nucleonsmearedpos_", Random::instance().counter()).c_str(),
-      ";dx;dy;dz", 100, -3.0 * radius_, 3.0 * radius_, 100, -3.0 * radius_,
-      3.0 * radius_, 100, -3.0 * radius_, 3.0 * radius_);
+      ";dx;dy;dz", 100, -20.0, 20.0, 100, -20.0, 20.0, 100, -20.0, 20.0);
   smeared_position_->SetDirectory(0);
 }
 
 TVector3 Nucleus::generateNucleonPosition() {
   double r, theta, phi;
-  // if the nucleus is not deformed, we are using a 1D woods-saxon
-  if (beta2_ == 0.0 && beta4_ == 0.0) {
-    r = nucleon_pdf_->GetRandom();
-    theta = acos(Random::instance().centeredUniform());
-  }
-  // otherwise we use a 2D woods-saxon
-  else {
-    double cos_theta;
-    ((TF2 *)nucleon_pdf_.get())->GetRandom2(r, cos_theta);
-    theta = acos(cos_theta);
-  }
+
+  nucleon_pdf_.sample(r, theta, phi);
 
   // record the generated R & cos theta for QA
   generated_rcos_theta_->Fill(r, cos(theta), 1.0 / pow(r, 2.0));
-
-  // finally, generate phi flat in -pi < phi < pi
-  phi = Random::instance().zeroToPi() * 2.0 - pi;
 
   TVector3 ret;
   ret.SetMagThetaPhi(r, theta, phi);
@@ -321,6 +285,61 @@ const Nucleon &Nucleus::operator[](unsigned idx) const {
 Nucleon &Nucleus::operator[](unsigned idx) {
   SCT_ASSERT(idx < nucleons_.size(), "Out of bounds access");
   return nucleons_[idx];
+}
+
+bool Nucleus::generateDeuteron() {
+  int tries = 0;
+  while (tries < 5) {
+    Nucleon nucleon_a;
+    Nucleon nucleon_b;
+    // generate a random position
+    TVector3 position_a = generateNucleonPosition();
+    // smear, if nucleon position smearing is turned on
+    TVector3 smearing_a = smear();
+
+    // the nominal position is the addition of raw position + smearing
+    TVector3 smeared_position_a = position_a + smearing_a;
+    TVector3 smeared_position_b = -smeared_position_a;
+
+    // create the nucleon
+    nucleon_a.set(smeared_position_a);
+    nucleon_b.set(smeared_position_b);
+
+    if (repulsion_distance_ > 0.0 &&
+        nucleon_a.deltaR(nucleon_b) >= repulsion_distance_) {
+      // rotate by the nucleus orientation and then offset by the impact
+      // parameter
+      rotateAndOffset(nucleon_a);
+      rotateAndOffset(nucleon_b);
+      nucleons_.push_back(nucleon_a);
+      nucleons_.push_back(nucleon_b);
+      return true;
+    }
+  }
+  LOG(ERROR) << "Repeated failure to generate a deuteron nucleus with a "
+                "Hulthen PDF: nucleon-nucleon repulsion distance ("
+             << repulsion_distance_
+             << ") is too large for the specified PDF parameters";
+  return false;
+}
+
+bool Nucleus::generateNucleus() {
+  int tries = 0;
+
+  while (nucleons_.size() < mass_number_) {
+    if (tries > mass_number_ * 10) {
+      LOG(ERROR) << "Repeated failure to create nucleus "
+                 << " with " << mass_number_
+                 << " nucleons, with a nucleon repulsion "
+                 << "distance of " << repulsion_distance_;
+      clear();
+      return false;
+    }
+
+    addNucleon(b_);
+    ++tries;
+  }
+  return true;
 }
 
 } // namespace sct

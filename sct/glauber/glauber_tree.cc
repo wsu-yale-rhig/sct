@@ -170,6 +170,10 @@ void GlauberTree::loadBranches() {
   header_->SetBranchAddress("beta2B", &beta2B_);
   header_->SetBranchAddress("beta4A", &beta4A_);
   header_->SetBranchAddress("beta4B", &beta4B_);
+  header_->SetBranchAddress("hulthenaA", &hulthenaA_);
+  header_->SetBranchAddress("hulthenaB", &hulthenaB_);
+  header_->SetBranchAddress("hulthenbA", &hulthenbA_);
+  header_->SetBranchAddress("hulthenbB", &hulthenbB_);
   header_->SetBranchAddress("sigmann", &sigmaNN_);
   header_->SetBranchAddress("sqrtsnn", &sqrtSNN_);
   header_->SetBranchAddress("repulsiond", &repulsionD_);
@@ -226,6 +230,10 @@ void GlauberTree::createBranches() {
   header_->Branch("beta2B", &beta2B_);
   header_->Branch("beta4A", &beta4A_);
   header_->Branch("beta4B", &beta4B_);
+  header_->Branch("hulthenaA", &hulthenaA_);
+  header_->Branch("hulthenaB", &hulthenaB_);
+  header_->Branch("hulthenbA", &hulthenbA_);
+  header_->Branch("hulthenbB", &hulthenbB_);
   header_->Branch("sigmann", &sigmaNN_);
   header_->Branch("sqrtsnn", &sqrtSNN_);
   header_->Branch("repulsiond", &repulsionD_);

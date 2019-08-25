@@ -147,6 +147,10 @@ class GlauberTree {
   inline void setBeta2B(double val) { beta2B_ = val; }
   inline void setBeta4A(double val) { beta4A_ = val; }
   inline void setBeta4B(double val) { beta4B_ = val; }
+  inline void setHulthenAA(double val) { hulthenaA_ = val; }
+  inline void setHulthenAB(double val) { hulthenaB_ = val; }
+  inline void setHulthenBA(double val) { hulthenbA_ = val; }
+  inline void setHulthenBB(double val) { hulthenbB_ = val; }
   inline void setSigmaNN(double val) { sigmaNN_ = val; }
   inline void setSqrtSNN(double val) { sqrtSNN_ = val; }
   inline void setRepulsionD(double val) { repulsionD_ = val; }
@@ -173,6 +177,10 @@ class GlauberTree {
   inline double beta2B() const { return beta2B_; }
   inline double beta4A() const { return beta4A_; }
   inline double beta4B() const { return beta4B_; }
+  inline double hulthenAA() const {return hulthenaA_; }
+  inline double hulthenAB() const {return hulthenaB_; }
+  inline double hulthenBA() const {return hulthenbA_; }
+  inline double hulthenBB() const {return hulthenbB_; }
   inline double sigmaNN() const { return sigmaNN_; }
   inline double sqrtSNN() const { return sqrtSNN_; }
   inline double repulsionD() const { return repulsionD_; }
@@ -227,6 +235,10 @@ class GlauberTree {
   double beta2B_;
   double beta4A_;
   double beta4B_;
+  double hulthenaA_;
+  double hulthenaB_;
+  double hulthenbA_;
+  double hulthenbB_;
   double sigmaNN_;
   double sqrtSNN_;
   double repulsionD_;
