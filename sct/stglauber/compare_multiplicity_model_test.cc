@@ -45,7 +45,7 @@ TEST(mult_model, test_star_multiplicity_comp_mult) {
 
   int npart = 100;
   int ncoll = 300;
-  int nevents = 1e6;
+  int nevents = 2e6;
 
   TH1D *h1 = new TH1D("h1", "", 300, 50, 350);
   TH1D *h2 = new TH1D("h2", "", 300, 50, 350);

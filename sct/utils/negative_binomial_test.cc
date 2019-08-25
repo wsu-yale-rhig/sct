@@ -36,7 +36,7 @@ TEST(nbd, test_nbd_dist) {
 TEST(nbd, test_mean) {
   sct::NegativeBinomial nbd;
   TH1D* tmp = new TH1D("h", "h", 100, 0, 100);
-  for (int i = 0; i < 1e6; ++i) {
+  for (int i = 0; i < 2e6; ++i) {
     tmp->Fill((int)nbd.random());
   }
   EXPECT_NEAR(nbd.npp(), tmp->GetMean(), 1e-3);
