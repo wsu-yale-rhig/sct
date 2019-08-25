@@ -25,7 +25,8 @@ TEST(function, step_function_1d) {
 TEST(function, step_function_1d_params) {
   EXPECT_EQ(sct::StepFunction1D_npar, 1);
   std::pair<unsigned, double> true_val = {0, 1.0};
-  std::pair<unsigned, double> lookup_val = sct::StepFunction1D_params.at("d");
+  std::pair<unsigned, double> lookup_val =
+      sct::StepFunction1D_params.at("radius");
   EXPECT_EQ(true_val, lookup_val);
 }
 

@@ -7,7 +7,7 @@
 
 TEST(unit_random, bounds) {
   sct::Random& random = sct::Random::instance();
-  unsigned n_throws = 1e5;
+  unsigned n_throws = 1e6;
   for (int i = 0; i < n_throws; ++i) {
     double tmp = random.uniform();
     EXPECT_LE(0.0, tmp);
@@ -27,7 +27,7 @@ TEST(unit_random, average) {
 
 TEST(two_unit_random, bounds) {
   sct::Random& random = sct::Random::instance();
-  unsigned n_throws = 1e5;
+  unsigned n_throws = 1e6;
   for (int i = 0; i < n_throws; ++i) {
     double tmp = random.uniform2();
     EXPECT_LE(0.0, tmp);
@@ -37,7 +37,7 @@ TEST(two_unit_random, bounds) {
 
 TEST(two_unit_random, average) {
   sct::Random& random = sct::Random::instance();
-  unsigned n_throws = 1e6;
+  unsigned n_throws = 5e6;
   double counter = 0.0;
   for (int i = 0; i < n_throws; ++i) {
     counter += random.uniform2();
@@ -47,7 +47,7 @@ TEST(two_unit_random, average) {
 
 TEST(two_unit_center_random, bounds) {
   sct::Random& random = sct::Random::instance();
-  unsigned n_throws = 1e5;
+  unsigned n_throws = 1e6;
   for (int i = 0; i < n_throws; ++i) {
     double tmp = random.centeredUniform();
     EXPECT_LE(-1.0, tmp);
@@ -57,7 +57,7 @@ TEST(two_unit_center_random, bounds) {
 
 TEST(two_unit_center_random, average) {
   sct::Random& random = sct::Random::instance();
-  unsigned n_throws = 1e6;
+  unsigned n_throws = 5e6;
   double counter = 0.0;
   for (int i = 0; i < n_throws; ++i) {
     counter += random.centeredUniform();

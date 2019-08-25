@@ -17,11 +17,11 @@ typedef std::pair<unsigned, double> param_def;
 typedef sct_map<string, param_def> parameter_template;
 
 // given a position x, is that point less than a distance d away from the origin
-// - if so, returns 1/d
+// - if so, returns 1/radius
 //  x[0] = x
-//  par[0] = d
+//  par[0] = radius
 const unsigned StepFunction1D_npar = 1;
-const parameter_template StepFunction1D_params{{"d", {0, 1.0}}};
+const parameter_template StepFunction1D_params{{"radius", {0, 1.0}}};
 double StepFunction1D(double *x, double *par);
 
 // given a position (dx, dy, dz), is that point in a sphere
