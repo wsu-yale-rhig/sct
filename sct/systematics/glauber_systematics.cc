@@ -76,9 +76,9 @@ void GlauberSystematics::setMultiplicityModel(double npp, double k, double x,
   mult_model_[GlauberMod::Nominal] = make_unique<MultiplicityModel>(
       npp, k, x, pp_eff, aa_eff, aa_cent, trig_eff, const_eff);
   mult_model_[GlauberMod::LargeNpp] = make_unique<MultiplicityModel>(
-      npp * 1.05, k, x, pp_eff, aa_eff, aa_cent, trig_eff, const_eff);
+      npp * 1.05, k, x - 0.02, pp_eff, aa_eff, aa_cent, trig_eff, const_eff);
   mult_model_[GlauberMod::SmallNpp] = make_unique<MultiplicityModel>(
-      npp * 0.95, k, x, pp_eff, aa_eff, aa_cent, trig_eff, const_eff);
+      npp * 0.95, k, x + 0.02, pp_eff, aa_eff, aa_cent, trig_eff, const_eff);
 }
 
 void GlauberSystematics::setCentralityBins(std::vector<double> cent_def) {
