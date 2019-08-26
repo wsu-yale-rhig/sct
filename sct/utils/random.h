@@ -5,18 +5,37 @@
 // glauber generation, as well as a globally unique counter for root object
 // naming.
 
-// to use the generator inside the sct library, call the singleton
-// Random::instance().
+// to use the counter inside the sct library, call the singleton
+// Counter::instance().
+
+// the random number generator is thread_local, so each thread should set its
+// own globally unique seed, or let a random seed be used
 
 #include <atomic>
-#include <random>
 #include <mutex>
+#include <random>
 
 namespace sct {
-// singleton Random implementation built on the standard library random
+
+class Counter {
+public:
+  static Counter &instance();
+  virtual ~Counter();
+
+  // returns a globally unique counter, useful for histogram naming where
+  // identical names can cause problems... thanks ROOT
+  inline unsigned counter() { return counter_++; }
+
+private:
+  std::atomic<unsigned> counter_;
+
+  Counter();
+  Counter(const Counter &);
+};
+
 class Random {
- public:
-  static Random& instance();
+public:
+  static Random &instance();
   virtual ~Random();
 
   // samples [0, 1] uniformly
@@ -35,15 +54,11 @@ class Random {
   // proportional to x
   double linear();
 
-  // returns a globally unique counter, useful for histogram naming where
-  // identical names can cause problems... thanks ROOT
-  inline unsigned counter() { return counter_++; }
-
-  // can reset the seed for the random number engine - does not reset
-  // counter
+  // reset the seed for the random number engine - a value less than zero will
+  // make a call to std::random_device, for a random seed.
   void seed(int seed = -1);
 
- private:
+private:
   std::mt19937 generator_;
 
   std::uniform_real_distribution<> unit_uniform_;
@@ -53,13 +68,9 @@ class Random {
 
   std::piecewise_linear_distribution<> unit_linear_;
 
-  std::atomic<unsigned> counter_;
-
-  std::mutex rng_mutex_;
-
   Random();
-  Random(const Random&);
+  Random(const Random &);
 };
-}  // namespace sct
+} // namespace sct
 
-#endif  // SCT_UTILS_RANDOM_H
+#endif // SCT_UTILS_RANDOM_H

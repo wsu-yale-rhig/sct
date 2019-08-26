@@ -42,7 +42,7 @@ void NBDFit::loadData(const TH1D &data) {
   // copy the data histogram
   refmult_data_ = make_unique<TH1D>(data);
   refmult_data_->SetName(
-      MakeString("nbdfit_internal_data_", Random::instance().counter())
+      MakeString("nbdfit_internal_data_", Counter::instance().counter())
           .c_str());
   refmult_data_->SetDirectory(0);
 }
@@ -54,7 +54,7 @@ void NBDFit::loadGlauber(const TH2D &glauber) {
   // copy the data histogram
   npart_ncoll_ = make_unique<TH2D>(glauber);
   npart_ncoll_->SetName(
-      MakeString("nbdfit_internal_data_", Random::instance().counter())
+      MakeString("nbdfit_internal_data_", Counter::instance().counter())
           .c_str());
   npart_ncoll_->SetDirectory(0);
 }
@@ -86,7 +86,7 @@ unique_ptr<FitResult> NBDFit::fit(unsigned nevents, string name) {
   // data refmult distribution
   string hist_name;
   if (name == "" || name == "refmultsim")
-    hist_name = MakeString("refmultsim", Random::instance().counter());
+    hist_name = MakeString("refmultsim", Counter::instance().counter());
   else
     hist_name = name;
   unique_ptr<TH1D> refmult_sim_ =

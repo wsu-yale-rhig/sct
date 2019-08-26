@@ -126,11 +126,11 @@ void MCGlauber::initQA() {
   generated_ip_.reset();
   accepted_ip_.reset();
   generated_ip_ = make_unique<TH1D>(
-      MakeString("generated_ip_", Random::instance().counter()).c_str(),
+      MakeString("generated_ip_", Counter::instance().counter()).c_str(),
       ";impact parameter[fm]", 100, b_min_, b_max_);
   generated_ip_->SetDirectory(0);
   accepted_ip_ = make_unique<TH1D>(
-      MakeString("accepted_ip_", Random::instance().counter()).c_str(),
+      MakeString("accepted_ip_", Counter::instance().counter()).c_str(),
       ";impact parameter[fm]", 100, b_min_, b_max_);
   accepted_ip_->SetDirectory(0);
 }

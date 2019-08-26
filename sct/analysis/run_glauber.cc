@@ -45,6 +45,9 @@ SCT_DEFINE_bool(multithread, false, "allow parallelization of glauber jobs");
 SCT_DEFINE_string(species, "au197", "nucleus species");
 SCT_DEFINE_bool(deformation, false, "turn on nucleus deformation");
 SCT_DEFINE_int(energy, 200, "collision energy");
+SCT_DEFINE_bool(random_seed, true,
+                "if true, uses a random seed for the thread RNGs - otherwise "
+                "uses a counter");
 
 void PrintSettings() {
   LOG(INFO) << "Running MC Glauber:";
@@ -57,19 +60,21 @@ void PrintSettings() {
 // job to run a single parameter set
 void RunGlauber(sct::GlauberSpecies species, sct::CollisionEnergy energy,
                 sct::GlauberMod mod, std::string outDir, bool deformation,
-                int nEvents) {
+                int nEvents, int seed) {
   std::string modstring = sct::glauberModToString[mod];
+
+  sct::Random::instance().seed(seed);
 
   // create and run the generator
   sct::MCGlauber generator(species, species, energy, mod, deformation,
                            deformation);
   generator.run(nEvents);
-  sct::GlauberTree* result = generator.results();
+  sct::GlauberTree *result = generator.results();
 
   int binx = sct::NucleusInfo::instance().massNumber(species) * 2 + 1;
   int biny = sct::NucleusInfo::instance().massNumber(species) * 8;
 
-  TH2D* ncollnpart = new TH2D(sct::MakeString("npartncoll_", modstring).c_str(),
+  TH2D *ncollnpart = new TH2D(sct::MakeString("npartncoll_", modstring).c_str(),
                               ";nPart;nColl", binx, 0, binx, biny, 0, biny);
   for (int i = 0; i < result->getEntries(); ++i) {
     result->getEntry(i);
@@ -83,16 +88,16 @@ void RunGlauber(sct::GlauberSpecies species, sct::CollisionEnergy energy,
   TFile file(outName.c_str(), "RECREATE");
 
   // get woods-saxon distributions
-  TH2D* WSA = generator.nuclearPDFA();
+  TH2D *WSA = generator.nuclearPDFA();
   WSA->SetName("rcosthetaA");
   WSA->Write();
-  TH2D* WSB = generator.nuclearPDFB();
+  TH2D *WSB = generator.nuclearPDFB();
   WSB->SetName("rcosthetaB");
   WSB->Write();
-  TH1D* genIP = generator.generatedImpactParameter();
+  TH1D *genIP = generator.generatedImpactParameter();
   genIP->SetName("generatedIP");
   genIP->Write();
-  TH1D* acceptIP = generator.acceptedImpactParameter();
+  TH1D *acceptIP = generator.acceptedImpactParameter();
   acceptIP->SetName("acceptedIP");
   acceptIP->Write();
   result->write();
@@ -102,7 +107,7 @@ void RunGlauber(sct::GlauberSpecies species, sct::CollisionEnergy energy,
   delete ncollnpart;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   // otherwise ROOT will commit suicide when we try to launch
   // multiple threads
   ROOT::EnableThreadSafety();
@@ -136,36 +141,36 @@ int main(int argc, char* argv[]) {
   // read energy from command line arguments
   sct::CollisionEnergy energy;
   switch (FLAGS_energy) {
-    case 2760:
-      energy = sct::CollisionEnergy::E2760;
-      break;
-    case 200:
-      energy = sct::CollisionEnergy::E200;
-      break;
-    case 62:
-      energy = sct::CollisionEnergy::E62;
-      break;
-    case 39:
-      energy = sct::CollisionEnergy::E39;
-      break;
-    case 27:
-      energy = sct::CollisionEnergy::E27;
-      break;
-    case 19:
-      energy = sct::CollisionEnergy::E19;
-      break;
-    case 14:
-      energy = sct::CollisionEnergy::E14;
-      break;
-    case 11:
-      energy = sct::CollisionEnergy::E11;
-      break;
-    case 7:
-      energy = sct::CollisionEnergy::E7;
-      break;
-    default:
-      LOG(ERROR) << "requested unknown energy: exiting";
-      return 1;
+  case 2760:
+    energy = sct::CollisionEnergy::E2760;
+    break;
+  case 200:
+    energy = sct::CollisionEnergy::E200;
+    break;
+  case 62:
+    energy = sct::CollisionEnergy::E62;
+    break;
+  case 39:
+    energy = sct::CollisionEnergy::E39;
+    break;
+  case 27:
+    energy = sct::CollisionEnergy::E27;
+    break;
+  case 19:
+    energy = sct::CollisionEnergy::E19;
+    break;
+  case 14:
+    energy = sct::CollisionEnergy::E14;
+    break;
+  case 11:
+    energy = sct::CollisionEnergy::E11;
+    break;
+  case 7:
+    energy = sct::CollisionEnergy::E7;
+    break;
+  default:
+    LOG(ERROR) << "requested unknown energy: exiting";
+    return 1;
   }
 
   // build output directory if it doesn't exist, using boost::filesystem
@@ -180,6 +185,10 @@ int main(int argc, char* argv[]) {
 
   PrintSettings();
 
+  // setup a random seed for the RNG
+  int seed = 0;
+  std::random_device rng;
+
   // if we are not running systematics, we only have one setting to run
   if (FLAGS_systematic == false) {
     std::string modstring = FLAGS_modification;
@@ -187,18 +196,29 @@ int main(int argc, char* argv[]) {
                    ::tolower);
     sct::GlauberMod mod = sct::stringToGlauberMod[modstring];
 
+    if (FLAGS_random_seed) {
+      seed = rng();
+    } else {
+      seed = sct::Counter::instance().counter();
+    }
+
     RunGlauber(species, energy, mod, FLAGS_outDir, FLAGS_deformation,
-               FLAGS_events);
+               FLAGS_events, seed);
   } else {
     // if we can multithread we'll run all the systematics at once
     if (FLAGS_multithread) {
       std::vector<std::thread> workers;
       for (auto mod : modifiers) {
+        if (FLAGS_random_seed) {
+          seed = rng();
+        } else {
+          seed = sct::Counter::instance().counter();
+        }
         LOG(INFO) << "Running Glauber with modification: "
                   << sct::glauberModToString[mod];
         workers.push_back(std::thread(RunGlauber, species, energy, mod,
                                       FLAGS_outDir, FLAGS_deformation,
-                                      FLAGS_events));
+                                      FLAGS_events, seed));
       }
       for (int i = 0; i < workers.size(); ++i) {
         workers[i].join();
@@ -210,10 +230,15 @@ int main(int argc, char* argv[]) {
     // otherwise, run sequentially
     else {
       for (auto mod : modifiers) {
+        if (FLAGS_random_seed) {
+          seed = rng();
+        } else {
+          seed = sct::Counter::instance().counter();
+        }
         LOG(INFO) << "Running Glauber with modification: "
                   << sct::glauberModToString[mod];
         RunGlauber(species, energy, mod, FLAGS_outDir, FLAGS_deformation,
-                   FLAGS_events);
+                   FLAGS_events, seed);
         LOG(INFO) << "done";
       }
     }

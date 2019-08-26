@@ -124,7 +124,7 @@ void NucleonPDF::setParameter(string par_name, double val) {
 
 bool NucleonPDF::initWS1D(parameter_list &params) {
   pdf_1d_ = make_unique<TF1>(
-      sct::MakeString("woodsaxon_", Random::instance().counter()).c_str(),
+      sct::MakeString("woodsaxon_", Counter::instance().counter()).c_str(),
       WoodsSaxonSpherical, 0.0, 20.0, WoodsSaxonSpherical_npar);
   pdf_1d_->SetNpx(400);
   initParameters(params, WoodsSaxonSpherical_params, pdf_1d_.get());
@@ -132,7 +132,7 @@ bool NucleonPDF::initWS1D(parameter_list &params) {
 }
 bool NucleonPDF::initWS2D(parameter_list &params) {
   pdf_2d_ = make_unique<TF2>(
-      sct::MakeString("woodsaxon_", Random::instance().counter()).c_str(),
+      sct::MakeString("woodsaxon_", Counter::instance().counter()).c_str(),
       WoodsSaxonDeformed, 0.0, 20.0, -1.0, 1.0, WoodsSaxonDeformed_npar);
   
   pdf_2d_->SetNpx(400);
@@ -144,7 +144,7 @@ bool NucleonPDF::initWS2D(parameter_list &params) {
 }
 bool NucleonPDF::initStepFunction(parameter_list &params) {
   pdf_1d_ = make_unique<TF1>(
-      sct::MakeString("stepfunction_", Random::instance().counter()).c_str(),
+      sct::MakeString("stepfunction_", Counter::instance().counter()).c_str(),
       StepFunction1D, 0.0, 20.0, StepFunction1D_npar);
   pdf_1d_->SetNpx(10000);
   initParameters(params, StepFunction1D_params, pdf_1d_.get());
@@ -152,7 +152,7 @@ bool NucleonPDF::initStepFunction(parameter_list &params) {
 }
 bool NucleonPDF::initHulthen(parameter_list &params) {
   pdf_1d_ = make_unique<TF1>(
-      sct::MakeString("hulthen_", Random::instance().counter()).c_str(),
+      sct::MakeString("hulthen_", Counter::instance().counter()).c_str(),
       HulthenPDF, 0.0, 20.0, HulthenPDF_npar);
   pdf_1d_->SetNpx(500);
   initParameters(params, HulthenPDF_params, pdf_1d_.get());

@@ -34,7 +34,7 @@ void NegativeBinomial::initNBD() {
 
   int nBins = 100;
   nbd_ =
-      make_unique<TH1D>(MakeString("nbd", Random::instance().counter()).c_str(),
+      make_unique<TH1D>(MakeString("nbd", Counter::instance().counter()).c_str(),
                         "", nBins, 0, nBins);
   nbd_->SetDirectory(0);
   for (int i = 0; i < nBins; ++i) {

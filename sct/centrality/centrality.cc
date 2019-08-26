@@ -30,7 +30,7 @@ Centrality::~Centrality() {}
 void Centrality::setDataRefmult(TH1D *histogram) {
   data_ = make_unique<TH1D>(*histogram);
   data_->SetName(MakeString("centrality_internal_data_refmult_",
-                            Random::instance().counter())
+                            Counter::instance().counter())
                      .c_str());
   data_->SetDirectory(0);
 }
@@ -38,7 +38,7 @@ void Centrality::setDataRefmult(TH1D *histogram) {
 void Centrality::setSimuRefmult(TH1D *histogram) {
   simu_ = make_unique<TH1D>(*histogram);
   simu_->SetName(MakeString("centrality_internal_simu_refmult_",
-                            Random::instance().counter())
+                            Counter::instance().counter())
                      .c_str());
   simu_->SetDirectory(0);
 }

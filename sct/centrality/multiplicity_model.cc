@@ -83,7 +83,7 @@ TH1D* MultiplicityModel::multiplicity(double npart, double ncoll,
 
   unsigned n_bins = 1000;
   TH1D* h =
-      new TH1D(MakeString("mult_tmp_", Random::instance().counter()).c_str(),
+      new TH1D(MakeString("mult_tmp_", Counter::instance().counter()).c_str(),
                "", n_bins, 0, n_bins);
 
   for (int i = 0; i < n_bins; ++i) {

@@ -135,7 +135,7 @@ void Nucleus::setNucleonSmearing(NucleonSmearing smear, double smear_area) {
   case NucleonSmearing::HardCore: {
     double rMax = sqrt(smear_area / pi);
     smearing_profile_ = make_unique<TF3>(
-        MakeString("hardCoreSmear_", Random::instance().counter()).c_str(),
+        MakeString("hardCoreSmear_", Counter::instance().counter()).c_str(),
         StepFunction, -rMax, rMax, -rMax, rMax, -rMax, rMax, 1);
     smearing_profile_->SetParameter(0, smear_area);
     break;
@@ -144,7 +144,7 @@ void Nucleus::setNucleonSmearing(NucleonSmearing smear, double smear_area) {
     double sigma = 0.79 / sqrt(3.0);
     double rMax = sigma * 5.0;
     smearing_profile_ = make_unique<TF3>(
-        MakeString("gaussianSmear_", Random::instance().counter()).c_str(),
+        MakeString("gaussianSmear_", Counter::instance().counter()).c_str(),
         Gaussian, -rMax, rMax, -rMax, rMax, -rMax, rMax, 1);
     smearing_profile_->SetParameter(0, sigma);
     break;
@@ -234,19 +234,19 @@ void Nucleus::initHistograms() {
 
   // initialize QA histograms
   generated_rcos_theta_ = make_unique<TH2D>(
-      MakeString("r_cos_theta_", Random::instance().counter()).c_str(),
+      MakeString("r_cos_theta_", Counter::instance().counter()).c_str(),
       ";R;cos(#theta)", 400, 0, 20, 100, -1.0, 1.0);
   generated_rcos_theta_->SetDirectory(0);
   generated_position_ = make_unique<TH3D>(
-      MakeString("nucleonpos_", Random::instance().counter()).c_str(),
+      MakeString("nucleonpos_", Counter::instance().counter()).c_str(),
       ";dx;dy;dz", 100, -20.0, 20.0, 100, -20.0, 20.0, 100, -20.0, 20.0);
   generated_position_->SetDirectory(0);
   generated_smear_ = make_unique<TH3D>(
-      MakeString("nucleonsmear_", Random::instance().counter()).c_str(),
+      MakeString("nucleonsmear_", Counter::instance().counter()).c_str(),
       ";dx;dy;dz", 100, -20.0, 20.0, 100, -20.0, 20.0, 100, -20.0, 20.0);
   generated_smear_->SetDirectory(0);
   smeared_position_ = make_unique<TH3D>(
-      MakeString("nucleonsmearedpos_", Random::instance().counter()).c_str(),
+      MakeString("nucleonsmearedpos_", Counter::instance().counter()).c_str(),
       ";dx;dy;dz", 100, -20.0, 20.0, 100, -20.0, 20.0, 100, -20.0, 20.0);
   smeared_position_->SetDirectory(0);
 }
