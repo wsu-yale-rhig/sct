@@ -114,8 +114,8 @@ public:
 
   // gives access to tree and individual nuclei
   GlauberTree *results() const { return tree_.get(); }
-  Nucleus *nucleusA() const { return nucleusA.get(); }
-  Nucleus *nucleusB() const { return nucleusB.get(); }
+  Nucleus *nucleusA() const { return nucleusA_.get(); }
+  Nucleus *nucleusB() const { return nucleusB_.get(); }
 
   // gives access to generated parameters
   TH2D *nuclearPDFA() { return nucleusA_->generatedRCosTheta(); }
