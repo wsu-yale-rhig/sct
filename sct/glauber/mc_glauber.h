@@ -112,8 +112,10 @@ public:
   // write the summary into header tree (called automatically by run())
   void writeHeader();
 
-  // gives access to tree
+  // gives access to tree and individual nuclei
   GlauberTree *results() const { return tree_.get(); }
+  Nucleus *nucleusA() const { return nucleusA.get(); }
+  Nucleus *nucleusB() const { return nucleusB.get(); }
 
   // gives access to generated parameters
   TH2D *nuclearPDFA() { return nucleusA_->generatedRCosTheta(); }
