@@ -39,7 +39,7 @@ static sct_map<GlauberSpecies, string, EnumClassHash> speciesString{
     {GlauberSpecies::Pb208, "pb208"},
     {GlauberSpecies::Cu63, "cu63"},
     {GlauberSpecies::p1, "p1"},
-    {GlauberSpecies::p1, "d2"}};
+    {GlauberSpecies::d2, "d2"}};
 
 // collision energies for which we have hard coded nucleon-nucleon inelastic
 // xsections
