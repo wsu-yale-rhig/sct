@@ -82,10 +82,22 @@ SCT_DEFINE_double(vrMax, 3.0, "maximum Vr [cm]");
 SCT_DEFINE_string(dVzBranch, "vzvpdvz", "name of vz - vpd vz branch");
 SCT_DEFINE_double(dVzMax, 3.0, "maximum dVz [cm]");
 
+// tof cuts are not absolute - they should be a function of refmult. To
+// accomplish this, I use a TH3D (refmult, tofMatch, luminosity) "mask"
+// where any accepted refmult x tofmatch pair has a bin content 1, and any not
+// accepted pair has a bin content of 0. For the TH3D, the zdc coincidence rate
+// axis should be in kHz, not Hz.
+SCT_DEFINE_string(
+    tofMatchBranch, "tofMatch",
+    "name of branch containing the number of tof matched primary tracks");
+SCT_DEFINE_string(tofMatchFile, "", "file with tofMatch x refmult cut");
+SCT_DEFINE_string(tofMatchHist, "tofmatch_mask",
+                  "name of tofMatch mask histogram");
+
 // applies event cuts as defined in program flags for each stage of the
 // corrections
 bool AcceptEvent(double vz, double vr, double dVz, unsigned refmult,
-                 double lumi);
+                 double lumi, unsigned tofmatch, TH3D *tofhist);
 
 // used internally to bin and project TH3s along different axes
 template <class T>
@@ -111,8 +123,8 @@ int main(int argc, char *argv[]) {
   std::string usage =
       "Performs luminosity and Vz corrections to a refmult distribution tree. ";
   usage +=
-      "Input must have refmult, luminosity & vz branches - output is a second "
-      "tree with corrected refmult.";
+      "Input must have refmult, luminosity, vz, vr, dVz & tofMatch branches - "
+      "output is a set of parameters for the correction.";
   sct::SetUsageMessage(usage);
 
   sct::InitLogging(&argc, argv);
@@ -134,6 +146,21 @@ int main(int argc, char *argv[]) {
   TTreeReaderValue<double> lumi(reader, FLAGS_luminosityBranch.c_str());
   TTreeReaderValue<double> vr(reader, FLAGS_vrBranch.c_str());
   TTreeReaderValue<double> dVz(reader, FLAGS_dVzBranch.c_str());
+  TTreeReaderValue<unsigned> tofmatch(reader, FLAGS_tofMatchBranch.c_str());
+
+  TFile *tof_file = nullptr;
+  TH3D *tofmatch_mask = nullptr;
+
+  if (!FLAGS_tofMatchFile.empty()) {
+    tof_file = new TFile(FLAGS_tofMatchFile.c_str(), "READ");
+    if (!tof_file || !tof_file->IsOpen())
+      LOG(FATAL) << "requested tof correction file could not be opened: "
+                 << FLAGS_tofMatchFile;
+    tofmatch_mask = (TH3D *)tof_file->Get(FLAGS_tofMatchHist.c_str());
+    if (tofmatch_mask == nullptr)
+      LOG(FATAL) << "requested tofMatch mask histogram " << FLAGS_tofMatchHist
+                 << " not found in file: " << FLAGS_tofMatchFile;
+  }
 
   // make an output file to store the corrected refmult distribution
   std::string out_file_name = FLAGS_outDir + "/" + FLAGS_outFile;
@@ -154,6 +181,10 @@ int main(int argc, char *argv[]) {
 
   double h_param_y_min = 450;
   double h_param_y_max = 600;
+
+  unsigned tofmult_nbins = 800;
+  double tofmult_min = 0;
+  double tofmult_max = 800;
 
   // Fit function definitions and default parameter values
   // -----------------------------------------
@@ -211,6 +242,11 @@ int main(int argc, char *argv[]) {
   sct::canvasOpts cOptsLogy;
   cOptsLogy.log_y = true;
 
+  sct::canvasOpts cOptsLogz;
+  cOptsLogz.log_z = true;
+  cOptsLogz.right_margin = 0.11;
+  cOptsLogz.left_margin = 0.14;
+
   sct::canvasOpts cOptsLowerLeg;
   cOptsLowerLeg.leg_upper_bound = 0.4;
   cOptsLowerLeg.leg_left_bound = 0.2;
@@ -234,14 +270,20 @@ int main(int argc, char *argv[]) {
                FLAGS_vzMin, FLAGS_vzMax, FLAGS_lumiBins, FLAGS_lumiMin,
                FLAGS_lumiMax, (FLAGS_refmultMax - FLAGS_refmultMin),
                FLAGS_refmultMin, FLAGS_refmultMax);
+  TH2D *uncorr_ref_tofmatch =
+      new TH2D("uncorrtofmult", ";refmult;tofmult",
+               (FLAGS_refmultMax - FLAGS_refmultMin), FLAGS_refmultMin,
+               FLAGS_refmultMax, tofmult_nbins, tofmult_min, tofmult_max);
 
   while (reader.Next()) {
     double lumikhz = *lumi / 1000.0;
 
-    if (!AcceptEvent(*vz, *vr, *dVz, *refmult, lumikhz))
+    if (!AcceptEvent(*vz, *vr, *dVz, *refmult, lumikhz, *tofmatch,
+                     tofmatch_mask))
       continue;
 
     uncorr_lumi->Fill(*vz, lumikhz, *refmult);
+    uncorr_ref_tofmatch->Fill(*refmult, *tofmatch);
   }
 
   LOG(INFO) << "Fitting average refmult as a function of luminosity";
@@ -265,6 +307,8 @@ int main(int argc, char *argv[]) {
                      "<refmult>", "");
   RefmultQA(uncorr_lumi, "uncorrected", hOpts, cOptsLowerLegLogy, hOpts, cOpts,
             4, false);
+  Print2DSimple(uncorr_ref_tofmatch, hOpts, cOptsLogz, FLAGS_outDir,
+                "uncorrected_ref_tofmatch", "", "refmult", "tofmult", "COLZ");
 
   // LUMINOSITY CORRECTED - GENERATE VZ CORRECTION
   // --------------------------------------------------------------------------
@@ -277,11 +321,16 @@ int main(int argc, char *argv[]) {
                FLAGS_vzMin, FLAGS_vzMax, FLAGS_lumiBins, FLAGS_lumiMin,
                FLAGS_lumiMax, (FLAGS_refmultMax - FLAGS_refmultMin),
                FLAGS_refmultMin, FLAGS_refmultMax);
+  TH2D *corr_ref_tofmatch =
+      new TH2D("corr_tofmult", ";refmult;tofmult",
+               (FLAGS_refmultMax - FLAGS_refmultMin), FLAGS_refmultMin,
+               FLAGS_refmultMax, tofmult_nbins, tofmult_min, tofmult_max);
 
   while (reader.Next()) {
     double lumikhz = *lumi / 1000.0;
 
-    if (!AcceptEvent(*vz, *vr, *dVz, *refmult, lumikhz))
+    if (!AcceptEvent(*vz, *vr, *dVz, *refmult, lumikhz, *tofmatch,
+                     tofmatch_mask))
       continue;
 
     double norm = luminosity_correction->Eval(FLAGS_lumiNorm);
@@ -290,6 +339,7 @@ int main(int argc, char *argv[]) {
     double corr_refmult = static_cast<double>(*refmult) * norm / zdc_corr;
 
     corr_lumi->Fill(*vz, lumikhz, corr_refmult);
+    corr_ref_tofmatch->Fill(corr_refmult, *tofmatch);
   }
 
   // now generate a 1D profile, <refmult> vs luminosity, and fit to see if its
@@ -308,6 +358,9 @@ int main(int argc, char *argv[]) {
                      "<refmult>", "");
   RefmultQA(corr_lumi, "lumi_corrected", hOpts, cOptsLowerLegLogy, hOpts,
             cOpts);
+  Print2DSimple(corr_ref_tofmatch, hOpts, cOptsLogz, FLAGS_outDir,
+                "lumi_corrected_ref_tofmatch", "", "refmult", "tofmult",
+                "COLZ");
 
   // now, do vz correction
   LOG(INFO) << "Performing Vz correction: extracting fit parameter h";
@@ -377,11 +430,16 @@ int main(int argc, char *argv[]) {
                FLAGS_vzMin, FLAGS_vzMax, FLAGS_lumiBins, FLAGS_lumiMin,
                FLAGS_lumiMax, (FLAGS_refmultMax - FLAGS_refmultMin),
                FLAGS_refmultMin, FLAGS_refmultMax);
+  TH2D *corr_lumi_vz_ref_tofmatch =
+      new TH2D("corr_lumi_vz_tofmatch", ";refmult;tofmult",
+               (FLAGS_refmultMax - FLAGS_refmultMin), FLAGS_refmultMin,
+               FLAGS_refmultMax, tofmult_nbins, tofmult_min, tofmult_max);
 
   while (reader.Next()) {
     double lumikhz = *lumi / 1000.0;
 
-    if (!AcceptEvent(*vz, *vr, *dVz, *refmult, lumikhz))
+    if (!AcceptEvent(*vz, *vr, *dVz, *refmult, lumikhz, *tofmatch,
+                     tofmatch_mask))
       continue;
 
     double zdc_norm = luminosity_correction->Eval(FLAGS_lumiNorm);
@@ -394,10 +452,14 @@ int main(int argc, char *argv[]) {
                           (zdc_corr * vz_corr);
 
     corr_lumi_vz->Fill(*vz, lumikhz, corr_refmult);
+    corr_lumi_vz_ref_tofmatch->Fill(corr_refmult, *tofmatch);
   }
 
   RefmultQA(corr_lumi_vz, "lumi_vz_corrected", hOpts, cOptsLowerLegLogy, hOpts,
             cOpts, 4);
+  Print2DSimple(corr_lumi_vz_ref_tofmatch, hOpts, cOptsLogz, FLAGS_outDir,
+                "lumi_vz_corrected_ref_tofmatch", "", "refmult", "tofmult",
+                "COLZ");
 
   // check vz h distribution
   LOG(INFO) << "Checking Vz correction: extracting fit parameter h";
@@ -465,6 +527,9 @@ int main(int argc, char *argv[]) {
   full_corr_refmult->SetName("refmult");
   full_corr_refmult->Write();
   uncorr_refmult->SetName("refmult_uncorrected");
+  uncorr_lumi->Write();
+  corr_lumi->Write();
+  corr_lumi_vz->Write();
   uncorr_refmult->Write();
   out_file->Close();
 
@@ -488,7 +553,7 @@ int main(int argc, char *argv[]) {
 }
 
 bool AcceptEvent(double vz, double vr, double dVz, unsigned refmult,
-                 double lumi) {
+                 double lumi, unsigned tofmatch, TH3D *tofhist) {
   if (vz < FLAGS_vzMin || vz > FLAGS_vzMax)
     return false;
   if (vr > FLAGS_vrMax)
@@ -499,6 +564,11 @@ bool AcceptEvent(double vz, double vr, double dVz, unsigned refmult,
     return false;
   if (lumi < FLAGS_lumiMin || lumi > FLAGS_lumiMax)
     return false;
+  if (tofhist != nullptr) {
+    int bin = tofhist->FindBin(refmult, tofmatch, lumi);
+    if (!tofhist->GetBinContent(bin))
+      return false;
+  }
   return true;
 }
 
